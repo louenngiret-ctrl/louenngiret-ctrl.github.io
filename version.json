@@ -1,7 +1,19 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.3.0",
+      "date": "2026-11-25",
+      "titre": "Le Grenier reçoit tes partages",
+      "notes": [
+        "Depuis Instagram, ta galerie ou Chrome : Partager, puis Grenier. Le lien, le texte ou la photo arrive dans la Boîte à trier.",
+        "Capture rapide : bouton Dicter pour parler au lieu d'écrire.",
+        "Capture rapide : bouton Photo pour prendre ou choisir une photo.",
+        "Les photos de la Boîte s'affichent en polaroïds, réduites pour ne pas encombrer le téléphone.",
+        "Appui long sur l'icône du Grenier : nouveau raccourci vers la liste de courses."
+      ]
+    },
     {
       "version": "0.2.0",
       "date": "2026-11-25",

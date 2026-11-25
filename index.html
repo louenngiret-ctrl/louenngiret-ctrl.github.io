@@ -27,7 +27,22 @@
 <dialog id="capture" class="feuille">
   <form method="dialog" id="capture-form">
     <label for="capture-texte" class="feuille-titre">Jette-le ici, on triera plus tard</label>
-    <textarea id="capture-texte" rows="4" placeholder="Une idée, un lien, une chose à acheter, une phrase…" required></textarea>
+    <textarea id="capture-texte" rows="4" placeholder="Une idée, un lien, une chose à acheter, une phrase…"></textarea>
+    <figure id="capture-apercu" class="apercu" hidden>
+      <img alt="Photo à ranger">
+      <button type="button" class="apercu-retirer" id="capture-retirer" aria-label="Retirer la photo">Retirer</button>
+    </figure>
+    <div class="outils">
+      <button type="button" class="outil" id="capture-dicter" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        <span>Dicter</span>
+      </button>
+      <label class="outil" id="capture-photo-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span>Photo</span>
+        <input type="file" id="capture-photo" accept="image/*" capture="environment" hidden>
+      </label>
+    </div>
     <div class="feuille-actions">
       <button type="button" class="btn-sobre" id="capture-annuler">Annuler</button>
       <button type="submit" class="btn">Ranger dans la boîte</button>

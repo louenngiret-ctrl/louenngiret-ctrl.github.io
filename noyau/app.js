@@ -118,7 +118,7 @@ async function vueAccueil() {
       ${boite.length ? `
       <div class="dernier">
         <span class="dernier-titre">Dernière chose capturée</span>
-        <p>${esc(boite[0].texte).slice(0, 160)}</p>
+        <p>${esc(boite[0].texte || boite[0].titre || 'Une photo').slice(0, 160)}</p>
       </div>` : `
       <p class="astuce">Appuie sur <b>+</b> pour jeter une idée dans la Boîte à trier, d'où que tu sois dans le Grenier.</p>`}
       <div id="installer-zone"></div>
@@ -161,6 +161,7 @@ async function vueMalle(id) {
 
 async function vueBoite() {
   const items = await store.parMalle('boite').catch(() => []);
+  libererPhotos();
   vue.innerHTML = `${barre('Boîte à trier')}
   <section class="page">
     <form class="ajout" id="ajout">
@@ -180,26 +181,63 @@ async function vueBoite() {
   });
 }
 
+// Les photos sont des Blob dans IndexedDB : on leur donne une adresse temporaire, libérée au rendu suivant.
+let urlsPhotos = [];
+function libererPhotos() { urlsPhotos.forEach((u) => URL.revokeObjectURL(u)); urlsPhotos = []; }
+
 function postit(el, i) {
-  const lien = el.type === 'lien';
-  const corps = lien
-    ? `<a href="${esc(el.texte)}" target="_blank" rel="noopener noreferrer">${esc(el.texte.replace(/^https?:\/\/(www\.)?/, ''))}</a>`
-    : esc(el.texte).replace(/\n/g, '<br>');
-  return `<li class="postit" style="--tourne:${[-1.4, 1, -0.6, 1.6, -1][i % 5]}deg">
-    <p>${corps}</p>
+  const tourne = [-1.4, 1, -0.6, 1.6, -1][i % 5];
+  const texte = el.texte || '';
+  const url = (el.url || (el.type === 'lien' ? texte.trim() : '')).trim();
+  const lienSur = /^https?:\/\/\S+$/i.test(url);
+  const reste = lienSur ? texte.replace(url, '').trim() : texte;
+  let image = '';
+  if (el.type === 'photo' && el.fichier instanceof Blob) {
+    const u = URL.createObjectURL(el.fichier);
+    urlsPhotos.push(u);
+    image = `<img src="${u}" alt="${esc(el.titre || 'Photo')}" loading="lazy">`;
+  }
+  const corps = (reste ? `<p>${esc(reste).replace(/\n/g, '<br>')}</p>` : '')
+    + (lienSur ? `<p><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url.replace(/^https?:\/\/(www\.)?/, ''))}</a></p>` : '');
+  const partage = (el.etiquettes || []).includes('partage') ? '<span class="partage">partagé</span>' : '';
+  return `<li class="postit${image ? ' polaroid' : ''}" style="--tourne:${tourne}deg">
+    ${image}${corps}
     <div class="postit-pied">
-      <time datetime="${new Date(el.cree).toISOString()}">${esc(QUAND.format(el.cree))}</time>
+      <time datetime="${new Date(el.cree).toISOString()}">${esc(QUAND.format(el.cree))}</time>${partage}
       <button type="button" class="jeter" data-jeter="${esc(el.id)}">Jeter</button>
     </div>
   </li>`;
 }
 
-async function capturer(texte) {
-  const t = texte.trim();
-  if (!t) return;
-  await store.ajouter({ malle: 'boite', type: estLien(t) ? 'lien' : 'note', texte: t, titre: t.split('\n')[0].slice(0, 80) });
+// Photo réduite à 1600 px de côté en JPEG ; si quelque chose échoue, on garde l'originale.
+async function compresserPhoto(fichier) {
+  try {
+    const img = await createImageBitmap(fichier, { imageOrientation: 'from-image' });
+    const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    img.close?.();
+    const b = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.82));
+    return b && b.size < fichier.size ? b : fichier;
+  } catch (e) { return fichier; }
+}
+
+async function capturer(texte, photo) {
+  const t = (texte || '').trim();
+  if (!t && !photo) return false;
+  const titre = t.split('\n')[0].slice(0, 80);
+  if (photo) {
+    const fichier = await compresserPhoto(photo);
+    await store.ajouter({ malle: 'boite', type: 'photo', texte: t, titre: titre || 'Photo', fichier });
+  } else {
+    const lien = estLien(t);
+    await store.ajouter({ malle: 'boite', type: lien ? 'lien' : 'note', texte: t, titre, url: lien ? t : undefined });
+  }
   store.demanderPersistance();
+  navigator.vibrate?.(12);
   toast('Rangé dans la Boîte à trier');
+  return true;
 }
 
 /* ---------- Quoi de neuf ---------- */
@@ -289,22 +327,87 @@ function majBoutonInstaller() {
   if (b) b.addEventListener('click', async () => { invitation.prompt(); await invitation.userChoice; invitation = null; majBoutonInstaller(); });
 }
 
-/* ---------- Capture rapide ---------- */
+/* ---------- Capture rapide : texte, dictée, photo ---------- */
 const dlg = $('#capture');
+let photoChoisie = null;
+let urlApercu = null;
+function retirerPhoto() {
+  photoChoisie = null;
+  if (urlApercu) URL.revokeObjectURL(urlApercu);
+  urlApercu = null;
+  $('#capture-apercu').hidden = true;
+  $('#capture-photo').value = '';
+}
+$('#capture-photo').addEventListener('change', (e) => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  retirerPhoto();
+  photoChoisie = f;
+  urlApercu = URL.createObjectURL(f);
+  $('#capture-apercu img').src = urlApercu;
+  $('#capture-apercu').hidden = false;
+});
+$('#capture-retirer').addEventListener('click', retirerPhoto);
+
+// Dictée : visible seulement si le navigateur sait faire. Sur Android, une phrase par appui.
+const Reco = window.SpeechRecognition || window.webkitSpeechRecognition;
+const btnDicter = $('#capture-dicter');
+let reco = null;
+let ecoute = false;
+function arreterDictee() { if (reco && ecoute) { try { reco.stop(); } catch (e) { /* rien */ } } }
+if (Reco) {
+  btnDicter.hidden = false;
+  btnDicter.addEventListener('click', () => {
+    if (ecoute) { arreterDictee(); return; }
+    const zone = $('#capture-texte');
+    const avant = zone.value.trim();
+    reco = new Reco();
+    reco.lang = 'fr-FR';
+    reco.interimResults = true;
+    reco.onresult = (ev) => {
+      let dit = '';
+      for (const r of ev.results) dit += r[0].transcript;
+      zone.value = (avant ? avant + ' ' : '') + dit.trim();
+    };
+    reco.onerror = (ev) => {
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') toast('Micro refusé : autorise-le pour le Grenier');
+      else if (ev.error === 'network') toast('La dictée a besoin d\'internet');
+      else if (ev.error === 'no-speech') toast('Je n\'ai rien entendu');
+    };
+    reco.onend = () => {
+      ecoute = false;
+      btnDicter.classList.remove('actif');
+      btnDicter.querySelector('span').textContent = 'Dicter';
+    };
+    try {
+      reco.start();
+      ecoute = true;
+      btnDicter.classList.add('actif');
+      btnDicter.querySelector('span').textContent = 'J\'écoute';
+      navigator.vibrate?.(8);
+    } catch (e) { toast('La dictée n\'a pas pu démarrer'); }
+  });
+}
+
 function ouvrirCapture() {
   $('#capture-texte').value = '';
+  retirerPhoto();
   if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
   setTimeout(() => $('#capture-texte').focus(), 40);
 }
-function fermerCapture() { if (dlg.open) dlg.close(); }
+function fermerCapture() {
+  arreterDictee();
+  if (dlg.open) dlg.close();
+}
 $('#capture-btn').addEventListener('click', ouvrirCapture);
 $('#capture-annuler').addEventListener('click', fermerCapture);
 dlg.addEventListener('click', (e) => { if (e.target === dlg) fermerCapture(); });
 $('#capture-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const t = $('#capture-texte').value;
-  if (!t.trim()) return;
-  await capturer(t);
+  arreterDictee();
+  const ok = await capturer($('#capture-texte').value, photoChoisie);
+  if (!ok) { toast('Écris, dicte ou ajoute une photo'); return; }
+  retirerPhoto();
   fermerCapture();
   route();
 });
@@ -365,7 +468,21 @@ async function brancherServiceWorker() {
   } catch (e) { /* hors https ou navigateur sans service worker */ }
 }
 
+/* ---------- Partage reçu d'une autre appli (voir sw.js, recevoirPartage) ---------- */
+function annoncerPartage() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has('recu')) return;
+  const n = Number(p.get('recu'));
+  history.replaceState(null, '', location.pathname + (location.hash || '#/boite'));
+  const msg = n > 1 ? `${n} choses reçues dans la Boîte à trier`
+    : n === 1 ? 'Reçu dans la Boîte à trier'
+    : n === 0 ? 'Rien à ranger dans ce partage'
+    : 'Le partage n\'a pas pu être rangé';
+  setTimeout(() => toast(msg), 350);
+}
+
 /* ---------- Démarrage ---------- */
+annoncerPartage();
 appliquerAmbiance(lireAmbiance());
 setInterval(() => appliquerAmbiance(lireAmbiance()), 10 * 60 * 1000);
 chargerVersion().finally(route);

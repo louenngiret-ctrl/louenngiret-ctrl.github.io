@@ -264,6 +264,30 @@ main { outline: none; padding-bottom: calc(110px + env(safe-area-inset-bottom));
 }
 .feuille-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 
+/* Outils de la capture : dictée et photo, comme deux étiquettes de carton */
+.outils { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.outil {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 14px; cursor: pointer;
+  border: 1.5px solid var(--encre-douce); border-radius: 10px; background: transparent; color: var(--encre);
+  font-family: "Special Elite", monospace; font-size: 15px;
+}
+.outil svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.outil.actif { border-color: var(--accent); color: var(--accent); }
+.outil.actif svg { animation: ecoute 1.1s ease-in-out infinite; }
+@keyframes ecoute { 50% { transform: scale(1.18); } }
+.outil:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Aperçu de la photo choisie : un petit polaroïd */
+.apercu { position: relative; width: 150px; margin: 12px 0 0; padding: 8px 8px 30px; background: #fffdf7; box-shadow: 0 6px 14px -6px rgba(0,0,0,.5); transform: rotate(-2deg); }
+.apercu img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.apercu-retirer { position: absolute; left: 0; right: 0; bottom: 0; min-height: 30px; border: 0; background: none; color: #6a2f12; font: 13px "Special Elite", monospace; text-decoration: underline; cursor: pointer; }
+
+/* Photos de la Boîte à trier : polaroïds */
+.postit.polaroid { background: #fffdf7; padding: 10px 10px 8px; }
+.postit.polaroid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 10px; background: #e8e0cc; }
+.postit.polaroid p { font-size: 19px; }
+.partage { padding: 0 6px; border: 1.5px solid currentColor; border-radius: 4px; transform: rotate(-3deg); font-size: 11.5px; }
+
 /* ---------- Bandeaux ---------- */
 .maj {
   position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); z-index: 40; transform: translateX(-50%);
