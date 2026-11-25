@@ -74,7 +74,7 @@ function scene() {
 function carteMalle(m, compte) {
   const tampon = { demenagement: 'en déménagement', vide: 'à remplir', ouverte: compte ? `${compte} dedans` : 'vide pour l’instant' }[m.etat];
   return `
-  <a class="malle malle-${m.etat}" href="#/malle/${m.id}" style="--bois:${m.bois};--etiq:${m.etiquette}">
+  <a class="malle malle-${m.etat}" href="${esc(m.lien || `#/malle/${m.id}`)}" style="--bois:${m.bois};--etiq:${m.etiquette}">
     <span class="malle-couvercle" aria-hidden="true"></span>
     <span class="malle-corps">
       <span class="etiquette">
@@ -87,10 +87,22 @@ function carteMalle(m, compte) {
   </a>`;
 }
 
+// Carnet V2 vit dans malles/carnet/ et garde son propre stockage (localStorage « carnet.state ») :
+// on le lit seulement pour afficher combien chaque malle contient.
+function comptesCarnet() {
+  try {
+    const s = JSON.parse(localStorage.getItem('carnet.state') || 'null');
+    if (!s) return {};
+    const items = Array.isArray(s.items) ? s.items.length : 0;
+    const pieces = s.wr && Array.isArray(s.wr.pieces) ? s.wr.pieces.length : 0;
+    return { achats: items, 'garde-robe': pieces };
+  } catch (e) { return {}; }
+}
+
 async function vueAccueil() {
   const m = moment();
   const boite = await store.parMalle('boite').catch(() => []);
-  const comptes = { boite: boite.length };
+  const comptes = { boite: boite.length, ...comptesCarnet() };
   vue.innerHTML = `
   <section class="accueil">
     <header class="haut">
@@ -135,6 +147,7 @@ async function vueMalle(id) {
   if (id === 'boite') return vueBoite();
   const m = malle(id);
   if (!m) return go('#/');
+  if (m.lien) { location.href = m.lien; return; }
   vue.innerHTML = `${barre(m.nom)}
   <section class="page">
     <div class="carton" style="--etiq:${m.etiquette}">

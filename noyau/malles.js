@@ -9,8 +9,9 @@ export const MALLES = [
     sous: 'listes, panier, envies',
     bois: '#8c4f2e',
     etiquette: '#e8cfa0',
-    etat: 'demenagement',
-    message: "Ta liste d'achats, ton panier du jour et tes envies arrivent ici à la prochaine version, avec tout ce que contient Carnet.",
+    etat: 'ouverte',
+    // Carnet V2, déménagé tel quel dans malles/carnet/
+    lien: 'malles/carnet/index.html#/home',
   },
   {
     id: 'garde-robe',
@@ -18,8 +19,8 @@ export const MALLES = [
     sous: 'armoire, tenues, atelier',
     bois: '#5d4a3b',
     etiquette: '#d9c8d8',
-    etat: 'demenagement',
-    message: "L'armoire, l'atelier et tes tenues arrivent ici à la prochaine version, avec tes photos de Carnet.",
+    etat: 'ouverte',
+    lien: 'malles/carnet/index.html#/armoire',
   },
   {
     id: 'boite',

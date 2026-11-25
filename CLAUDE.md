@@ -13,7 +13,8 @@ La référence complète est la Bible du Grenier : https://claude.ai/artifact/Mb
 - HTML, CSS, JavaScript en modules natifs : aucun framework, aucune étape de compilation.
 - Une malle = une entrée dans `noyau/malles.js` + un dossier `malles/<id>/`. Ne toucher une autre malle qu'en le disant.
 - Données : IndexedDB « grenier » (`noyau/store.js`). Tout changement de schéma = une nouvelle étape de migration, jamais la modification d'une étape publiée.
-- Dépôt public : aucune donnée personnelle, aucune photo de Louenn, aucune image qui ne lui appartient pas.
+- Dépôt public : aucune donnée personnelle, aucune photo de Louenn. Exception choisie par Louenn le 25/11/2026 : Carnet V2 (`malles/carnet/index.html`) garde toutes ses images d'origine, sans remplacement.
+- Carnet V2 a été déménagé tel quel : ne pas modifier son contenu sans demande explicite. Seul ajout : le lien « Grenier » en fin de fichier.
 - Mobile d'abord (Samsung A14), cibles tactiles de 44 px minimum, rien qui dépasse à 360 px.
 - Textes visibles et noms de fichiers livrés : vrais espaces, jamais de tirets du bas.
 - Tester en local (serveur http + navigateur) avant d'envoyer : rendu 360 px et PC, service worker, hors connexion.

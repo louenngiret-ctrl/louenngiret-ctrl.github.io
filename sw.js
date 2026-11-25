@@ -1,6 +1,6 @@
 // Service worker du Grenier : hors connexion + mises à jour.
 // À CHAQUE NOUVELLE VERSION : changer VERSION ici ET dans version.json.
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const CACHE = `grenier-${VERSION}`;
 
 const COQUILLE = [
@@ -11,6 +11,7 @@ const COQUILLE = [
   './noyau/app.js',
   './noyau/store.js',
   './noyau/malles.js',
+  './malles/carnet/index.html',
   './assets/fonts/special-elite.woff2',
   './assets/fonts/permanent-marker.woff2',
   './assets/fonts/patrick-hand.woff2',
@@ -20,7 +21,8 @@ const COQUILLE = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(COQUILLE)));
+  // cache: 'reload' pour ne pas reprendre une vieille copie gardée par le navigateur.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(COQUILLE.map((u) => new Request(u, { cache: 'reload' })))));
   // Pas de skipWaiting automatique : l'appli propose « Recharger » à Louenn.
 });
 
@@ -48,9 +50,16 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Pages : la coquille en cache, même hors connexion.
+  // Pages : chaque page (le grenier, Carnet…) depuis le cache, même hors connexion.
   if (req.mode === 'navigate') {
-    e.respondWith(caches.match('./index.html').then((r) => r || fetch(req)));
+    e.respondWith((async () => {
+      const page = await caches.match(req, { ignoreSearch: true });
+      if (page) return page;
+      try { return await fetch(req); } catch (err) {
+        const racine = url.pathname === '/' || url.pathname.endsWith('/index.html') && !url.pathname.includes('/malles/');
+        return (racine && await caches.match('./index.html')) || Response.error();
+      }
+    })());
     return;
   }
 

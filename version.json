@@ -1,7 +1,20 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.2.0",
+      "date": "2026-11-25",
+      "titre": "Carnet a déménagé au Grenier",
+      "notes": [
+        "Carnet V2 est dans le Grenier, tel quel, avec toutes ses images.",
+        "La malle Achats et courses ouvre l'accueil de Carnet, la malle Garde-robe ouvre l'armoire.",
+        "Le bouton « Grenier » en haut à droite de Carnet ramène au grenier.",
+        "Les malles affichent combien de choses elles contiennent.",
+        "Pour récupérer tes données : sauvegarde depuis ton ancien Carnet, puis importe le fichier dans les Réglages du Carnet du Grenier.",
+        "Carnet marche aussi hors connexion."
+      ]
+    },
     {
       "version": "0.1.0",
       "date": "2026-11-25",
