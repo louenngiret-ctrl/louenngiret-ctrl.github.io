@@ -1,7 +1,21 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.4.0",
+      "date": "2026-11-25",
+      "titre": "La Loge et la pièce des Cours",
+      "notes": [
+        "Nouvelle malle La Loge : coiffure, make-up, soins, ongles, piercings et tatouages, chacun avec son rangement.",
+        "Make-up et soins : la date limite après ouverture se calcule toute seule, avec un tampon « à jeter ».",
+        "Soins : ta routine du matin et du soir, à cocher chaque jour.",
+        "Piercings : la carte de l'oreille et du visage, et la cicatrisation estimée.",
+        "Coiffure : le miroir d'essayage pose une coiffure de ta collection sur ta photo.",
+        "Nouvelle pièce Cours, en préparation : l'ordinateur du bureau ouvre la Suite BTS.",
+        "Carnet et la Suite ne se retéléchargent plus à chaque mise à jour."
+      ]
+    },
     {
       "version": "0.3.0",
       "date": "2026-11-25",

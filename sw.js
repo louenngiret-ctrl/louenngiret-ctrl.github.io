@@ -1,7 +1,11 @@
 // Service worker du Grenier : hors connexion + mises à jour.
 // À CHAQUE NOUVELLE VERSION : changer VERSION ici ET dans version.json.
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const CACHE = `grenier-${VERSION}`;
+// Gros fichiers (Carnet, Suite BTS, moteur et modèles d'essayage) : dans un cache à part,
+// gardé d'une version à l'autre. Changer LOURDS seulement quand Carnet ou la Suite changent.
+const LOURDS = 'grenier-lourds-1';
+const FICHIERS_LOURDS = ['./malles/carnet/index.html', './malles/cours/suite/index.html'];
 
 const COQUILLE = [
   './',
@@ -11,7 +15,18 @@ const COQUILLE = [
   './noyau/app.js',
   './noyau/store.js',
   './noyau/malles.js',
-  './malles/carnet/index.html',
+  './noyau/outils.js',
+  './malles/loge/index.html',
+  './malles/loge/loge.css',
+  './malles/loge/loge.js',
+  './malles/loge/donnees.js',
+  './malles/loge/essayage.js',
+  './malles/cours/index.html',
+  './assets/textures/plaster.png',
+  './assets/textures/woodfloor.png',
+  './assets/textures/rug.png',
+  './assets/fonts/bodoni-moda-italic.woff2',
+  './assets/fonts/bodoni-moda-600.woff2',
   './assets/fonts/special-elite.woff2',
   './assets/fonts/permanent-marker.woff2',
   './assets/fonts/patrick-hand.woff2',
@@ -22,14 +37,21 @@ const COQUILLE = [
 
 self.addEventListener('install', (e) => {
   // cache: 'reload' pour ne pas reprendre une vieille copie gardée par le navigateur.
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(COQUILLE.map((u) => new Request(u, { cache: 'reload' })))));
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    await c.addAll(COQUILLE.map((u) => new Request(u, { cache: 'reload' })));
+    const l = await caches.open(LOURDS);
+    for (const u of FICHIERS_LOURDS) {
+      if (!(await l.match(u))) await l.add(new Request(u, { cache: 'reload' }));
+    }
+  })());
   // Pas de skipWaiting automatique : l'appli propose « Recharger » à Louenn.
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     const cles = await caches.keys();
-    await Promise.all(cles.filter((k) => k.startsWith('grenier-') && k !== CACHE).map((k) => caches.delete(k)));
+    await Promise.all(cles.filter((k) => k.startsWith('grenier-') && k !== CACHE && k !== LOURDS).map((k) => caches.delete(k)));
     await self.clients.claim();
   })());
 });
@@ -49,6 +71,21 @@ self.addEventListener('fetch', (e) => {
   }
 
   if (req.method !== 'GET') return;
+
+  // Moteur d'essayage (vendor/) et modèles MediaPipe : cache d'abord, gardé entre les versions.
+  const modele = url.hostname === 'storage.googleapis.com' && url.pathname.startsWith('/mediapipe-models/');
+  if (modele || (url.origin === location.origin && url.pathname.includes('/vendor/'))) {
+    e.respondWith((async () => {
+      const l = await caches.open(LOURDS);
+      const deja = await l.match(req);
+      if (deja) return deja;
+      const rep = await fetch(req);
+      if (rep.ok) l.put(req, rep.clone());
+      return rep;
+    })());
+    return;
+  }
+
   if (url.origin !== location.origin) return;
 
   // version.json : toujours le réseau d'abord, pour voir les nouveautés.

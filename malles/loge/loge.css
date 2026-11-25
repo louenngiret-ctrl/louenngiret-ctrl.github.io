@@ -1,0 +1,192 @@
+/*
+  VOICE   : la loge d'artiste dans le grenier : coulisses de théâtre, poudre, ampoules chaudes.
+  IDEA    : un miroir de loge à ampoules posé sur une coiffeuse en bois ; les rayons sont des étiquettes glissées dans le cadre.
+  PICTURE : mur en plâtre et plancher en bois (textures CC0 ambientCG), miroir à ampoules, dessin à l'encre du rayon dans la glace.
+  COLOUR  : bois, laiton, crème poudrée ; accent rouge tampon du Grenier ; rose poudré seulement pour les ampoules la nuit.
+  TYPE    : Bodoni Moda italique (étiquettes de parfumerie) + polices du Grenier.
+*/
+@font-face { font-family: "Bodoni Moda"; src: url(../../assets/fonts/bodoni-moda-italic.woff2) format("woff2"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Bodoni Moda"; src: url(../../assets/fonts/bodoni-moda-600.woff2) format("woff2"); font-style: normal; font-weight: 600; font-display: swap; }
+
+.loge { --laiton: #b8914a; --laiton-clair: #e6c983; --poudre: #f6ecdf; --rose: #d9a3a0; }
+.loge main { padding-bottom: 60px; }
+
+/* ---------- Scène : mur, miroir, coiffeuse ---------- */
+.scene-loge { position: relative; height: clamp(230px, 42vw, 330px); overflow: hidden; background: #5a4535; }
+.scene-loge .mur { position: absolute; inset: 0; background: url(../../assets/textures/plaster.png) 0 0 / 160px, linear-gradient(#cdb79c, #a88d6f); background-blend-mode: multiply; }
+[data-amb="nuit"] .scene-loge .mur { background: url(../../assets/textures/plaster.png) 0 0 / 160px, linear-gradient(#4a3a30, #2c221c); background-blend-mode: multiply; }
+.scene-loge .coiffeuse {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 22%;
+  background: url(../../assets/textures/woodfloor.png) 0 0 / 220px, linear-gradient(#7a4f30, #5b3820); background-blend-mode: multiply;
+  box-shadow: 0 -6px 14px rgba(0,0,0,.35), inset 0 3px 0 rgba(255,255,255,.18);
+}
+.miroir {
+  position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%); margin: 0;
+  width: min(78%, 420px); aspect-ratio: 300 / 220;
+}
+.ampoules { position: absolute; inset: -4%; width: 108%; height: 108%; z-index: 2; overflow: visible; }
+.ampoules .halo { fill: rgba(255, 214, 140, .28); }
+.ampoules .ampoule { fill: #fff3cf; stroke: var(--laiton); stroke-width: 2; }
+[data-amb="nuit"] .ampoules .halo { fill: rgba(255, 190, 170, .45); }
+.glace {
+  position: absolute; inset: 9% 7%; border-radius: 10px; overflow: hidden;
+  border: 6px solid var(--laiton); box-shadow: 0 0 0 2px #6d5126, 0 10px 24px rgba(0,0,0,.45);
+  background: radial-gradient(ellipse at 30% 25%, rgba(255,255,255,.55), transparent 55%), linear-gradient(140deg, #dfe4e0, #a9b4b2 60%, #c9ceca);
+  display: grid; place-items: center; color: #3b2e25;
+}
+#miroir-dessin { width: 44%; height: 70%; opacity: .78; }
+.etiquette-loge {
+  position: absolute; left: max(4vw, 14px); top: 16px; z-index: 3; padding: 12px 16px 10px;
+  background: var(--poudre); color: #2a1c12; transform: rotate(-3deg); box-shadow: 0 4px 10px rgba(0,0,0,.35);
+}
+.etiquette-loge b { display: block; font: italic 400 clamp(30px, 7vw, 46px)/1 "Bodoni Moda", serif; }
+.etiquette-loge small { display: block; max-width: 220px; margin-top: 4px; font-size: 13px; }
+
+/* ---------- Rayons : étiquettes glissées dans le cadre ---------- */
+.onglets {
+  display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; padding: 14px max(4vw, 12px) 18px;
+  background: linear-gradient(#3a2618, transparent 70%);
+}
+.onglet {
+  flex: none; scroll-snap-align: start; display: grid; justify-items: center; gap: 4px; min-width: 84px; min-height: 76px; padding: 10px 10px 8px;
+  background: var(--poudre); color: #2a1c12; text-decoration: none; transform: rotate(var(--tourne));
+  box-shadow: 0 3px 8px rgba(0,0,0,.3); clip-path: polygon(0 6px, 50% 0, 100% 6px, 100% 100%, 0 100%);
+  transition: transform .2s ease-out;
+}
+.onglet svg { width: 30px; height: 30px; }
+.onglet span { font: 15px/1 "Special Elite", monospace; }
+.onglet[aria-current="page"] { background: var(--laiton-clair); transform: rotate(0deg) translateY(4px); }
+@media (min-width: 760px) { .onglets { justify-content: center; } }
+
+/* ---------- Contenu d'un rayon ---------- */
+.rayon { max-width: 1000px; margin: 0 auto; padding: 8px max(4vw, 14px) 30px; }
+.rayon-tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.rayon-tete h2 { margin: 0; font: italic 400 clamp(28px, 6vw, 38px)/1.1 "Bodoni Moda", serif; }
+.sous-titre { margin: 30px 0 12px; font: 400 22px "Permanent Marker", cursive; }
+.vide-loge { padding: 22px; text-align: center; font: 20px/1.4 "Patrick Hand", cursive; background: rgba(255,250,240,.5); border-radius: 8px; }
+.petit.avertissement { margin-top: 18px; }
+
+/* Étagère : planches de bois, flacons debout */
+.planche { margin-bottom: 26px; }
+.planche h3 { margin: 0 0 -4px 10px; position: relative; z-index: 1; }
+.planche h3 span { display: inline-block; padding: 3px 10px; background: var(--poudre); color: #2a1c12; font: 15px "Special Elite", monospace; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(0,0,0,.25); }
+.planche ul {
+  list-style: none; margin: 0; padding: 18px 12px 0; display: flex; gap: 12px; overflow-x: auto; align-items: flex-end;
+  border-bottom: 16px solid transparent;
+  border-image: url(../../assets/textures/woodfloor.png) 30 round;
+  box-shadow: 0 10px 12px -8px rgba(0,0,0,.5);
+}
+.flacon {
+  display: grid; justify-items: center; gap: 3px; width: 118px; min-height: 150px; padding: 10px 8px 12px; margin-bottom: 2px;
+  border: 0; border-radius: 14px 14px 6px 6px; cursor: pointer; text-align: center; color: #2a1c12;
+  background: linear-gradient(90deg, rgba(255,255,255,.55), rgba(255,255,255,.2) 40%, rgba(0,0,0,.06)), var(--poudre);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.25);
+}
+.flacon .bouchon { width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.6), transparent 40%), var(--c); box-shadow: inset 0 -3px 6px rgba(0,0,0,.25); }
+.flacon-photo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.flacon b { font: 17px/1.15 "Patrick Hand", cursive; }
+.flacon small { font-size: 12px; opacity: .8; }
+.tampon-pao { margin-top: 4px; padding: 0 6px; border: 1.5px solid #2f6b3a; color: #2f6b3a; border-radius: 4px; font-size: 11.5px; transform: rotate(-3deg); }
+.tampon-pao.bientot { border-color: #b26a00; color: #8a5200; }
+.tampon-pao.perime { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+
+/* Routine */
+.routine { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.routine-col { padding: 16px; background: var(--papier); box-shadow: var(--ombre); border-radius: 4px; }
+.routine-col h3 { margin: 0 0 10px; font: italic 400 26px "Bodoni Moda", serif; }
+.routine-col ol { margin: 0; padding: 0; list-style: none; counter-reset: etape; }
+.routine-col li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--papier-ligne); counter-increment: etape; }
+.routine-col label { display: flex; align-items: center; gap: 10px; min-height: 44px; flex: 1; cursor: pointer; }
+.routine-col label::before { content: counter(etape); font: 20px "Permanent Marker", cursive; color: var(--accent); width: 18px; }
+.routine-col input { width: 22px; height: 22px; accent-color: var(--accent); }
+.routine-col input:checked + span b { text-decoration: line-through; opacity: .6; }
+.routine-col b { display: block; font: 19px/1.15 "Patrick Hand", cursive; }
+.routine-col small { font-size: 12.5px; color: var(--encre-douce); }
+.ordre button { min-width: 36px; min-height: 40px; border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--encre); }
+.ordre button:disabled { opacity: .25; }
+
+/* Nuancier : des ongles vernis */
+.nuancier { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 16px 10px; }
+.vernis { display: grid; justify-items: center; gap: 4px; width: 100%; min-height: 140px; padding: 8px; border: 0; background: none; cursor: pointer; color: var(--encre); text-align: center; }
+.ongle {
+  width: 52px; height: 72px; border-radius: 50% 50% 14px 14px / 60% 60% 14px 14px;
+  background: radial-gradient(ellipse at 32% 22%, rgba(255,255,255,.75) 0 12%, transparent 30%), linear-gradient(180deg, transparent 70%, rgba(0,0,0,.18)), var(--c);
+  box-shadow: 0 0 0 3px #f1d9c8, 0 6px 10px rgba(0,0,0,.3);
+}
+.vernis b { font: 17px/1.1 "Patrick Hand", cursive; }
+.vernis small { font-size: 12px; color: var(--encre-douce); }
+
+/* Polaroïds (coiffures, idées) */
+.polaroids { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(46%, 180px), 1fr)); gap: 18px 14px; }
+.polaroids button { position: relative; display: block; width: 100%; padding: 8px 8px 10px; border: 0; background: #fffdf7; color: #2a1c12; cursor: pointer; transform: rotate(var(--tourne)); box-shadow: 0 8px 16px -8px rgba(0,0,0,.55); text-align: left; }
+.polaroids img, .polaroids .sans-photo { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #e8e0cc; }
+.polaroids .sans-photo { display: grid; place-items: center; font-size: 13px; color: #8a7a66; }
+.polaroids b { display: block; margin-top: 8px; font: 18px/1.15 "Patrick Hand", cursive; }
+.statut { position: absolute; top: 14px; right: 12px; padding: 0 6px; border: 2px solid var(--accent); color: var(--accent); background: rgba(255,250,240,.9); border-radius: 4px; font-size: 12px; transform: rotate(-6deg); }
+
+.carte-essai {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding: 14px 16px; text-decoration: none; color: #2a1c12;
+  background: linear-gradient(140deg, #e6ebe8, #b9c3c1); border: 5px solid var(--laiton); border-radius: 12px; box-shadow: 0 8px 18px -8px rgba(0,0,0,.6);
+}
+.carte-essai svg { flex: none; width: 54px; height: 54px; }
+.carte-essai b { display: block; font: italic 400 24px "Bodoni Moda", serif; }
+.carte-essai small { display: block; font-size: 14px; }
+
+/* Piercings */
+.carte-corps { margin: 0 0 18px; padding: 10px; background: var(--papier); box-shadow: var(--ombre); border-radius: 4px; }
+.carte-corps svg { display: block; width: 100%; max-width: 560px; margin: 0 auto; }
+.carte-corps .trait { stroke: var(--encre); stroke-width: 2.4; }
+.carte-corps .point circle { fill: none; stroke: var(--encre-douce); stroke-width: 1.5; stroke-dasharray: 2 2; }
+.carte-corps .point.porte circle { fill: var(--accent); stroke: #fff7ec; stroke-dasharray: none; stroke-width: 2; }
+.carte-corps text { font: 12px "Special Elite", monospace; fill: var(--encre); }
+.fiches { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.fiche-ligne { display: flex; gap: 12px; width: 100%; padding: 12px; border: 0; background: var(--papier); color: var(--encre); box-shadow: var(--ombre); border-radius: 4px; text-align: left; cursor: pointer; }
+.fiche-ligne .mini { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; flex: none; }
+.fiche-ligne b { display: block; font: 20px "Patrick Hand", cursive; }
+.fiche-ligne small { display: block; font-size: 13px; color: var(--encre-douce); }
+.cicatrisation { height: 8px; margin: 8px 0 4px; background: var(--papier-ligne); border-radius: 8px; overflow: hidden; }
+.cicatrisation span { display: block; height: 100%; background: #2f6b3a; }
+
+/* Carnet de flash */
+.flash { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(46%, 190px), 1fr)); gap: 16px 12px; }
+.flash button {
+  position: relative; display: grid; gap: 6px; width: 100%; min-height: 180px; padding: 12px; cursor: pointer; text-align: left; color: #1c1410;
+  background: #f4ead8; border: 2px solid #1c1410; box-shadow: 4px 4px 0 #9b2a22; transform: rotate(var(--tourne));
+}
+.flash img, .flash svg { width: 100%; aspect-ratio: 1; object-fit: cover; color: #9b2a22; }
+.flash b { font: 20px/1.1 "Permanent Marker", cursive; }
+.flash small { font-size: 12.5px; }
+.flash .statut-fait { border-color: #2f6b3a; color: #2f6b3a; }
+.flash .statut-projet { border-color: #b26a00; color: #8a5200; }
+
+.sources { margin-top: 22px; font-size: 14px; }
+.sources summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+
+/* ---------- Fiche (formulaire) ---------- */
+.fiche form { max-height: 86dvh; overflow-y: auto; }
+.champs { display: grid; gap: 12px; }
+.champ { display: grid; gap: 4px; }
+.champ-label { font-size: 13.5px; color: var(--encre-douce); }
+.champ input, .champ select, .champ textarea {
+  width: 100%; min-height: 46px; padding: 8px 12px; border: 1.5px solid var(--encre-douce); border-radius: 8px;
+  background: var(--papier); color: var(--encre); font: 16px "Special Elite", monospace;
+}
+.champ input[type="color"] { padding: 4px; height: 46px; }
+.photo-champ { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.photo-champ img { width: 84px; height: 84px; object-fit: cover; border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
+.fiche .jeter { margin-right: auto; }
+
+/* ---------- Essayage ---------- */
+.essai-grille { display: grid; gap: 18px; }
+@media (min-width: 760px) { .essai-grille { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; } }
+.essai-toile { position: relative; padding: 12px; background: linear-gradient(140deg, #e6ebe8, #b9c3c1); border: 6px solid var(--laiton); border-radius: 14px; box-shadow: 0 10px 24px -10px rgba(0,0,0,.6); }
+#e-toile { display: block; width: 100%; height: auto; max-height: 70dvh; object-fit: contain; touch-action: none; user-select: none; -webkit-user-select: none; background: rgba(255,255,255,.35); border-radius: 6px; }
+.essai-vide { position: absolute; inset: 30% 12% auto; text-align: center; font: 20px/1.35 "Patrick Hand", cursive; color: #3b2e25; }
+.essai-outils { display: grid; gap: 10px; align-content: start; }
+.outil.grand { justify-self: start; }
+.essai-choix { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px; }
+.essai-choix button, .essai-importer { flex: none; width: 74px; height: 96px; padding: 4px; border: 0; background: #fffdf7; box-shadow: 0 4px 8px rgba(0,0,0,.3); cursor: pointer; }
+.essai-choix img { width: 100%; height: 100%; object-fit: cover; }
+.essai-importer { display: grid; place-items: center; font: 34px "Permanent Marker", cursive; color: var(--accent); }
+.reglage { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
+.reglage input { width: 100%; accent-color: var(--accent); }

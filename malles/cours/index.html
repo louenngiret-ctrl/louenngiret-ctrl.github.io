@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr" data-amb="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cours · Grenier</title>
+<meta name="theme-color" content="#2b1e16">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../../assets/icons/favicon.png">
+<link rel="stylesheet" href="../../noyau/style.css">
+<style>
+/*
+  VOICE   : une pièce du grenier pas encore aménagée, calme, un peu poussiéreuse, pleine de promesses.
+  IDEA    : la salle d'étude en travaux : meubles sous des draps, cartons, et un seul coin prêt, le bureau et son vieil ordinateur.
+  PICTURE : mur en plâtre et plancher (textures CC0 ambientCG), fenêtre de toit, ordinateur beige à écran vert qui ouvre la Suite BTS.
+  COLOUR  : plâtre, bois, draps écrus ; l'écran vert phosphore est la seule lumière vive.
+  TYPE    : polices du Grenier ; l'écran parle en Special Elite.
+*/
+.piece { position: relative; max-width: min(1100px, 118vh); margin: 0 auto; }
+.piece svg { display: block; width: 100%; height: auto; }
+.ecran-texte { font-family: "Special Elite", monospace; fill: #b8ffb0; }
+.curseur { animation: cligne 1.1s steps(1) infinite; }
+@keyframes cligne { 50% { opacity: 0; } }
+.ordi { cursor: pointer; }
+.ordi:hover .ecran, .ordi:focus .ecran { filter: brightness(1.25); }
+.ordi:focus { outline: none; }
+.ordi:focus-visible .cadre-focus { stroke: var(--accent); stroke-width: 6; }
+.halo-ecran { animation: halo 3.5s ease-in-out infinite; }
+@keyframes halo { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .curseur, .halo-ecran { animation: none; } }
+.texte-cours { max-width: 760px; margin: 0 auto; padding: 22px max(5vw, 16px) 60px; }
+.texte-cours .carton { margin-top: 0; }
+.ouvrir-suite { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+</style>
+</head>
+<body>
+<nav class="barre">
+  <a class="retour" href="../../#/" aria-label="Retour au grenier">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Grenier</span>
+  </a>
+  <h1>Cours</h1>
+</nav>
+
+<div class="piece">
+  <svg viewBox="0 0 800 520" role="img" aria-label="La pièce des cours en préparation : meubles sous des draps, cartons, et un bureau avec un ordinateur allumé">
+    <defs>
+      <pattern id="platre" width="160" height="160" patternUnits="userSpaceOnUse"><image href="../../assets/textures/plaster.png" width="160" height="160"/></pattern>
+      <pattern id="parquet" width="200" height="200" patternUnits="userSpaceOnUse"><image href="../../assets/textures/woodfloor.png" width="200" height="200"/></pattern>
+      <linearGradient id="jour" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(255,236,190,.55)"/><stop offset="1" stop-color="rgba(255,236,190,0)"/></linearGradient>
+      <radialGradient id="lueur"><stop offset="0" stop-color="rgba(150,255,140,.45)"/><stop offset="1" stop-color="rgba(150,255,140,0)"/></radialGradient>
+    </defs>
+    <!-- mur et sol -->
+    <rect width="800" height="380" fill="#cdb79c"/>
+    <rect width="800" height="380" fill="url(#platre)" style="mix-blend-mode:multiply"/>
+    <path d="M0 0H800V70L400 0z" fill="#5a3d27" opacity=".55"/>
+    <rect y="372" width="800" height="148" fill="#7a5233"/>
+    <rect y="372" width="800" height="148" fill="url(#parquet)" style="mix-blend-mode:multiply"/>
+    <rect y="366" width="800" height="10" fill="#5b3a22"/>
+    <!-- fenêtre de toit et rayon -->
+    <g transform="translate(110 70)">
+      <rect width="130" height="100" rx="4" fill="#d7e7ee" stroke="#7b522f" stroke-width="10"/>
+      <path d="M65 0v100M0 50h130" stroke="#7b522f" stroke-width="7"/>
+    </g>
+    <polygon points="118,170 236,170 330,372 60,372" fill="url(#jour)"/>
+    <!-- meubles sous des draps -->
+    <g>
+      <path d="M40 372c-6-70 4-150 20-190 30-12 90-14 120-2 18 40 26 120 20 192z" fill="#efe6d6" stroke="#b9ab94" stroke-width="2"/>
+      <path d="M80 190c-6 60-4 120 2 182M140 186c8 60 10 126 6 186M60 250c40 10 90 10 136-4" fill="none" stroke="#cbbda5" stroke-width="2"/>
+      <path d="M250 372c-4-40 6-80 18-96 40-8 100-8 130 2 10 20 14 60 10 94z" fill="#ece2d0" stroke="#b9ab94" stroke-width="2"/>
+      <path d="M300 280c-4 30-2 60 2 92M360 282c6 30 6 60 2 90" fill="none" stroke="#cbbda5" stroke-width="2"/>
+    </g>
+    <!-- cartons -->
+    <g>
+      <rect x="430" y="318" width="86" height="56" fill="#b98a55" stroke="#7c5631" stroke-width="2"/>
+      <rect x="440" y="276" width="70" height="44" fill="#c49763" stroke="#7c5631" stroke-width="2"/>
+      <path d="M430 330h86M440 288h70" stroke="#e9dcc0" stroke-width="7" opacity=".7"/>
+      <text x="473" y="358" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="17" fill="#3a2414">COURS</text>
+      <text x="475" y="312" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="13" fill="#3a2414">BTS</text>
+    </g>
+    <!-- étiquette en préparation -->
+    <g transform="translate(70 214) rotate(-4)">
+      <rect width="118" height="44" fill="#fbf5e6" stroke="#b3261e" stroke-width="2"/>
+      <text x="59" y="20" text-anchor="middle" font-family="Special Elite, monospace" font-size="13" fill="#b3261e">pièce en</text>
+      <text x="59" y="36" text-anchor="middle" font-family="Special Elite, monospace" font-size="13" fill="#b3261e">préparation</text>
+    </g>
+    <!-- bureau -->
+    <g>
+      <rect x="520" y="300" width="250" height="16" fill="#6b4226"/>
+      <rect x="520" y="300" width="250" height="16" fill="url(#parquet)" style="mix-blend-mode:multiply"/>
+      <rect x="532" y="316" width="12" height="60" fill="#5b3820"/>
+      <rect x="746" y="316" width="12" height="60" fill="#5b3820"/>
+      <rect x="690" y="316" width="62" height="40" fill="#6b4226" stroke="#4a2c17"/>
+      <circle cx="721" cy="336" r="3" fill="#d8c08a"/>
+    </g>
+    <!-- l'ordinateur : ouvre la Suite BTS -->
+    <a class="ordi" href="suite/index.html" aria-label="Ouvrir la Suite BTS Audiovisuel">
+      <circle class="halo-ecran" cx="640" cy="215" r="120" fill="url(#lueur)"/>
+      <rect x="566" y="140" width="148" height="132" rx="12" fill="#e4dcc8" stroke="#8d8370" stroke-width="3"/>
+      <rect class="cadre-focus" x="566" y="140" width="148" height="132" rx="12" fill="none" stroke="transparent"/>
+      <rect class="ecran" x="582" y="154" width="116" height="92" rx="8" fill="#14301a"/>
+      <text class="ecran-texte" x="592" y="186" font-size="16">SUITE</text>
+      <text class="ecran-texte" x="592" y="208" font-size="16">BTS</text>
+      <text class="ecran-texte" x="592" y="232" font-size="12">&gt; ouvrir</text>
+      <rect class="curseur" x="650" y="222" width="8" height="12" fill="#b8ffb0"/>
+      <rect x="620" y="272" width="40" height="14" fill="#d2c9b3"/>
+      <rect x="596" y="284" width="88" height="10" rx="3" fill="#e4dcc8" stroke="#8d8370"/>
+      <rect x="590" y="294" width="110" height="8" rx="2" fill="#cfc6af"/>
+    </a>
+    <!-- lampe -->
+    <g>
+      <path d="M538 300v-66l28-30" stroke="#2a1c12" stroke-width="4" fill="none"/>
+      <path d="M552 196l34 12-10 22-30-14z" fill="#2f5a3a" stroke="#1f3a26" stroke-width="2"/>
+    </g>
+  </svg>
+</div>
+
+<div class="texte-cours">
+  <div class="carton">
+    <span class="scotch" aria-hidden="true"></span>
+    <p class="carton-tampon">pièce en préparation</p>
+    <p>La salle d'étude du grenier s'aménage petit à petit. Pour l'instant, seul le bureau est prêt : touche l'ordinateur pour ouvrir ta Suite BTS Audiovisuel.</p>
+    <p class="petit">La Suite est mise à jour de temps en temps : la nouvelle version arrive ici avec le bandeau « Recharger » du Grenier.</p>
+    <a class="btn ouvrir-suite" href="suite/index.html">Ouvrir la Suite BTS</a>
+  </div>
+</div>
+<script type="module">
+import { appliquerAmbiance } from '../../noyau/outils.js';
+appliquerAmbiance();
+</script>
+</body>
+</html>

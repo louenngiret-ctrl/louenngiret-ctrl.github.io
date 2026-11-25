@@ -72,7 +72,7 @@ function scene() {
 }
 
 function carteMalle(m, compte) {
-  const tampon = { demenagement: 'en déménagement', vide: 'à remplir', ouverte: compte ? `${compte} dedans` : 'vide pour l’instant' }[m.etat];
+  const tampon = { demenagement: 'en déménagement', vide: 'à remplir', preparation: 'en préparation', ouverte: compte ? `${compte} dedans` : 'vide pour l’instant' }[m.etat];
   return `
   <a class="malle malle-${m.etat}" href="${esc(m.lien || `#/malle/${m.id}`)}" style="--bois:${m.bois};--etiq:${m.etiquette}">
     <span class="malle-couvercle" aria-hidden="true"></span>
@@ -102,7 +102,8 @@ function comptesCarnet() {
 async function vueAccueil() {
   const m = moment();
   const boite = await store.parMalle('boite').catch(() => []);
-  const comptes = { boite: boite.length, ...comptesCarnet() };
+  const loge = await store.parMalle('loge').catch(() => []);
+  const comptes = { boite: boite.length, loge: loge.length, ...comptesCarnet() };
   vue.innerHTML = `
   <section class="accueil">
     <header class="haut">
