@@ -69,10 +69,10 @@ export async function ouvrir(vue, { store, items, retour }) {
       </div>
       <div class="essai-outils">
         <label class="outil grand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-          <span>Ma photo</span><input type="file" id="e-visage" accept="image/*" capture="user" hidden></label>
+          <span>Ma photo</span><input type="file" id="e-visage" class="fichier-cache" accept="image/*" capture="user"></label>
         <p class="champ-label">Coiffure à essayer</p>
         <div class="essai-choix" id="e-choix">${coiffures.map((e) => `<button type="button" data-c="${esc(e.id)}" aria-label="${esc(e.titre || 'Coiffure')}"><img src="${urlPhoto(e.fichier)}" alt=""></button>`).join('')}
-          <label class="essai-importer" aria-label="Importer une image">+<input type="file" id="e-importer" accept="image/*" hidden></label></div>
+          <label class="essai-importer" aria-label="Importer une image">+<input type="file" id="e-importer" class="fichier-cache" accept="image/*"></label></div>
         <p class="petit" id="e-etat">${coiffures.length ? 'Touche une coiffure.' : 'Ajoute d’abord des coiffures dans le miroir, ou importe une image avec +.'}</p>
         <label class="reglage">Taille <input type="range" id="e-taille" min="20" max="300" value="100"></label>
         <label class="reglage">Rotation <input type="range" id="e-rotation" min="-45" max="45" value="0"></label>

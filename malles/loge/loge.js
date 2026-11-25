@@ -39,6 +39,11 @@ const ONGLETS = [
     champs: [{ k: 'photo', label: 'Dessin ou photo', type: 'photo' }, { k: 'titre', label: 'Motif', type: 'text', ph: 'Hirondelle, ronces…' }, { k: 'categorie', label: 'Où en est-il', type: 'select', options: CATEGORIES.tatouage }, { k: 'zone', label: 'Emplacement', type: 'select', options: ZONES_TATOUAGE }, { k: 'artiste', label: 'Artiste ou studio', type: 'text' }, { k: 'taille', label: 'Taille', type: 'text', ph: '7 cm…' }, { k: 'date', label: 'Date', type: 'date' }, { k: 'notes', label: 'Notes', type: 'textarea' }] },
 ];
 const onglet = (id) => ONGLETS.find((o) => o.id === id);
+// le bord droit des onglets s'estompe tant qu'il reste des rayons cachés à droite
+function bordOnglets() {
+  const n = $('#onglets');
+  n.classList.toggle('suite', n.scrollLeft + n.clientWidth < n.scrollWidth - 4);
+}
 
 /* ---------- Décor : miroir à ampoules ---------- */
 (function ampoules() {
@@ -79,6 +84,7 @@ function dessinMiroir(id) {
   $('#miroir-dessin').innerHTML = `<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${DESSINS[id] || ''}</g>`;
 }
 
+$('#onglets').addEventListener('scroll', bordOnglets, { passive: true });
 $('#onglets').innerHTML = ONGLETS.map((o, i) => `
   <a class="onglet" href="#${o.id}" style="--tourne:${[-2, 1.5, -1, 2, -1.5, 1][i]}deg" data-o="${o.id}">
     <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${DESSINS[o.id]}</g></svg>
@@ -211,6 +217,9 @@ async function rendre() {
   const [a, b] = location.hash.replace(/^#/, '').split('/');
   courant = onglet(a) ? a : 'coiffure';
   $$('.onglet').forEach((x) => x.setAttribute('aria-current', x.dataset.o === courant ? 'page' : 'false'));
+  const actif = $(`.onglet[data-o="${courant}"]`);
+  if (actif) { const n = $('#onglets'); n.scrollLeft = Math.max(0, actif.offsetLeft - (n.clientWidth - actif.offsetWidth) / 2); }
+  bordOnglets();
   const o = onglet(courant);
   dessinMiroir(courant);
   if (poserDecor.dernier !== courant) { poserDecor(courant); poserDecor.dernier = courant; }
@@ -251,7 +260,7 @@ function champHTML(c, v) {
   if (c.type === 'photo') return `<div class="champ"><span class="champ-label">${esc(c.label)}</span>
     <div class="photo-champ"><img id="f-apercu" alt="" ${val instanceof Blob ? `src="${urlPhoto(val)}"` : 'hidden'}>
       <label class="outil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Choisir ou prendre</span>
-      <input type="file" id="f-photo" accept="image/*" hidden></label></div></div>`;
+      <input type="file" id="f-photo" class="fichier-cache" accept="image/*"></label></div></div>`;
   if (c.type === 'select') return `<label class="champ" for="${id}"><span class="champ-label">${esc(c.label)}</span>
     <select id="${id}" name="${c.k}">${c.options.map((o) => `<option ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
   if (c.type === 'textarea') return `<label class="champ" for="${id}"><span class="champ-label">${esc(c.label)}</span><textarea id="${id}" name="${c.k}" rows="3">${esc(val)}</textarea></label>`;

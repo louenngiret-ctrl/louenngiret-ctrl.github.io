@@ -1,6 +1,17 @@
 // Noyau du Grenier : navigation, accueil, capture rapide, ambiances, mises à jour.
 import * as store from './store.js';
 import { MALLES, malle } from './malles.js';
+// carton ouvert, dessiné pour la Boîte vide
+const CARTON = `<svg class="carton-vide" viewBox="0 0 160 120" aria-hidden="true">
+  <path d="M30 52 L80 64 L130 52 L130 104 L80 116 L30 104 Z" fill="#b98a55" stroke="#6e4a26" stroke-width="2"/>
+  <path d="M80 64 L80 116" stroke="#6e4a26" stroke-width="2"/>
+  <path d="M30 52 L80 64 L130 52 L80 40 Z" fill="#5d3f22"/>
+  <path d="M30 52 L10 34 L58 24 L80 40 Z" fill="#c9a06a" stroke="#6e4a26" stroke-width="2"/>
+  <path d="M130 52 L152 36 L104 24 L80 40 Z" fill="#d2ab75" stroke="#6e4a26" stroke-width="2"/>
+  <path d="M38 76 L72 84" stroke="#e9dcc0" stroke-width="7" opacity=".75"/>
+  <text x="105" y="94" text-anchor="middle" transform="rotate(-12 105 94)" font-family="Permanent Marker, cursive" font-size="11.5" fill="#3a2414">À TRIER</text>
+</svg>`;
+
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -167,11 +178,11 @@ async function vueBoite() {
   <section class="page">
     <form class="ajout" id="ajout">
       <label for="ajout-texte" class="sr">Ajouter à la boîte</label>
-      <input id="ajout-texte" type="text" autocomplete="off" placeholder="Ajouter une idée, un lien…">
+      <input id="ajout-texte" type="text" autocomplete="off" placeholder="Une idée, un lien…">
       <button class="btn" type="submit">Ranger</button>
     </form>
     ${items.length ? `<ul class="postits">${items.map(postit).join('')}</ul>`
-      : `<div class="vide"><p>La boîte est vide.</p><p class="petit">Tout ce que tu captures avec le bouton + arrive ici. Le tri vers les malles viendra quand elles seront ouvertes.</p></div>`}
+      : `<div class="vide">${CARTON}<p>La boîte est vide.</p><p class="petit">Tout ce que tu captures avec le bouton + arrive ici. Le tri vers les malles arrivera plus tard.</p></div>`}
   </section>${pied()}`;
   $('#ajout').addEventListener('submit', async (e) => {
     e.preventDefault();

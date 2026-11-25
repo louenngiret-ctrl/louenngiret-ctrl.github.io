@@ -1,7 +1,22 @@
 {
-  "version": "0.5.0",
+  "version": "0.5.1",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.5.1",
+      "date": "2026-11-25",
+      "titre": "Finitions",
+      "notes": [
+        "La Loge : on voit qu'il reste des onglets à droite, et l'onglet ouvert se place au milieu.",
+        "Le filtre : le cadre suit la forme de l'image et le déclencheur reste visible sur téléphone.",
+        "Le bouton + ne cache plus la fin des pages.",
+        "La Boîte vide a son carton.",
+        "En ambiance nuit, les boutons discrets se lisent bien.",
+        "Les textes trop petits sont agrandis.",
+        "La sélection de texte et le curseur sont aux couleurs du Grenier.",
+        "Les boutons photo se choisissent aussi au clavier."
+      ]
+    },
     {
       "version": "0.5.0",
       "date": "2026-11-25",

@@ -160,7 +160,7 @@ export async function ouvrir(vue, { store, retour }) {
         </button>
       </div>
       <div class="cabine-commandes">
-        <label class="btn-sobre cabine-photo"><input type="file" id="f-fichier" accept="image/*" hidden>Une photo</label>
+        <label class="btn-sobre cabine-photo"><input type="file" id="f-fichier" class="fichier-cache" accept="image/*">Une photo</label>
         <button type="button" class="declencheur" id="f-declencheur" aria-label="Allumer la caméra"><span></span></button>
         <button type="button" class="btn-sobre" id="f-arreter" hidden>Éteindre</button>
       </div>
