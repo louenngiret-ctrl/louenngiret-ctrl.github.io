@@ -13,10 +13,12 @@ La référence complète est la Bible du Grenier : https://claude.ai/artifact/Mb
 - HTML, CSS, JavaScript en modules natifs : aucun framework, aucune étape de compilation.
 - Une malle = une entrée dans `noyau/malles.js` + un dossier `malles/<id>/`. Ne toucher une autre malle qu'en le disant.
 - Données : IndexedDB « grenier » (`noyau/store.js`). Tout changement de schéma = une nouvelle étape de migration, jamais la modification d'une étape publiée.
-- Dépôt public : aucune donnée personnelle, aucune photo de Louenn. Exception choisie par Louenn le 25/11/2026 : Carnet V2 (`malles/carnet/index.html`) garde toutes ses images d'origine, sans remplacement.
+- Dépôt public : aucune donnée personnelle, aucune photo de Louenn. Exceptions choisies par Louenn le 25/11/2026 : Carnet V2 (`malles/carnet/index.html`) garde toutes ses images d'origine, sans remplacement ; les images que Louenn a fournies pour décorer la Loge (collages Pinterest, objets, outils, vis, mannequin) sont découpées dans `assets/loge/`.
 - Carnet V2 a été déménagé tel quel : ne pas modifier son contenu sans demande explicite. Seul ajout : le lien « Grenier » en fin de fichier.
 - Suite BTS (`malles/cours/suite/index.html`) : fichier de Louenn, mis à jour par Louenn de temps en temps. Pour une nouvelle version : remplacer le fichier tel quel, remettre le lien « Grenier » avant le dernier `</body>`, et changer `LOURDS` dans `sw.js`. Même règle (`LOURDS`) quand Carnet change.
 - Les gros fichiers (Carnet, Suite, `vendor/`, modèles MediaPipe) vivent dans le cache `LOURDS`, gardé d'une version à l'autre : ne pas les mettre dans `COQUILLE`.
+- Filtre coiffure (`malles/loge/filtre.js`, `cheveux.js`) : MediaPipe et three.js sont embarqués dans `vendor/`, modèles compris. Dans `vendor/mediapipe/vision_bundle.mjs`, l'envoi de statistiques vers Google est coupé : à refaire si on met à jour MediaPipe (voir `vendor/mediapipe/NOTICE.md`).
+- Noms de classes : vérifier qu'un nom n'existe pas déjà ailleurs (`.miroir`, `.flash`, `.rayon` ont déjà causé des bugs).
 - Mobile d'abord (Samsung A14), cibles tactiles de 44 px minimum, rien qui dépasse à 360 px.
 - Textes visibles et noms de fichiers livrés : vrais espaces, jamais de tirets du bas.
 - Tester en local (serveur http + navigateur) avant d'envoyer : rendu 360 px et PC, service worker, hors connexion.

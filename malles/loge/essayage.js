@@ -4,8 +4,8 @@
 // Sans modèle, tout reste possible à la main : déplacer, agrandir, tourner, transparence.
 import { $, esc, toast, compresserPhoto, urlPhoto } from '../../noyau/outils.js';
 
-const MODELE_CHEVEUX = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/hair_segmenter/float32/latest/hair_segmenter.tflite';
-const MODELE_VISAGE = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const MODELE_CHEVEUX = new URL('../../vendor/mediapipe/modeles/hair_segmenter.tflite', import.meta.url).href;
+const MODELE_VISAGE = new URL('../../vendor/mediapipe/modeles/face_landmarker.task', import.meta.url).href;
 
 let ia = null; // { seg, visage } une fois chargés
 async function chargerIA() {

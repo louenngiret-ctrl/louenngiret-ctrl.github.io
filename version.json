@@ -1,7 +1,22 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.5.0",
+      "date": "2026-11-25",
+      "titre": "Le filtre coiffure et la Loge décorée",
+      "notes": [
+        "Nouveau dans Coiffure : le filtre. Douze coupes en 3D se posent sur ton visage, en direct à la caméra, sur téléphone comme sur PC.",
+        "Carré, longs, frange, frange rideau, ondulé, wolf cut, pixie, boucles, chignon, macarons, queue de cheval, tresses.",
+        "Onze couleurs de mèches, du noir au vert mousse, et des réglages de taille et de hauteur.",
+        "« Couleur seule » teint tes vrais cheveux à l'écran.",
+        "Le déclencheur range la photo dans ton miroir. Pas de caméra ? Le filtre marche aussi sur une photo.",
+        "Tout se calcule sur l'appareil : rien n'est envoyé.",
+        "La Loge est décorée avec tes images : un papier peint, des objets et des lampes par rayon, et les coulisses en bas de page.",
+        "La pièce Cours accueille les vieux outils de l'atelier."
+      ]
+    },
     {
       "version": "0.4.0",
       "date": "2026-11-25",

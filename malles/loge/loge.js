@@ -49,6 +49,32 @@ const onglet = (id) => ONGLETS.find((o) => o.id === id);
   s.innerHTML = pts.map(([x, y]) => `<circle class="halo" cx="${x}" cy="${y}" r="16"/><circle class="ampoule" cx="${x}" cy="${y}" r="6.5"/>`).join('');
 })();
 
+/* ---------- Décor de chaque rayon (images de Louenn découpées) ---------- */
+const A = (n) => `../../assets/loge/${n}.webp`;
+const DECORS = {
+  coiffure: { mur: 'mur-coiffure', gauche: [['tete-mannequin', 1.15], ['peigne', 0.38]], droite: [['lampe-champignon', 1], ['boite-coeur', 0.42]], haut: [['lanterne-rose', 0.5, 9], ['suspension-verte', 0.42, 84]], murs: [['lune-chat', 0.62, 6, 30]] },
+  makeup: { mur: 'mur-makeup', gauche: [['trousse', 0.5], ['atomiseur', 0.72]], droite: [['lampe-tiffany', 1.05], ['flacon-rose', 0.6], ['boite-papillon', 0.4]], haut: [['lanterne-orange', 0.5, 86]], murs: [['etoile-or', 0.42, 4, 30]] },
+  soin: { mur: 'mur-soins', gauche: [['plante', 0.75], ['pichet', 0.62]], droite: [['bougie', 0.5], ['tasse', 0.36], ['vase-rond', 0.6]], haut: [['lanterne-bleue', 0.48, 10]], murs: [['feuille-chene', 0.34, 84, 30]] },
+  ongles: { mur: 'mur-ongles', gauche: [['lampe-lotus', 0.85], ['verres', 0.55]], droite: [['assiette', 0.4], ['boite-papillons', 0.42]], haut: [['lustre-dore', 0.62, 88]], murs: [['etoile-spirale', 0.26, 6, 32]] },
+  piercing: { mur: 'mur-piercing', gauche: [['buste', 0.85]], droite: [['flacon-bleu', 0.7], ['lampe-pied', 0.9]], haut: [], murs: [['collier-soleil', 0.72, 74, 24], ['cle', 0.36, 8, 30]] },
+  tatouage: { mur: 'mur-tatouage', gauche: [['crane', 0.72], ['serpent', 0.55]], droite: [['pot-cire', 0.42], ['poincon', 0.7], ['livre', 0.42]], haut: [['lustre-roses', 0.6, 12]], murs: [['papillon-nuit', 0.34, 80, 30], ['champignon', 0.3, 4, 34]] },
+};
+function poserDecor(id) {
+  const d = DECORS[id];
+  if (!d) return;
+  $('#papier-peint').src = `../../assets/loge/murs/${d.mur}.webp`;
+  // quatre vis différentes par rayon : les 24 têtes de vis de la planche y passent toutes
+  const rang = ONGLETS.findIndex((o) => o.id === id);
+  ['.coiffeuse .vg', '.coiffeuse .vd', '.miroir .v1', '.miroir .v2'].forEach((sel, k) => { $(sel).src = `../../assets/loge/vis/vis-${String(rang * 4 + k).padStart(2, '0')}.webp`; });
+  const objet = ([n, h]) => `<img src="${A(n)}" alt="" style="--h:${h}" class="objet o-${n}">`;
+  $('#decor-gauche').innerHTML = d.gauche.map(objet).join('');
+  $('#decor-droite').innerHTML = d.droite.map(objet).join('');
+  $('#suspensions').innerHTML = d.haut.map(([n, h, x]) => `<span class="suspension" style="--h:${h};--x:${x}%"><i></i><img src="${A(n)}" alt=""></span>`).join('');
+  $('#sur-mur').innerHTML = d.murs.map(([n, h, x, y]) => `<img src="${A(n)}" alt="" class="au-mur" style="--h:${h};--x:${x}%;--y:${y}%">`).join('');
+  const sc = $('#scene');
+  sc.classList.remove('arrive'); void sc.offsetWidth; sc.classList.add('arrive');
+}
+
 function dessinMiroir(id) {
   $('#miroir-dessin').innerHTML = `<g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${DESSINS[id] || ''}</g>`;
 }
@@ -86,11 +112,15 @@ function vignette(e, cls = '') {
 /* ---------- Vues par rayon ---------- */
 const VUES = {
   coiffure(items) {
+    const filtre = `<a class="carte-filtre" href="#coiffure/filtre">
+        <img src="../../assets/loge/tete-mannequin.webp" alt="" class="carte-filtre-tete">
+        <span><b>Le filtre</b><small>Des coupes en 3D posées sur ton visage, en direct à la caméra. Ou ta vraie couleur changée.</small></span>
+      </a>`;
     const essayer = `<a class="carte-essai" href="#coiffure/essayer">
         <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><ellipse cx="32" cy="30" rx="18" ry="22"/><path d="M32 52v8M22 60h20"/><path d="M22 18c6-6 14-6 20 0"/></g></svg>
         <span><b>Essayer sur moi</b><small>Ta photo + une coiffure de ta collection : le miroir la pose sur ton visage.</small></span>
       </a>`;
-    return essayer + (items.length ? polaroids(items) : '');
+    return `<div class="cartes-miroir">${filtre}${essayer}</div>` + (items.length ? polaroids(items) : '');
   },
   makeup(items) { return etagere(items, CATEGORIES.makeup); },
   soin(items) {
@@ -183,8 +213,15 @@ async function rendre() {
   $$('.onglet').forEach((x) => x.setAttribute('aria-current', x.dataset.o === courant ? 'page' : 'false'));
   const o = onglet(courant);
   dessinMiroir(courant);
+  if (poserDecor.dernier !== courant) { poserDecor(courant); poserDecor.dernier = courant; }
   $('#scene-titre').textContent = o.scene;
   libererPhotos();
+  if (rendre.sousPage && !b) await charger(); // retour du filtre ou de l'essayage : relire les photos prises
+  rendre.sousPage = Boolean(b);
+  if (courant === 'coiffure' && b === 'filtre') {
+    const m = await import('./filtre.js');
+    return m.ouvrir(vue, { store, retour: () => { location.hash = '#coiffure'; } });
+  }
   if (courant === 'coiffure' && b === 'essayer') {
     const m = await import('./essayage.js');
     return m.ouvrir(vue, { store, items: duRayon('coiffure'), retour: () => { location.hash = '#coiffure'; } });

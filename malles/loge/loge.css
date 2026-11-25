@@ -11,36 +11,78 @@
 .loge { --laiton: #b8914a; --laiton-clair: #e6c983; --poudre: #f6ecdf; --rose: #d9a3a0; }
 .loge main { padding-bottom: 60px; }
 
-/* ---------- Scène : mur, miroir, coiffeuse ---------- */
-.scene-loge { position: relative; height: clamp(230px, 42vw, 330px); overflow: hidden; background: #5a4535; }
-.scene-loge .mur { position: absolute; inset: 0; background: url(../../assets/textures/plaster.png) 0 0 / 160px, linear-gradient(#cdb79c, #a88d6f); background-blend-mode: multiply; }
-[data-amb="nuit"] .scene-loge .mur { background: url(../../assets/textures/plaster.png) 0 0 / 160px, linear-gradient(#4a3a30, #2c221c); background-blend-mode: multiply; }
+/* ---------- Scène : papier peint, rideaux, lampes, coiffeuse, miroir ---------- */
+.scene-loge { position: relative; height: clamp(300px, 56vw, 420px); overflow: hidden; background: #3a2618; container-type: size; }
+.scene-loge .mur { position: absolute; inset: 0; }
+.papier-peint { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scene-loge .mur::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(255,214,150,.18), transparent 55%), radial-gradient(ellipse at 50% 40%, transparent 45%, rgba(25,12,4,.62)); }
+[data-amb="nuit"] .papier-peint { filter: brightness(.55) saturate(.8); }
+.rideaux { position: absolute; top: -3cqh; left: 0; width: 100%; height: 20cqh; z-index: 3; pointer-events: none;
+  background: url(../../assets/loge/rideaux.webp) 0 0 / auto 100% repeat-x; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)) sepia(.25) brightness(.92); }
+.suspensions { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.suspension { position: absolute; top: 0; left: var(--x); display: grid; justify-items: center; transform: translateX(-50%); transform-origin: 50% 0; }
+.suspension i { width: 1.5px; height: 17cqh; background: #2a1c12; }
+.suspension img { height: calc(var(--h) * 34cqh); width: auto; filter: drop-shadow(0 8px 10px rgba(0,0,0,.4)); }
+.sur-mur { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.au-mur { position: absolute; left: var(--x); top: var(--y); height: calc(var(--h) * 34cqh); filter: drop-shadow(0 4px 5px rgba(0,0,0,.4)); transform: rotate(-4deg); }
 .scene-loge .coiffeuse {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 22%;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 19cqh; z-index: 4;
   background: url(../../assets/textures/woodfloor.png) 0 0 / 220px, linear-gradient(#7a4f30, #5b3820); background-blend-mode: multiply;
-  box-shadow: 0 -6px 14px rgba(0,0,0,.35), inset 0 3px 0 rgba(255,255,255,.18);
+  box-shadow: 0 -8px 16px rgba(0,0,0,.4), inset 0 4px 0 rgba(255,235,200,.22), inset 0 -10px 18px rgba(0,0,0,.35);
 }
+.vis { position: absolute; width: clamp(14px, 4.4cqh, 22px); height: auto; filter: drop-shadow(0 1px 1px rgba(0,0,0,.5)); }
+.coiffeuse .vg { left: 10px; top: 8px; } .coiffeuse .vd { right: 10px; top: 8px; }
 .miroir {
-  position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%); margin: 0;
-  width: min(78%, 420px); aspect-ratio: 300 / 220;
+  position: absolute; left: 50%; bottom: 17cqh; transform: translateX(-50%); margin: 0; z-index: 5;
+  width: min(50%, 64cqh); aspect-ratio: 300 / 220;
 }
+.miroir .v1 { left: 2%; top: 2%; } .miroir .v2 { right: 2%; top: 2%; }
 .ampoules { position: absolute; inset: -4%; width: 108%; height: 108%; z-index: 2; overflow: visible; }
-.ampoules .halo { fill: rgba(255, 214, 140, .28); }
+.ampoules .halo { fill: rgba(255, 214, 140, .3); }
 .ampoules .ampoule { fill: #fff3cf; stroke: var(--laiton); stroke-width: 2; }
-[data-amb="nuit"] .ampoules .halo { fill: rgba(255, 190, 170, .45); }
+[data-amb="nuit"] .ampoules .halo { fill: rgba(255, 190, 170, .5); }
 .glace {
   position: absolute; inset: 9% 7%; border-radius: 10px; overflow: hidden;
-  border: 6px solid var(--laiton); box-shadow: 0 0 0 2px #6d5126, 0 10px 24px rgba(0,0,0,.45);
-  background: radial-gradient(ellipse at 30% 25%, rgba(255,255,255,.55), transparent 55%), linear-gradient(140deg, #dfe4e0, #a9b4b2 60%, #c9ceca);
+  border: 6px solid var(--laiton); box-shadow: 0 0 0 2px #6d5126, 0 12px 26px rgba(0,0,0,.5);
+  background: radial-gradient(ellipse at 30% 25%, rgba(255,255,255,.6), transparent 55%), linear-gradient(140deg, #dfe4e0, #a9b4b2 60%, #c9ceca);
   display: grid; place-items: center; color: #3b2e25;
 }
-#miroir-dessin { width: 44%; height: 70%; opacity: .78; }
+#miroir-dessin { width: 40%; height: 64%; opacity: .78; }
+.cote { position: absolute; bottom: 17.5cqh; z-index: 6; display: flex; align-items: flex-end; gap: 0; width: calc((100% - min(50%, 64cqh)) / 2 - 2%); }
+.cote.gauche { left: 1%; justify-content: flex-end; }
+.cote.droite { right: 1%; justify-content: flex-start; }
+.objet { height: calc(var(--h) * 34cqh); width: auto; min-width: 0; max-width: 62%; object-fit: contain; object-position: bottom; margin-inline: -1.5%; filter: drop-shadow(0 6px 6px rgba(0,0,0,.45)); }
 .etiquette-loge {
-  position: absolute; left: max(4vw, 14px); top: 16px; z-index: 3; padding: 12px 16px 10px;
-  background: var(--poudre); color: #2a1c12; transform: rotate(-3deg); box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  position: absolute; left: 50%; bottom: 2.5cqh; z-index: 7; transform: translateX(-50%) rotate(-1.5deg);
+  padding: 4px 16px 5px; text-align: center; white-space: nowrap;
+  background: linear-gradient(#f6ecdf, #e9dcc6); color: #2a1c12; box-shadow: 0 3px 8px rgba(0,0,0,.4); border: 1px solid #b8914a;
 }
-.etiquette-loge b { display: block; font: italic 400 clamp(30px, 7vw, 46px)/1 "Bodoni Moda", serif; }
-.etiquette-loge small { display: block; max-width: 220px; margin-top: 4px; font-size: 13px; }
+.etiquette-loge .epingle { position: absolute; left: -22px; top: -8px; width: 44px; transform: rotate(-24deg); }
+.etiquette-loge b { display: block; font: italic 400 clamp(20px, 6.2cqh, 30px)/1 "Bodoni Moda", serif; }
+.etiquette-loge small { display: block; font-size: 12.5px; }
+.scene-loge.arrive .objet, .scene-loge.arrive .au-mur { animation: poser .3s cubic-bezier(.2,.9,.3,1.2) both; }
+.scene-loge.arrive .suspension { animation: balance .32s ease-out both; }
+@keyframes poser { from { opacity: 0; transform: translateY(10px); } }
+@keyframes balance { from { transform: translateX(-50%) rotate(-5deg); } }
+@media (prefers-reduced-motion: reduce) { .scene-loge.arrive * { animation: none !important; } }
+
+/* ---------- Coulisses (bas de page) ---------- */
+.coulisses { position: relative; height: clamp(220px, 40vw, 320px); margin-top: 20px; overflow: hidden; container-type: size; background: #3a2618; }
+.coulisses .papier { position: absolute; inset: 0 0 26% 0; width: 100%; height: 74%; object-fit: cover; filter: brightness(.72) sepia(.15); }
+.coulisses .plancher { position: absolute; left: 0; right: 0; bottom: 0; height: 26%; background: url(../../assets/textures/woodfloor.png) 0 0 / 200px, #6f4628; background-blend-mode: multiply; box-shadow: inset 0 8px 14px rgba(0,0,0,.45); }
+.coulisses .o { position: absolute; width: auto; filter: drop-shadow(0 8px 8px rgba(0,0,0,.45)); }
+.coulisses .tableau { left: 30%; top: 6cqh; height: 34cqh; transform: rotate(1.5deg); }
+.coulisses .cadre { right: 5%; top: 7cqh; height: 26cqh; transform: rotate(-2deg); }
+.coulisses .commode { left: 1%; bottom: 14cqh; height: 40cqh; }
+.coulisses .lampe-lune { left: 8%; bottom: 50cqh; height: 30cqh; }
+.coulisses .tapis { left: 36%; bottom: 0; height: 30cqh; transform: scaleY(.38); transform-origin: bottom; }
+.coulisses .lit { right: 1%; bottom: 10cqh; height: 46cqh; }
+.coulisses .plaid { right: 30%; bottom: 14cqh; height: 30cqh; transform: rotate(-4deg); }
+.coulisses .coussin { right: 9%; bottom: 36cqh; height: 17cqh; transform: rotate(8deg); }
+.coulisses .vase-haut { left: 33%; bottom: 14cqh; height: 34cqh; }
+.coulisses .bougeoir { left: 27%; bottom: 14cqh; height: 30cqh; }
+.coulisses .faons { left: 43%; bottom: 13cqh; height: 15cqh; }
+[data-amb="nuit"] .coulisses .papier { filter: brightness(.4) sepia(.2); }
 
 /* ---------- Rayons : étiquettes glissées dans le cadre ---------- */
 .onglets {
@@ -70,6 +112,9 @@
 .planche { margin-bottom: 26px; }
 .planche h3 { margin: 0 0 -4px 10px; position: relative; z-index: 1; }
 .planche h3 span { display: inline-block; padding: 3px 10px; background: var(--poudre); color: #2a1c12; font: 15px "Special Elite", monospace; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(0,0,0,.25); }
+.planche { position: relative; }
+.planche::before, .planche::after { content: ""; position: absolute; z-index: 2; bottom: 3px; width: 13px; height: 13px; background: url(../../assets/loge/vis/vis-12.webp) center / contain no-repeat; }
+.planche::before { left: 8px; } .planche::after { right: 8px; background-image: url(../../assets/loge/vis/vis-03.webp); }
 .planche ul {
   list-style: none; margin: 0; padding: 18px 12px 0; display: flex; gap: 12px; overflow-x: auto; align-items: flex-end;
   border-bottom: 16px solid transparent;
@@ -121,6 +166,8 @@
 .polaroids button { position: relative; display: block; width: 100%; padding: 8px 8px 10px; border: 0; background: #fffdf7; color: #2a1c12; cursor: pointer; transform: rotate(var(--tourne)); box-shadow: 0 8px 16px -8px rgba(0,0,0,.55); text-align: left; }
 .polaroids img, .polaroids .sans-photo { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #e8e0cc; }
 .polaroids .sans-photo { display: grid; place-items: center; font-size: 13px; color: #8a7a66; }
+.polaroids li { position: relative; }
+.polaroids li::before { content: ""; position: absolute; z-index: 2; top: -12px; left: 50%; width: 52px; height: 30px; background: url(../../assets/loge/epingle.webp) center / contain no-repeat; transform: translateX(-50%) rotate(-9deg); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
 .polaroids b { display: block; margin-top: 8px; font: 18px/1.15 "Patrick Hand", cursive; }
 .statut { position: absolute; top: 14px; right: 12px; padding: 0 6px; border: 2px solid var(--accent); color: var(--accent); background: rgba(255,250,240,.9); border-radius: 4px; font-size: 12px; transform: rotate(-6deg); }
 
@@ -153,6 +200,9 @@
   position: relative; display: grid; gap: 6px; width: 100%; min-height: 180px; padding: 12px; cursor: pointer; text-align: left; color: #1c1410;
   background: #f4ead8; border: 2px solid #1c1410; box-shadow: 4px 4px 0 #9b2a22; transform: rotate(var(--tourne));
 }
+.flash button::before, .flash button::after { content: ""; position: absolute; width: 34px; height: 34px; background: url(../../assets/loge/coin-laiton.webp) center / contain no-repeat; pointer-events: none; }
+.flash button::before { top: -4px; right: -4px; }
+.flash button::after { bottom: -4px; left: -4px; transform: rotate(180deg); }
 .flash img, .flash svg { width: 100%; aspect-ratio: 1; object-fit: cover; color: #9b2a22; }
 .flash b { font: 20px/1.1 "Permanent Marker", cursive; }
 .flash small { font-size: 12.5px; }
@@ -190,3 +240,56 @@
 .essai-importer { display: grid; place-items: center; font: 34px "Permanent Marker", cursive; color: var(--accent); }
 .reglage { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
 .reglage input { width: 100%; accent-color: var(--accent); }
+
+/* ---------- Cartes du miroir ---------- */
+.cartes-miroir { display: grid; gap: 14px; margin-bottom: 26px; }
+@media (min-width: 640px) { .cartes-miroir { grid-template-columns: 1.15fr 1fr; } }
+.cartes-miroir .carte-essai { margin: 0; }
+.carte-filtre {
+  position: relative; display: flex; align-items: center; gap: 14px; min-height: 120px; padding: 12px 16px 12px 8px; text-decoration: none; color: #f6ecdf; overflow: hidden;
+  background: url(../../assets/loge/murs/mur-coiffure.webp) center 30% / cover, #2a3320; border: 5px solid var(--laiton); border-radius: 12px;
+  box-shadow: inset 0 0 0 999px rgba(20,24,12,.55), 0 8px 18px -8px rgba(0,0,0,.6);
+}
+.carte-filtre-tete { flex: none; height: 104px; width: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,.5)); }
+.carte-filtre b { display: block; font: italic 400 26px "Bodoni Moda", serif; }
+.carte-filtre small { display: block; font-size: 14px; line-height: 1.35; }
+
+/* ---------- Le filtre : une cabine de loge, une étagère à perruques ---------- */
+.cabine { position: relative; margin: 0 auto 18px; max-width: 560px; padding: 16px 16px 12px; background: linear-gradient(160deg, #d9b56a, #8e6a2c 55%, #c79f55); border-radius: 18px; box-shadow: inset 0 0 0 2px #6d5126, inset 0 2px 0 rgba(255,240,200,.6), 0 14px 30px -12px rgba(0,0,0,.7); }
+.cabine-ampoules { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); pointer-events: none; }
+.cabine-ampoules circle { fill: #fff3cf; stroke: #6d5126; stroke-width: .6; filter: drop-shadow(0 0 3px rgba(255,214,140,.9)); }
+.cabine-glace { position: relative; margin: 0 10px; border-radius: 10px; overflow: hidden; background: #1c1410; box-shadow: 0 0 0 3px #6d5126; }
+#f-toile { display: block; width: 100%; height: auto; max-height: 66dvh; object-fit: contain; background: #1c1410; }
+#f-toile.retourne { transform: scaleX(-1); }
+.cabine-glace.eclair::after { content: ""; position: absolute; inset: 0; background: #fffdf7; animation: eclair .35s ease-out forwards; pointer-events: none; }
+@keyframes eclair { from { opacity: .95; } to { opacity: 0; } }
+.cabine-etat { position: absolute; left: 10px; right: 10px; bottom: 10px; margin: 0; padding: 8px 12px; background: rgba(251,245,230,.94); color: #2a1c12; font: 16px/1.3 "Patrick Hand", cursive; border-radius: 4px; transform: rotate(-.6deg); box-shadow: 0 3px 8px rgba(0,0,0,.35); }
+.cabine-etat:empty { display: none; }
+.cabine-retourner { position: absolute; top: 10px; right: 10px; width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(28,20,16,.6); color: #f6ecdf; cursor: pointer; }
+.cabine-retourner svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cabine-commandes { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 12px; }
+.cabine-commandes .btn-sobre { justify-self: start; min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; cursor: pointer; }
+.cabine-commandes #f-arreter { justify-self: end; }
+.declencheur { width: 72px; height: 72px; border-radius: 50%; border: 0; padding: 6px; cursor: pointer; background: radial-gradient(circle at 35% 30%, #fff3cf, #c79f55 45%, #6d5126); box-shadow: 0 4px 10px rgba(0,0,0,.45), inset 0 -3px 6px rgba(0,0,0,.35); }
+.declencheur span { display: block; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #e8584c, #9b2a22); box-shadow: inset 0 2px 4px rgba(255,255,255,.35); transition: transform .15s ease-out; }
+.declencheur.pret span { background: radial-gradient(circle at 40% 35%, #fffdf7, #e9dcc6); }
+.declencheur:active span { transform: scale(.88); }
+.filtre-modes { display: flex; justify-content: center; gap: 0; margin: 0 auto 18px; width: fit-content; border: 2px solid var(--encre); border-radius: 30px; overflow: hidden; }
+.filtre-modes button { min-height: 44px; padding: 0 18px; border: 0; background: var(--papier); color: var(--encre); font: 16px "Special Elite", monospace; cursor: pointer; }
+.filtre-modes button[aria-checked="true"] { background: var(--encre); color: var(--papier); }
+.filtre-titre { margin: 6px 0 8px; font: 400 22px "Permanent Marker", cursive; }
+.etagere-tetes { display: flex; gap: 8px; overflow-x: auto; padding: 6px 12px 0; scroll-snap-type: x proximity;
+  border-bottom: 16px solid transparent; border-image: url(../../assets/textures/woodfloor.png) 30 round; box-shadow: 0 10px 12px -8px rgba(0,0,0,.5); margin-bottom: 18px; }
+.etagere-tetes button { flex: none; scroll-snap-align: start; display: grid; justify-items: center; gap: 2px; width: 92px; padding: 0 0 4px; border: 0; background: none; cursor: pointer; color: var(--encre); }
+.tete-vignette { display: block; width: 84px; height: 112px; overflow: hidden; border-radius: 42px 42px 6px 6px; background: #c9b08c; }
+.tete-vignette img { width: 100%; height: 160%; object-fit: cover; object-position: top; }
+.etagere-tetes button[aria-checked="true"] .tete-vignette { box-shadow: 0 0 0 3px var(--accent); }
+.tete-nom { font: 15px/1.1 "Patrick Hand", cursive; text-align: center; padding: 2px 6px; background: var(--poudre); color: #2a1c12; transform: rotate(-2deg); }
+.meches { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; margin-bottom: 10px; }
+.meches button { flex: none; display: grid; justify-items: center; gap: 2px; width: 64px; min-height: 92px; padding: 4px 0; border: 0; border-radius: 8px; background: none; cursor: pointer; color: var(--encre); }
+.meches svg { width: 34px; height: 56px; filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+.meches path { fill: var(--b); stroke: var(--a); stroke-width: 3; }
+.meches span { font-size: 12.5px; line-height: 1.1; text-align: center; }
+.meches button[aria-checked="true"] { background: rgba(251,245,230,.75); box-shadow: inset 0 0 0 2px var(--accent); }
+.filtre-reglages { display: grid; gap: 4px; max-width: 520px; }
+.loge .barre { position: sticky; top: 0; z-index: 30; }
