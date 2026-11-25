@@ -43,44 +43,7 @@ function toast(msg) {
 }
 const JOURS = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const QUAND = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-function moment() {
-  const h = new Date().getHours();
-  if (h < 6 || h >= 21) return { nom: 'nuit', ciel: '#1d2747', lueur: 'rgba(150,170,255,.18)', salut: 'Bonsoir' };
-  if (h < 10) return { nom: 'matin', ciel: '#f4c47c', lueur: 'rgba(255,205,130,.32)', salut: 'Bonjour' };
-  if (h < 17) return { nom: 'jour', ciel: '#cfe4ec', lueur: 'rgba(255,245,215,.30)', salut: 'Bonjour' };
-  return { nom: 'soir', ciel: '#ec8d52', lueur: 'rgba(255,150,90,.30)', salut: 'Bonsoir' };
-}
 const estLien = (t) => /^https?:\/\/\S+$/i.test(t.trim());
-
-/* ---------- Le grenier (scène d'accueil) ---------- */
-function scene() {
-  const m = moment();
-  const lune = m.nom === 'nuit' ? '<circle cx="372" cy="96" r="9" fill="#f6efd8"/><circle cx="376" cy="93" r="8" fill="#1d2747"/>' : '';
-  return `
-  <svg class="scene" viewBox="0 0 720 300" preserveAspectRatio="xMidYMax meet" overflow="visible" role="img" aria-label="Le grenier, sous la charpente, au ${m.nom}">
-    <defs>
-      <linearGradient id="g-rayon" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${m.lueur}"/><stop offset="1" stop-color="rgba(0,0,0,0)"/>
-      </linearGradient>
-      <pattern id="g-planches" width="120" height="22" patternUnits="userSpaceOnUse">
-        <rect width="120" height="22" fill="var(--plancher)"/>
-        <path d="M0 21.5H120M70 0V22" stroke="var(--joint)" stroke-width="1.4"/>
-      </pattern>
-    </defs>
-    <rect x="-1400" y="-600" width="3520" height="1200" fill="var(--fond-scene)"/>
-    <polygon points="360,22 -1400,1087 2120,1087" fill="var(--mur)"/>
-    <polygon points="360,96 290,300 430,300" fill="url(#g-rayon)" class="rayon"/>
-    <g class="lucarne">
-      <circle cx="360" cy="100" r="34" fill="${m.ciel}"/>${lune}
-      <circle cx="360" cy="100" r="34" fill="none" stroke="var(--poutre)" stroke-width="7"/>
-      <path d="M360 66V134M326 100H394" stroke="var(--poutre)" stroke-width="5"/>
-    </g>
-    <path d="M360 14L-1400 1079M360 14L2120 1079" stroke="var(--poutre)" stroke-width="22" stroke-linecap="round"/>
-    <path d="M140 150L140 262M580 150L580 262M-160 262V340M880 262V340" stroke="var(--poutre-ombre)" stroke-width="14"/>
-    <path d="M96 176H624" stroke="var(--poutre)" stroke-width="12"/>
-    <rect x="-1400" y="262" width="3520" height="400" fill="url(#g-planches)"/>
-  </svg>`;
-}
 
 function carteMalle(m, compte) {
   const tampon = { demenagement: 'en déménagement', vide: 'à remplir', preparation: 'en préparation', ouverte: compte ? `${compte} dedans` : 'vide pour l’instant' }[m.etat];
@@ -111,32 +74,10 @@ function comptesCarnet() {
 }
 
 async function vueAccueil() {
-  const m = moment();
-  const boite = await store.parMalle('boite').catch(() => []);
-  const loge = await store.parMalle('loge').catch(() => []);
+  const [boite, loge] = await Promise.all([store.parMalle('boite').catch(() => []), store.parMalle('loge').catch(() => [])]);
   const comptes = { boite: boite.length, loge: loge.length, ...comptesCarnet() };
-  vue.innerHTML = `
-  <section class="accueil">
-    <header class="haut">
-      ${scene()}
-      <div class="haut-texte">
-        <h1>Grenier</h1>
-        <p>${m.salut} Louenn · ${esc(JOURS.format(new Date()))}</p>
-      </div>
-    </header>
-    <div class="plancher">
-      <h2 class="sr">Les malles</h2>
-      <div class="malles">${MALLES.map((x) => carteMalle(x, comptes[x.id])).join('')}</div>
-      ${boite.length ? `
-      <div class="dernier">
-        <span class="dernier-titre">Dernière chose capturée</span>
-        <p>${esc(boite[0].texte || boite[0].titre || 'Une photo').slice(0, 160)}</p>
-      </div>` : `
-      <p class="astuce">Appuie sur <b>+</b> pour jeter une idée dans la Boîte à trier, d'où que tu sois dans le Grenier.</p>`}
-      <div id="installer-zone"></div>
-    </div>
-    ${pied()}
-  </section>`;
+  const { rendreAccueil } = await import('./accueil.js');
+  await rendreAccueil(vue, { malles: MALLES, carteMalle, comptes, pied: pied(), toast });
   majBoutonInstaller();
 }
 
@@ -282,6 +223,8 @@ async function vueReglages() {
   const actuelle = lireAmbiance();
   let persiste = false;
   try { persiste = navigator.storage && (await navigator.storage.persisted()); } catch (e) { /* rien */ }
+  const { WIDGETS, widgetsCaches, cacherWidgets } = await import('./accueil.js');
+  const caches = new Set(widgetsCaches());
   vue.innerHTML = `${barre('Réglages')}
   <section class="page reglages">
     <fieldset class="bloc">
@@ -293,6 +236,12 @@ async function vueReglages() {
           <span><b>${nom}</b><small>${desc}</small></span>
         </label>`).join('')}
       </div>
+    </fieldset>
+    <fieldset class="bloc">
+      <legend>L’accueil</legend>
+      <p class="petit">Coche ce que tu veux voir sur l’accueil.</p>
+      <div class="widgets-choix">${WIDGETS.map(([id, nom]) => `
+        <label class="choix"><input type="checkbox" name="w" value="${id}" ${caches.has(id) ? '' : 'checked'}><span>${nom}</span></label>`).join('')}</div>
     </fieldset>
     <div class="bloc">
       <h2>Appli</h2>
@@ -307,6 +256,9 @@ async function vueReglages() {
     </div>
   </section>${pied()}`;
   vue.querySelectorAll('input[name="amb"]').forEach((r) => r.addEventListener('change', () => choisirAmbiance(r.value)));
+  vue.querySelectorAll('input[name="w"]').forEach((c) => c.addEventListener('change', () => {
+    cacherWidgets([...vue.querySelectorAll('input[name="w"]')].filter((x) => !x.checked).map((x) => x.value));
+  }));
   $('#sauver').addEventListener('click', async () => {
     const data = await store.exporter();
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
@@ -447,6 +399,7 @@ async function route() {
   const h = location.hash.replace(/^#\/?/, '');
   const [a, b] = h.split('/');
   fermerCapture();
+  vue.onclick = vue.onchange = vue.onsubmit = null; // gestionnaires posés par l'Accueil
   if (a === 'capture') { await vueAccueil(); ouvrirCapture(); history.replaceState(null, '', '#/'); }
   else if (a === 'malle' && b) await vueMalle(b);
   else if (a === 'boite') await vueMalle('boite');

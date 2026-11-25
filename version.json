@@ -1,7 +1,23 @@
 {
-  "version": "0.5.1",
+  "version": "0.6.0",
   "date": "2026-11-25",
   "historique": [
+    {
+      "version": "0.6.0",
+      "date": "2026-11-25",
+      "titre": "L'Accueil",
+      "notes": [
+        "Le Grenier s'ouvre sur un vrai tableau de bord.",
+        "La lucarne : son ciel suit l'heure réelle, le lever et le coucher du soleil, la lune et la météo.",
+        "L'horloge en laiton, l'éphéméride du jour et la météo sur six jours.",
+        "Le calendrier du mois, avec tes rendez-vous.",
+        "Les priorités du moment sur un post-it, et le temps qui passe en mètres rubans.",
+        "Un coup d'œil sur tes courses, ton armoire, la Loge, la Boîte et tes cours.",
+        "Ta playlist Spotify et ta devise.",
+        "Dans Réglages, choisis les tuiles à afficher.",
+        "La météo vient d'Open-Meteo : seule ta ville y est envoyée."
+      ]
+    },
     {
       "version": "0.5.1",
       "date": "2026-11-25",

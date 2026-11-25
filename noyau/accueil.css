@@ -1,0 +1,242 @@
+/*
+  VOICE   : le mur du grenier, vu de près ; chaque chose utile y est accrochée ou posée.
+  IDEA    : un bento d'objets. Chaque tuile est un objet réel : la lucarne, l'horloge en laiton, l'éphéméride,
+            le bulletin météo, le calendrier mural, le post-it, le mètre ruban, le carnet à spirale, les coupons de tissu.
+  PICTURE : la lucarne tient la vedette : son ciel suit l'heure réelle, le soleil, la lune et la météo.
+  COLOUR  : liège du Grenier, bois, papier, laiton ; rouge tampon pour aujourd'hui ; jaune post-it.
+  TYPE    : Bodoni Moda italique pour les grands chiffres (comme une éphéméride imprimée), Special Elite pour
+            l'interface, Patrick Hand pour ce qu'on écrit soi-même, Permanent Marker pour les titres de rubrique.
+*/
+@font-face { font-family: "Bodoni Moda"; src: url(../assets/fonts/bodoni-moda-italic.woff2) format("woff2"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Bodoni Moda"; src: url(../assets/fonts/bodoni-moda-600.woff2) format("woff2"); font-style: normal; font-weight: 600; font-display: swap; }
+
+.accueil-bento { --laiton: #c79f55; --laiton-sombre: #6d5126; --papier-eph: #fbf7ee; --bois-fonce: #3b281b; padding: 14px 12px 0; max-width: 1280px; margin: 0 auto; }
+.bento, .bento-tete { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; grid-auto-flow: row dense; }
+.bento-tete { margin-bottom: 12px; }
+.tuile { position: relative; display: block; min-width: 0; padding: 14px; border-radius: 6px; color: var(--encre); text-decoration: none;
+  box-shadow: 0 2px 0 rgba(0,0,0,.12), 0 16px 26px -14px rgba(40,20,5,.6); }
+a.tuile { transition: transform .18s cubic-bezier(.2,.8,.3,1.1), box-shadow .18s ease-out; }
+a.tuile:active { transform: translateY(2px) scale(.99); }
+@media (hover: hover) { a.tuile:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: 0 2px 0 rgba(0,0,0,.12), 0 22px 30px -14px rgba(40,20,5,.65); } }
+.t-titre { margin: 0 0 8px; font: 400 21px/1.15 "Permanent Marker", cursive; letter-spacing: .01em; }
+.t-section { margin: 34px 0 12px; font: 400 26px/1 "Permanent Marker", cursive; color: var(--encre); }
+.lien { padding: 0; min-height: 44px; border: 0; background: none; color: inherit; font: inherit; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.tuile .petit { font-size: 14px; }
+.t-loge .petit, .t-cours .petit, .t-temps .petit, .t-musique .petit, .t-lucarne .petit { color: inherit; opacity: .88; }
+.tuile input:not([type="checkbox"]):not([type="radio"]) { font: 16px "Special Elite", monospace; min-height: 44px; padding: 0 10px; border: 1.5px solid currentColor; border-radius: 4px; background: rgba(255,255,255,.55); color: var(--encre); min-width: 0; }
+[data-amb="nuit"] .tuile input:not([type="checkbox"]):not([type="radio"]) { background: rgba(0,0,0,.25); }
+
+/* Spans : téléphone (2 colonnes) */
+.t-lucarne, .t-meteo, .t-calendrier, .t-priorites, .t-temps, .t-musique, .t-devise, .t-cours { grid-column: span 2; }
+
+/* ---------- La lucarne ---------- */
+.t-lucarne { padding: 14px 14px 0; background: url(../assets/textures/plaster.png) 0 0 / 180px, #6d5240; background-blend-mode: multiply; color: #f6ecdf; overflow: hidden; }
+.vitre { position: relative; aspect-ratio: 16 / 9.5; border: 9px solid #7a4f2c; border-bottom-width: 0; border-radius: 46% 46% 4px 4px / 34% 34% 4px 4px; overflow: hidden;
+  box-shadow: inset 0 0 0 2px #4a2f19, inset 0 8px 18px rgba(0,0,0,.35); background: #16244b; }
+.lucarne-ciel { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.croisee { position: absolute; inset: 0; background: linear-gradient(90deg, transparent calc(50% - 4px), #7a4f2c calc(50% - 4px), #8c5d35 50%, #7a4f2c calc(50% + 4px), transparent calc(50% + 4px)), linear-gradient(transparent calc(55% - 4px), #7a4f2c calc(55% - 4px), #8c5d35 55%, #7a4f2c calc(55% + 4px), transparent calc(55% + 4px)); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
+.reflet { position: absolute; inset: 0; background: linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 38%, transparent 44%, transparent 60%, rgba(255,255,255,.08) 64%, transparent 68%); pointer-events: none; }
+.rebord { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; column-gap: 16px; row-gap: 6px; margin: 0 -14px; padding: 12px 18px 14px;
+  background: url(../assets/textures/woodfloor.png) 0 0 / 220px, linear-gradient(#8a5a35, #5b3a22); background-blend-mode: multiply;
+  box-shadow: 0 -6px 12px rgba(0,0,0,.35), inset 0 3px 0 rgba(255,230,190,.25); }
+.lu-heure { flex: none; margin: 0; font: italic 400 clamp(54px, 15vw, 92px)/.8 "Bodoni Moda", serif; letter-spacing: -.02em; color: #fbf1df; text-shadow: 0 2px 0 rgba(0,0,0,.35); font-variant-numeric: lining-nums; }
+.lu-texte { flex: 1 1 150px; min-width: 0; padding-bottom: 4px; }
+.lu-salut { margin: 0; font: 22px/1.1 "Patrick Hand", cursive; }
+.lu-date { margin: 2px 0 0; font-size: 15px; }
+.lu-temps { margin: 2px 0 0; font-size: 14px; color: #f0dcc0; }
+
+/* ---------- L'horloge en laiton ---------- */
+.t-horloge { display: grid; place-items: center; padding: 10px; background: none; box-shadow: none; }
+.cadran { width: 100%; max-width: 190px; filter: drop-shadow(0 10px 10px rgba(30,15,5,.45)); }
+.anneau { fill: url(#laiton-g); stroke: var(--laiton-sombre); stroke-width: 1.5; }
+.fond-cadran { fill: #fbf5e6; stroke: #a5803f; stroke-width: 1; }
+.grad line { stroke: #2a1c12; }
+.chiffres text { font: italic 400 11px "Bodoni Moda", serif; fill: #2a1c12; text-anchor: middle; }
+.aiguille { stroke: #2a1c12; stroke-linecap: round; }
+.aiguille.h { stroke-width: 3.2; } .aiguille.m { stroke-width: 2; }
+.axe { fill: var(--accent); }
+
+/* ---------- L'éphéméride ---------- */
+.t-ephemeride { padding: 22px 12px 12px; text-align: center; background: var(--papier-eph); color: #2a1c12; border-radius: 3px;
+  box-shadow: 0 3px 0 #e9dfc9, 0 6px 0 #ddd0b2, 0 9px 0 #d0c19f, 0 22px 26px -12px rgba(40,20,5,.6); }
+.t-ephemeride { --rouge: #b3261e; }
+.eph-reliure { position: absolute; left: 0; right: 0; top: 0; height: 12px; background: var(--rouge); border-radius: 3px 3px 0 0; }
+.eph-reliure::before, .eph-reliure::after { content: ""; position: absolute; top: 3px; width: 18px; height: 5px; border-radius: 3px; background: #e9d5a8; box-shadow: inset 0 1px 1px rgba(0,0,0,.4); }
+.eph-reliure::before { left: 24%; } .eph-reliure::after { right: 24%; }
+.eph-jour { margin: 0; color: var(--rouge); font-size: 16px; }
+.eph-num { margin: -4px 0 -6px; font: 600 clamp(70px, 22vw, 104px)/1 "Bodoni Moda", serif; letter-spacing: -.03em; font-variant-numeric: lining-nums; }
+.eph-mois { margin: 0 0 8px; font-size: 15px; }
+.eph-pied, .eph-soleil, .eph-rdv { margin: 6px 0 0; padding-top: 6px; border-top: 1px dashed #cdbd99; font-size: 13px; line-height: 1.35; color: #5a4636; }
+.eph-rdv { color: var(--rouge); }
+
+/* ---------- La météo ---------- */
+.t-meteo { background: linear-gradient(#e4ecee, #d6e1e3); color: #1f2a30; border-radius: 4px; }
+.t-meteo::before { content: ""; position: absolute; inset: 6px; border: 1.5px dashed rgba(31,42,48,.25); border-radius: 2px; pointer-events: none; }
+[data-amb="nuit"] .t-meteo { background: linear-gradient(#1e2a38, #17212c); color: #e5edf2; }
+[data-amb="nuit"] .t-meteo::before { border-color: rgba(229,237,242,.2); }
+.picto { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.me-haut { display: flex; gap: 14px; align-items: center; }
+.me-mots { min-width: 0; }
+.me-actuel { display: flex; align-items: center; gap: 4px; }
+.me-actuel .picto { width: 52px; height: 52px; stroke-width: 1.3; }
+.me-temp { margin: 0 6px 0 0; font: italic 400 64px/.9 "Bodoni Moda", serif; letter-spacing: -.03em; }
+.me-mots p { margin: 0; }
+.me-mots .t-titre { margin-bottom: 2px; }
+.me-heures { display: flex; gap: 4px; margin: 14px 0 8px; padding: 0 0 4px; list-style: none; overflow-x: auto; scrollbar-width: thin; }
+.me-heures li, .me-jours li { flex: 1 0 52px; display: grid; justify-items: center; gap: 2px; font-size: 13px; }
+.me-heures b, .me-jours b { font: 600 17px "Bodoni Moda", serif; }
+.me-heures small, .me-jours small { font-size: 13px; opacity: .8; }
+.me-jours { display: flex; gap: 4px; margin: 0; padding: 10px 0 0; list-style: none; border-top: 1.5px dashed rgba(31,42,48,.25); }
+[data-amb="nuit"] .me-jours { border-color: rgba(229,237,242,.2); }
+.me-source { margin: 10px 0 0; font-size: 13px; opacity: .85; }
+.me-source a { color: inherit; }
+.me-source .lien { font-size: 13px; min-height: 32px; }
+.vide-meteo p { margin: 0 0 12px; }
+.meteo-choix { display: flex; flex-wrap: wrap; gap: 8px; }
+.ville { display: flex; gap: 8px; flex: 1 1 220px; }
+.ville input { flex: 1; }
+.villes { display: grid; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.villes .btn-sobre { width: 100%; justify-content: flex-start; text-align: left; display: flex; flex-direction: column; align-items: flex-start; padding: 6px 12px; min-height: 44px; }
+.villes small { font-size: 13px; opacity: .8; }
+
+/* ---------- Le calendrier mural ---------- */
+.t-calendrier { background: var(--papier); background-image: linear-gradient(var(--papier-ligne) 1px, transparent 1px); background-size: 100% 28px; background-position: 0 6px; border-radius: 3px; }
+.cal-tete { display: flex; align-items: center; justify-content: space-between; margin: -4px -4px 6px; }
+.cal-tete .t-titre { margin: 0; }
+.cal-fleche { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; color: inherit; cursor: pointer; border-radius: 50%; }
+.cal-fleche svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cal-grille { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; background: var(--papier); }
+.cal-grille .js { font-size: 13px; opacity: .7; padding: 2px 0 4px; }
+.case { position: relative; min-height: 44px; border: 0; background: none; color: inherit; font: 17px "Special Elite", monospace; cursor: pointer; border-radius: 6px; font-variant-numeric: tabular-nums; }
+.case.vide { cursor: default; }
+.case i { position: absolute; left: 50%; bottom: 5px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #3f6b8f; }
+.case.choisi { background: rgba(247,226,124,.65); }
+[data-amb="nuit"] .case.choisi { background: rgba(247,226,124,.18); }
+.case.aujourdhui { color: var(--accent); font-weight: bold; }
+[data-amb="nuit"] .case.aujourdhui { color: #ffb0a4; }
+[data-amb="nuit"] .case.aujourdhui::after { border-color: #ffb0a4; }
+.case.aujourdhui::after { content: ""; position: absolute; inset: 3px 4px; border: 2px solid var(--accent); border-radius: 52% 46% 55% 44%; transform: rotate(-9deg); pointer-events: none; }
+.cal-jour { margin-top: 12px; padding-top: 10px; border-top: 1.5px dashed var(--encre-douce); }
+.cal-jour h3, .cal-avenir h3 { margin: 0 0 6px; font: 20px "Patrick Hand", cursive; }
+.rdv { margin: 0 0 8px; padding: 0; list-style: none; }
+.rdv li { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid var(--papier-ligne); }
+.rdv-h { flex: none; width: 64px; font-size: 14px; color: var(--accent); }
+.rdv-t { flex: 1; min-width: 0; font: 19px/1.2 "Patrick Hand", cursive; overflow-wrap: anywhere; }
+.rdv-x { flex: none; min-width: 44px; min-height: 44px; border: 0; background: none; color: inherit; font: 22px/1 "Special Elite", monospace; cursor: pointer; }
+.rdv-x.sur { font-size: 13px; color: var(--accent); }
+.rdv-ajout { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.rdv-ajout input[name="titre"] { grid-column: 1 / -1; }
+@media (min-width: 1100px) { .rdv-ajout { grid-template-columns: 1fr auto auto; } .rdv-ajout input[name="titre"] { grid-column: auto; } }
+.rdv-ajout input[type="time"] { width: 104px; }
+.cal-avenir { margin-top: 12px; }
+.cal-avenir ul { margin: 0; padding: 0; list-style: none; font-size: 15px; }
+.cal-avenir li { padding: 3px 0; }
+.cal-avenir b { color: var(--accent); font-weight: normal; }
+
+/* ---------- Le temps qui passe : des mètres rubans ---------- */
+.t-temps { background: #2f2219; color: #f3e9d6; background-image: radial-gradient(ellipse at 20% 0, rgba(255,220,160,.12), transparent 60%); }
+.rubans { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ru-l { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; }
+.ru-l b { font: italic 400 22px "Bodoni Moda", serif; }
+.rubans small { font-size: 13px; opacity: .8; }
+.metre { position: relative; height: 16px; margin-top: 4px; border-radius: 3px; background: #15100c; box-shadow: inset 0 2px 3px rgba(0,0,0,.6); overflow: hidden; }
+.metre span { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(90deg, rgba(40,25,5,.75) 0 1px, transparent 1px 8px), repeating-linear-gradient(90deg, rgba(40,25,5,.75) 0 1.5px, transparent 1.5px 40px), linear-gradient(#f5d35c, #e2b12f); background-size: auto 6px, auto 11px, auto; background-repeat: repeat-x; background-position: 0 0, 0 0, 0 0; border-radius: 3px 0 0 3px; box-shadow: 2px 0 0 #8a6a1b; }
+.vie { margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(243,233,214,.3); }
+.vie h3 { margin: 0 0 8px; font: 19px "Patrick Hand", cursive; }
+.vie-points { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; max-width: 300px; }
+.vie-points i { aspect-ratio: 1; border-radius: 50%; border: 1.5px solid rgba(243,233,214,.45); }
+.vie-points i.v { background: #f5d35c; border-color: #f5d35c; }
+.vie-points i.en { background: conic-gradient(#f5d35c var(--p), transparent 0); border-color: #f5d35c; }
+.vie-regler { margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(243,233,214,.3); font-size: 14px; }
+.vie-regler span, .musique-lien span { display: flex; gap: 8px; margin-top: 6px; }
+.t-temps input { color: #f3e9d6 !important; background: rgba(0,0,0,.3) !important; color-scheme: dark; }
+.t-temps .btn-sobre, .t-temps .lien { color: #f3e9d6; border-color: rgba(243,233,214,.5); }
+
+/* ---------- Les priorités : un post-it punaisé ---------- */
+.t-priorites { padding: 26px 16px 14px; background: var(--postit); color: #2a2110; border-radius: 2px; transform: rotate(-.6deg);
+  box-shadow: 0 1px 1px rgba(0,0,0,.15), 0 18px 22px -12px rgba(0,0,0,.55); }
+.punaise { position: absolute; top: 8px; left: 50%; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f08a80, #b3261e 60%, #6e1510); box-shadow: 0 3px 3px rgba(0,0,0,.35); }
+.prio { margin: 0 0 8px; padding: 0; list-style: none; }
+.prio label { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font: 21px/1.2 "Patrick Hand", cursive; }
+.prio input { flex: none; width: 22px; height: 22px; accent-color: #2a2110; }
+.prio input:checked + span { text-decoration: line-through; text-decoration-thickness: 2px; opacity: .6; }
+.prio-vide { font: 20px/1.3 "Patrick Hand", cursive; margin: 0 0 10px; }
+.prio-ajout { display: flex; gap: 6px; }
+.prio-ajout input { flex: 1; border-color: rgba(42,33,16,.5) !important; background: rgba(255,255,255,.4) !important; color: #2a2110 !important; }
+.prio-ajout .btn-sobre { min-width: 44px; justify-content: center; color: #2a2110; border-color: rgba(42,33,16,.5); font-size: 20px; }
+.t-priorites .lien { color: #2a2110; }
+
+/* ---------- Les courses : un carnet à spirale ---------- */
+.t-courses { padding-top: 24px; background: #fffdf7; background-image: linear-gradient(transparent 27px, #c9d7e6 27px, #c9d7e6 28px); background-size: 100% 28px; background-position: 0 30px; color: #2a1c12; border-radius: 3px; }
+.spirale { position: absolute; top: -6px; left: 12px; right: 12px; height: 16px; background: radial-gradient(circle at 50% 70%, #6b6b6b 3px, transparent 3.5px) 0 0 / 18px 16px repeat-x; }
+.spirale::after { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 6px; background: radial-gradient(circle, #ddd 2.5px, transparent 3px) 0 0 / 18px 6px repeat-x; }
+.liste-courses { margin: 0; padding: 0; list-style: none; }
+.liste-courses li { position: relative; padding-left: 22px; font: 19px/28px "Patrick Hand", cursive; overflow-wrap: anywhere; }
+.liste-courses li::before { content: ""; position: absolute; left: 0; top: 7px; width: 13px; height: 13px; border: 1.5px solid #2a1c12; border-radius: 2px; }
+.co-achats { margin: 8px 0 0; font-size: 13px; color: #5a4636; }
+
+/* ---------- L'armoire : des coupons de tissu ---------- */
+.t-armoire { background: #e9e1d3; background-image: repeating-linear-gradient(0deg, rgba(90,70,50,.05) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(90,70,50,.05) 0 1px, transparent 1px 3px); color: #2a1c12; }
+.coupons { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 10px; }
+.coupons i { width: 26px; height: 32px; background: var(--c); transform: rotate(var(--r)); box-shadow: 0 2px 3px rgba(0,0,0,.25);
+  clip-path: polygon(0 0, 8% 4%, 16% 0, 25% 4%, 33% 0, 41% 4%, 50% 0, 58% 4%, 66% 0, 75% 4%, 83% 0, 91% 4%, 100% 0, 100% 100%, 91% 96%, 83% 100%, 75% 96%, 66% 100%, 58% 96%, 50% 100%, 41% 96%, 33% 100%, 25% 96%, 16% 100%, 8% 96%, 0 100%); }
+.t-armoire p { margin: 0; font-size: 15px; }
+
+/* ---------- La Loge : velours et laiton ---------- */
+.t-loge { background: radial-gradient(ellipse at 30% 0, #8e4452, #5e2430 70%); color: #f6e7dc; border: 3px solid var(--laiton); border-radius: 10px; }
+.t-loge p { margin: 0 0 4px; font-size: 15px; }
+.petit-metre { height: 10px; margin: 4px 0; background: rgba(0,0,0,.35); }
+.petit-metre span { background: linear-gradient(#f6d58e, #c79f55); box-shadow: none; }
+.lo-alerte { margin-top: 8px !important; padding: 4px 8px; background: #fbf5e6; color: var(--accent); font-size: 13px !important; transform: rotate(-1.5deg); display: inline-block; }
+
+/* ---------- La Boîte : un carton ---------- */
+.t-boite { background: linear-gradient(#c49763, #b0844f); color: #2a1c12; border-radius: 3px; }
+.t-boite::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 12px; background: rgba(255,240,210,.35); }
+.mini-postits { display: grid; gap: 6px; margin: 0 0 6px; padding: 0; list-style: none; }
+.mini-postits li { padding: 6px 8px; background: var(--postit); font: 16px/1.2 "Patrick Hand", cursive; transform: rotate(var(--r)); box-shadow: 0 3px 5px -2px rgba(0,0,0,.4); overflow-wrap: anywhere; }
+
+/* ---------- Les cours : le petit ordinateur ---------- */
+.t-cours { display: flex; align-items: center; gap: 14px; background: #4f5a46; color: #eef0e3; }
+.ecran-mini { flex: none; display: grid; place-items: center; width: 96px; height: 76px; padding: 6px; background: #e4dcc8; border-radius: 8px; box-shadow: inset 0 0 0 2px #8d8370; }
+.ecran-mini span { display: block; width: 100%; height: 100%; padding: 6px 8px; background: #14301a; color: #b8ffb0; border-radius: 4px; font: 12px/1.15 "Special Elite", monospace; }
+.ecran-mini i { font-style: normal; }
+.t-cours .t-titre { margin-bottom: 2px; }
+.t-cours p { margin: 0; }
+
+/* ---------- La musique : un vieux poste ---------- */
+.t-musique { background: #2a1c12; color: #f3e9d6; background-image: radial-gradient(circle, rgba(255,255,255,.07) 1.5px, transparent 2px); background-size: 9px 9px; border-radius: 12px; }
+.t-musique iframe { display: block; width: 100%; height: 152px; border: 0; border-radius: 10px; background: #15100c; }
+.t-musique .lien { color: #f3e9d6; }
+.musique-lien { font-size: 14px; }
+.musique-lien input { flex: 1; color: #f3e9d6 !important; background: rgba(0,0,0,.35) !important; }
+.t-musique .btn-sobre { color: #f3e9d6; border-color: rgba(243,233,214,.5); }
+
+/* ---------- La devise : une bande de papier ---------- */
+.t-devise { padding: 22px 26px 8px; background: var(--papier); text-align: center; border-radius: 0; transform: rotate(.5deg);
+  clip-path: polygon(0 4%, 6% 0, 14% 5%, 24% 1%, 35% 4%, 47% 0, 58% 5%, 70% 1%, 81% 4%, 92% 0, 100% 5%, 100% 96%, 93% 100%, 82% 95%, 70% 99%, 58% 96%, 46% 100%, 34% 95%, 22% 99%, 11% 96%, 0 100%); }
+.t-devise blockquote { margin: 0; font: italic 400 clamp(22px, 5.6vw, 30px)/1.25 "Bodoni Moda", serif; text-wrap: balance; }
+.devise-form { display: grid; gap: 8px; }
+.devise-form textarea { font: italic 400 20px/1.3 "Bodoni Moda", serif; padding: 8px; border: 1.5px dashed var(--encre-douce); background: transparent; color: var(--encre); resize: vertical; }
+
+/* ---------- Les malles ---------- */
+.etagere-malles .malles { margin-top: 0; }
+.widgets-choix { display: grid; gap: 2px; }
+.choix { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.choix input { width: 20px; height: 20px; }
+
+/* ---------- Grand écran : la lucarne en tête, puis une mosaïque en colonnes (chaque objet garde sa hauteur) ---------- */
+@media (min-width: 760px) {
+  .accueil-bento { padding: 22px 22px 0; }
+  .bento-tete { grid-template-columns: minmax(0, 3.2fr) minmax(0, 1.15fr) minmax(0, 1.15fr); gap: 16px; margin-bottom: 16px; align-items: stretch; }
+  .bento-tete .t-lucarne { grid-column: auto; display: flex; flex-direction: column; }
+  .t-lucarne .vitre { flex: 1; aspect-ratio: auto; min-height: 260px; }
+  .t-ephemeride { display: flex; flex-direction: column; justify-content: center; }
+  .bento { display: block; column-count: 2; column-gap: 16px; }
+  .bento > .tuile { break-inside: avoid; margin: 0 0 16px; width: 100%; }
+  .bento > a.tuile { display: block; }
+  .bento > .t-cours { display: flex; }
+}
+@media (min-width: 1040px) { .bento { column-count: 3; } }
+@media (min-width: 1100px) { .eph-num { font-size: 96px; } .lu-heure { font-size: 104px; } }
+@media (prefers-reduced-motion: reduce) { a.tuile, a.tuile:hover { transition: none; transform: none; } }
+.t-priorites, .t-ephemeride, .t-courses, .t-armoire, .t-boite { color-scheme: light; }
