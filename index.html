@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr" data-amb="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grenier</title>
+<meta name="description" content="Le Grenier de Louenn : un seul endroit pour tout ranger.">
+<meta name="theme-color" content="#2b1e16">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="assets/icons/favicon.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/permanent-marker.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="noyau/style.css">
+</head>
+<body>
+<div id="maj" class="maj" hidden>
+  <span>Une nouvelle version du Grenier est prête.</span>
+  <button type="button" id="maj-go">Recharger</button>
+</div>
+
+<main id="vue" tabindex="-1" aria-live="polite"></main>
+
+<button type="button" id="capture-btn" class="capture-btn" aria-label="Capture rapide">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<dialog id="capture" class="feuille">
+  <form method="dialog" id="capture-form">
+    <label for="capture-texte" class="feuille-titre">Jette-le ici, on triera plus tard</label>
+    <textarea id="capture-texte" rows="4" placeholder="Une idée, un lien, une chose à acheter, une phrase…" required></textarea>
+    <div class="feuille-actions">
+      <button type="button" class="btn-sobre" id="capture-annuler">Annuler</button>
+      <button type="submit" class="btn">Ranger dans la boîte</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<noscript><p class="noscript">Le Grenier a besoin de JavaScript pour s'ouvrir.</p></noscript>
+<script type="module" src="noyau/app.js"></script>
+</body>
+</html>

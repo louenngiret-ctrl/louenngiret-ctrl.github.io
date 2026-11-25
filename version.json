@@ -1,0 +1,18 @@
+{
+  "version": "0.1.0",
+  "date": "2026-11-25",
+  "historique": [
+    {
+      "version": "0.1.0",
+      "date": "2026-11-25",
+      "titre": "Le Grenier ouvre ses portes",
+      "notes": [
+        "Le Grenier s'installe comme une vraie appli sur le PC et le téléphone.",
+        "Il fonctionne hors connexion et se met à jour tout seul.",
+        "Capture rapide : le bouton + range n'importe quelle idée dans la Boîte à trier.",
+        "Quatre ambiances : automatique, liège, kraft, nuit.",
+        "Achats et Garde-robe arrivent à la prochaine version, avec l'import de Carnet."
+      ]
+    }
+  ]
+}
