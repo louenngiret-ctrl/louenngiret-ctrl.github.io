@@ -1,4 +1,4 @@
-# État du projet (version 1.2.0, 26 novembre 2026)
+# État du projet (version 1.2.1, 26 novembre 2026)
 
 ## Marche aujourd'hui
 
@@ -11,7 +11,9 @@
 - **Pages en blocs** : chaque page est une feuille de blocs (texte, titre, sous-titre, liste à puces, liste
   numérotée, case à cocher, citation, image, séparateur, lien vers une page). Entrée ouvre un nouveau bloc, raccourcis
   en début de ligne (`#`, `##`, `-`, `1.`, `[]`, `>`, `---`), menu de bloc (transformer, monter, descendre, jeter),
-  blocs jetés récupérables sous la feuille. Les notes d'avant sont des blocs de texte.
+  blocs jetés récupérables sous la feuille. Les notes d'avant sont des blocs de texte. Au téléphone, barre d'outils
+  au-dessus du clavier (le clavier reste ouvert) ; coller plusieurs lignes = un bloc par ligne ; image en grand ;
+  Alt + flèches et Ctrl + Entrée sur ordinateur.
 - **Fichiers des pages** : importer, ouvrir, aperçu image, son, vidéo, modifier les textes, renommer,
   télécharger, jeter) avec 15 anciennes versions par fichier.
 - **Apps** : livrées (Achats, Armoire, Loge, Cours) et ajoutées (dossier ou .zip), isolées, SDK avec permissions,

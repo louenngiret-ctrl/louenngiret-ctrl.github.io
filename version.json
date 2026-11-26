@@ -1,7 +1,20 @@
 {
-  "version": "1.2.0",
+  "version": "1.2.1",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "1.2.1",
+      "date": "2026-11-26",
+      "titre": "Écrire au téléphone, plus confortable",
+      "notes": [
+        "Au téléphone, une barre d'outils se pose juste au-dessus du clavier quand tu écris : titre, liste, case à cocher, image, monter, descendre, plus d'options, et OK pour ranger le clavier.",
+        "Le clavier reste ouvert quand tu transformes ou déplaces un bloc.",
+        "Pendant que tu écris, la barre de navigation et le bouton + se retirent pour laisser la place.",
+        "Coller plusieurs lignes crée un bloc par ligne ; les tirets, crochets et dièses deviennent des listes, des cases et des titres.",
+        "Touche une image pour la voir en grand. Touche le bas de la feuille pour écrire à la suite.",
+        "Sur ordinateur : Alt + flèches déplace le bloc, Ctrl + Entrée coche la case."
+      ]
+    },
     {
       "version": "1.2.0",
       "date": "2026-11-26",

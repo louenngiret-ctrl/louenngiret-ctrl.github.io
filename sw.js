@@ -1,6 +1,6 @@
 // Service worker du Grenier : hors connexion + mises à jour.
 // À CHAQUE NOUVELLE VERSION : changer VERSION ici ET dans version.json.
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const CACHE = `grenier-${VERSION}`;
 // Gros fichiers (Carnet, Suite BTS, moteur et modèles d'essayage) : dans un cache à part,
 // gardé d'une version à l'autre. Changer LOURDS seulement quand Carnet ou la Suite changent.

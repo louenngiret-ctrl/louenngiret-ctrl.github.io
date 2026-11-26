@@ -115,7 +115,9 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     </div>
     <div data-jetes></div>
     <input type="file" accept="image/*" data-bl-image hidden>
-    <dialog class="feuille bl-menu" data-bl-menu aria-labelledby="bl-menu-titre"></dialog>`;
+    <dialog class="feuille bl-menu" data-bl-menu aria-labelledby="bl-menu-titre"></dialog>
+    <dialog class="bl-loupe" data-loupe aria-label="Image en grand"></dialog>`;
+  const loupe = zone.querySelector('[data-loupe]');
   const doc = zone.querySelector('.bl-doc'), menu = zone.querySelector('[data-bl-menu]'), choixImage = zone.querySelector('[data-bl-image]');
   const trouver = (id) => liste.find((x) => x.id === id);
   const liDe = (id) => doc.querySelector(`[data-id="${CSS.escape(id)}"]`);
@@ -147,6 +149,7 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     z.focus(); const p = pos == null ? z.value.length : pos; z.setSelectionRange(p, p);
   }
   function dessiner(focus) {
+    ecrire(false);
     urls.forEach((u) => URL.revokeObjectURL(u)); urls = [];
     doc.innerHTML = liste.map((el, i) => htmlBloc(el, numeroDe(i))).join('') + FANTOME(!liste.length);
     if (AUTO) doc.querySelectorAll('textarea').forEach(ajuster);
@@ -203,7 +206,7 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     return garder;
   }
   // Transformer le bloc sans remplacer sa zone de texte (le clavier du téléphone reste ouvert)
-  function transformerEnPlace(li, el, g, texte) {
+  function transformerEnPlace(li, el, g, texte, pos = 0) {
     const t = li.querySelector('[data-zone]');
     changer(el, g, { texte, ...(g === 'case' ? { coche: el.coche || false } : {}) });
     li.className = `bl bl-${g}${g === 'case' && el.coche ? ' fait' : ''}`;
@@ -211,7 +214,29 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     li.querySelector('.bl-poignee').setAttribute('aria-label', `Options du bloc ${GENRES[g].nom.toLowerCase()}`);
     t.setAttribute('aria-label', GENRES[g].nom); t.placeholder = GENRES[g].place;
     if (t.value !== texte) t.value = texte;
-    t.setSelectionRange(0, 0); ajuster(t); numeros();
+    t.setSelectionRange(pos, pos); ajuster(t); numeros();
+  }
+  // Le fantôme (la ligne vide du bas) devient un vrai bloc sans être remplacé : la saisie en cours continue
+  function fantomeEnBloc(t) {
+    const el = creer('texte', { texte: t.value }, liste.length), li = t.closest('li');
+    li.className = 'bl bl-texte'; li.dataset.id = el.id;
+    li.querySelector('.bl-poignee-place').outerHTML = POIGNEE('texte');
+    t.removeAttribute('data-fantome'); t.setAttribute('data-zone', ''); t.setAttribute('aria-label', 'Texte'); t.placeholder = GENRES.texte.place;
+    doc.insertAdjacentHTML('beforeend', FANTOME(false));
+    return el;
+  }
+  // Monter ou descendre sans redessiner : c'est le voisin qui bouge, la zone où l'on écrit garde le clavier
+  function deplacerSurPlace(el, sens) {
+    const li = liDe(el.id); if (!li) return false;
+    const voisin = sens < 0 ? li.previousElementSibling : li.nextElementSibling;
+    if (!voisin || voisin.matches('.bl-fantome') || !deplacer(el, sens)) return false;
+    if (sens < 0) li.after(voisin); else li.before(voisin);
+    numeros(); garderVisible(li);
+    return true;
+  }
+  function basculerCoche(el) {
+    const li = liDe(el.id), c = li?.querySelector('[data-coche]'); if (!c) return;
+    c.checked = !c.checked; sauver(el, { coche: c.checked }, true); li.classList.toggle('fait', c.checked);
   }
   // Entrée : couper le bloc au curseur, la suite part dans un nouveau bloc dessous
   function couper(t) {
@@ -278,7 +303,7 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     cible = el;
     menu.innerHTML = `<form method="dialog"><h2 class="feuille-titre" id="bl-menu-titre">${el ? 'Ajouter un bloc dessous' : 'Ajouter un bloc'}</h2>
       <div class="bl-choix">${Object.keys(GENRES).map((g) => `<button type="button" data-choisir="${g}">${APERCU[g]}</button>`).join('')}</div>
-      <p class="petit bl-astuce">En écrivant : Entrée ouvre un nouveau bloc. En début de ligne, <b>#</b> fait un titre, <b>##</b> un sous-titre, <b>-</b> une liste, <b>1.</b> une liste numérotée, <b>[]</b> une case, <b>&gt;</b> une citation, <b>---</b> un séparateur.</p>
+      <p class="petit bl-astuce">En écrivant : Entrée ouvre un nouveau bloc. En début de ligne, <b>#</b> fait un titre, <b>##</b> un sous-titre, <b>-</b> une liste, <b>1.</b> une liste numérotée, <b>[]</b> une case, <b>&gt;</b> une citation, <b>---</b> un séparateur. Sur ordinateur, <b>Alt + flèches</b> déplace le bloc et <b>Ctrl + Entrée</b> coche la case.</p>
       ${fermer}</form>`;
   }
   function menuBloc(el) {
@@ -314,6 +339,9 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
       return;
     }
     if (!t.matches('[data-zone]')) return;
+    const el = trouver(t.closest('[data-id]')?.dataset.id);
+    if (el && e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); deplacerSurPlace(el, e.key === 'ArrowUp' ? -1 : 1); return; }
+    if (el && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (genreDe(el) === 'case') basculerCoche(el); else if (ECRITS.has(genreDe(el))) transformerEnPlace(t.closest('[data-id]'), el, 'case', t.value, t.selectionStart); return; }
     if (e.key === 'Enter') { if (e.shiftKey) permisLB = true; else { e.preventDefault(); couper(t); } return; }
     if (e.key === 'Backspace' && t.selectionStart === 0 && t.selectionEnd === 0) { if (reculer(t)) e.preventDefault(); return; }
     if (e.key === 'ArrowUp' && t.selectionStart === 0 && t.selectionEnd === 0) { const v = voisine(t, -1); if (v) { e.preventDefault(); v.focus(); v.setSelectionRange(v.value.length, v.value.length); } }
@@ -344,12 +372,7 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     ajuster(t);
     if (t.matches('[data-fantome]')) {
       if (!t.value) return;
-      // le fantôme devient un vrai bloc sans être remplacé : la saisie en cours continue
-      const el = creer('texte', { texte: t.value }, liste.length), li = t.closest('li');
-      li.className = 'bl bl-texte'; li.dataset.id = el.id;
-      li.querySelector('.bl-poignee-place').outerHTML = POIGNEE('texte');
-      t.removeAttribute('data-fantome'); t.setAttribute('data-zone', ''); t.setAttribute('aria-label', 'Texte'); t.placeholder = GENRES.texte.place;
-      doc.insertAdjacentHTML('beforeend', FANTOME(false));
+      fantomeEnBloc(t);
       return;
     }
     if (!t.matches('[data-zone]')) return;
@@ -368,7 +391,37 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     }
     sauver(el, { texte: t.value });
   });
-  zone.addEventListener('focusout', (e) => { const li = e.target.closest?.('[data-id]'); if (li && e.target.matches('[data-zone]')) vider(li.dataset.id); });
+  zone.addEventListener('focusout', (e) => {
+    const li = e.target.closest?.('[data-id]'); if (li && e.target.matches('[data-zone]')) vider(li.dataset.id);
+    setTimeout(() => { const a = document.activeElement; if (!(a && (zone.contains(a) && a.matches('textarea')) || barre.contains(a))) ecrire(false); }, 0);
+  });
+  zone.addEventListener('focusin', (e) => {
+    const t = e.target; if (!(t instanceof HTMLTextAreaElement)) return;
+    actuel = t.closest('[data-id]')?.dataset.id || null; ecrire(true); garderVisible(t);
+  });
+  // Coller plusieurs lignes : une ligne = un bloc, avec les mêmes raccourcis qu'au clavier
+  zone.addEventListener('paste', (e) => {
+    const t = e.target; if (!(t instanceof HTMLTextAreaElement) || t.matches('.bl-legende')) return;
+    const texte = (e.clipboardData?.getData('text/plain') || '').replace(/\r/g, '');
+    if (!texte.includes('\n')) return;
+    e.preventDefault();
+    const lignes = texte.split('\n');
+    const el = t.matches('[data-fantome]') ? fantomeEnBloc(t) : trouver(t.closest('[data-id]').dataset.id);
+    const fin = t.value.slice(t.selectionEnd);
+    t.value = t.value.slice(0, t.selectionStart) + lignes.shift();
+    sauver(el, { texte: t.value }, true);
+    let index = liste.indexOf(el) + 1, der = el, n = 1;
+    lignes.forEach((l, k) => {
+      if (k === lignes.length - 1) l += fin;
+      if (!l.trim()) return;
+      n++;
+      if (l.trim() === '---') { der = creer('separateur', {}, index++); return; }
+      const r = raccourci(l);
+      der = creer(r ? r.g : 'texte', r ? { texte: r.reste, ...(r.g === 'case' ? { coche: r.coche } : {}) } : { texte: l }, index++);
+    });
+    dessiner(ECRITS.has(genreDe(der)) ? { id: der.id } : { poignee: der.id });
+    toast(`${n} lignes collées, une par bloc`);
+  });
   zone.addEventListener('change', async (e) => {
     const c = e.target.closest('[data-coche]');
     if (c) { const li = c.closest('[data-id]'), el = trouver(li.dataset.id); sauver(el, { coche: c.checked }, true); li.classList.toggle('fait', c.checked); navigator.vibrate?.(8); return; }
@@ -382,6 +435,9 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
   });
   zone.addEventListener('click', async (e) => {
     const t = e.target;
+    const img = t.closest('.bl-photo img');
+    if (img) { loupe.innerHTML = `<form method="dialog"><img src="${img.src}" alt="${esc(img.alt)}"><button type="submit" class="btn-sobre">Fermer</button></form>`; loupe.showModal(); return; }
+    if (t === doc || t.matches('.bl-feuille')) { doc.querySelector('[data-fantome]')?.focus(); return; }
     const m = t.closest('[data-menu]');
     if (m) { menuBloc(trouver(m.closest('[data-id]').dataset.id)); menu.showModal(); return; }
     if (t.closest('[data-ajouter]')) { await attendre(); menuAjouter(null); menu.showModal(); return; }
@@ -426,6 +482,71 @@ export async function monter(zone, page, { toast = () => {} } = {}) {
     }
   });
 
+  // La barre d'outils du téléphone agit sur le bloc où l'on écrit
+  let actuel = null;
+  const barre = barreOutils();
+  function ecrire(oui) {
+    barre.hidden = !oui; document.documentElement.classList.toggle('bl-ecrit', oui);
+    if (oui) { const z = document.activeElement, el = trouver(z?.closest?.('[data-id]')?.dataset.id) || (actuel && trouver(actuel)), g = el ? genreDe(el) : 'texte'; barre.querySelectorAll('[data-outil]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.outil === g))); }
+  }
+  barre.api = (outil) => {
+    const a = document.activeElement, t = a instanceof HTMLTextAreaElement && zone.contains(a) ? a : (actuel ? zoneDe(actuel) : null);
+    if (outil === 'fini') { t?.blur(); ecrire(false); return; }
+    let el = trouver(t?.closest('[data-id]')?.dataset.id) || (actuel && trouver(actuel));
+    if (!el && t?.matches('[data-fantome]') && outil !== 'image' && outil !== 'plus') { el = fantomeEnBloc(t); actuel = el.id; }
+    if (outil === 'image') { cible = el || null; choixImage.click(); return; }
+    if (outil === 'plus') { if (el) menuBloc(el); else menuAjouter(null); menu.showModal(); return; }
+    if (!el) return;
+    if (outil === 'monter' || outil === 'descendre') { deplacerSurPlace(el, outil === 'monter' ? -1 : 1); return; }
+    const g = genreDe(el); if (!ECRITS.has(g) || !t) return;
+    transformerEnPlace(liDe(el.id), el, g === outil ? 'texte' : outil, t.value, t.selectionStart);
+    if (outil === 'case' && g !== 'case') sauver(el, { coche: false }, true);
+    ecrire(true);
+  };
+
   dessiner();
   dessinerJetes();
+}
+
+/* ---------- La barre d'outils au-dessus du clavier (téléphone) ---------- */
+let barreEl = null;
+const OUTILS = [
+  ['titre', 'Titre', '<b class="bl-o-titre">T</b>'],
+  ['liste', 'Liste à puces', '<svg viewBox="0 0 24 24"><circle cx="5" cy="7" r="1.8"/><circle cx="5" cy="17" r="1.8"/><path d="M10 7h10M10 17h10"/></svg>'],
+  ['case', 'Case à cocher', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" transform="rotate(-3 12 12)"/><path d="M8 12l3 3 6-8"/></svg>'],
+  ['image', 'Ajouter une image', '<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M7 15l3-4 3 3 2-2 2 3"/></svg>'],
+  ['monter', 'Monter le bloc', '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'],
+  ['descendre', 'Descendre le bloc', '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>'],
+  ['plus', 'Plus d’options', '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>'],
+  ['fini', 'Fini, ranger le clavier', '<b class="bl-o-fini">OK</b>'],
+];
+function barreOutils() {
+  if (barreEl?.isConnected) return barreEl;
+  barreEl = document.createElement('div');
+  barreEl.className = 'bl-barre'; barreEl.hidden = true;
+  barreEl.setAttribute('role', 'toolbar'); barreEl.setAttribute('aria-label', 'Outils du bloc');
+  barreEl.innerHTML = OUTILS.map(([id, nom, ic]) => `<button type="button" data-outil="${id}" aria-label="${nom}" title="${nom}"${['titre', 'liste', 'case'].includes(id) ? ' aria-pressed="false"' : ''}>${ic}</button>`).join('');
+  // appuyer sur un outil ne doit pas retirer le focus de la zone (le clavier resterait fermé)
+  const garder = (e) => { if (e.target.closest('button')) e.preventDefault(); };
+  barreEl.addEventListener('pointerdown', garder); barreEl.addEventListener('mousedown', garder);
+  barreEl.addEventListener('click', (e) => { const b = e.target.closest('[data-outil]'); if (b) barreEl.api?.(b.dataset.outil); });
+  document.body.append(barreEl);
+  addEventListener('hashchange', () => { barreEl.hidden = true; document.documentElement.classList.remove('bl-ecrit'); });
+  // la barre se pose juste au-dessus du clavier, qui réduit la partie visible de la page
+  const vv = window.visualViewport;
+  if (vv) {
+    const poser = () => { const bas = Math.max(0, innerHeight - vv.height - vv.offsetTop); document.documentElement.style.setProperty('--bl-clavier', `${bas}px`); };
+    vv.addEventListener('resize', () => { poser(); const a = document.activeElement; if (a?.matches?.('.bl-zone')) garderVisible(a); });
+    vv.addEventListener('scroll', poser); poser();
+  }
+  return barreEl;
+}
+// Le bloc où l'on écrit reste visible au-dessus de la barre et du clavier
+function garderVisible(el) {
+  if (!barreEl || barreEl.hidden || getComputedStyle(barreEl).display === 'none') return;
+  requestAnimationFrame(() => {
+    const vv = window.visualViewport, haut = vv ? vv.height + vv.offsetTop : innerHeight;
+    const r = el.getBoundingClientRect(), limite = haut - barreEl.offsetHeight - 12;
+    if (r.bottom > limite) window.scrollBy({ top: Math.min(r.bottom - limite, r.top - 80), behavior: 'smooth' });
+  });
 }
