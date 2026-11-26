@@ -38,7 +38,7 @@ Administration, Applications, « Installer l'app modèle ».
 | --- | --- |
 | *(aucune)* | `mm.stockage` (ses propres données), `mm.ui`, `mm.theme`, `mm.fichier` |
 | `arbre:lire` | `mm.arbre.lister()` |
-| `notes:lire` | `mm.notes.lister(page)` |
+| `notes:lire` | `mm.notes.lister(page)` (les blocs écrits de la page : texte, titres, listes, cases, citations) |
 | `notes:ecrire` | `mm.notes.ajouter`, `modifier`, `jeter` (seulement les notes des pages) |
 | `fichiers:lire` | `mm.fichiers.lister(page)`, `mm.fichiers.lire(id)` |
 | `fichiers:ecrire` | `mm.fichiers.ajouter(page, nom, blob)` |

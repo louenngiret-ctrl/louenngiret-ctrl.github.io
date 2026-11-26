@@ -1,0 +1,155 @@
+/* Pages en blocs : une feuille de carnet scotchée, à lignes, où l'on écrit à la main.
+   Titres au feutre (Permanent Marker), sous-titres à la machine à écrire (Special Elite), texte manuscrit (Patrick Hand),
+   puces en goutte d'encre, cases tracées à la main, images en polaroïd scotché, lien en étiquette de malle. */
+
+.bl-feuille {
+  position: relative; display: grid; gap: 6px; padding: 24px 12px 16px 4px;
+  background: var(--papier, #fbf5e6); color: var(--encre); border-radius: 3px; box-shadow: var(--ombre);
+}
+.bl-feuille > .scotch { top: -9px; left: 50%; }
+.bl-doc { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; min-width: 0; }
+.bl { position: relative; display: grid; grid-template-columns: 34px auto minmax(0, 1fr); align-items: start; min-width: 0; }
+
+.bl-poignee, .bl-poignee-place { width: 34px; min-height: 44px; }
+.bl-poignee {
+  display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; cursor: grab;
+  background: none; color: var(--encre-douce); opacity: .4; transition: opacity .15s ease-out;
+}
+.bl-poignee svg { width: 16px; height: 16px; fill: currentColor; }
+.bl:focus-within .bl-poignee, .bl-poignee:hover, .bl-poignee:focus-visible { opacity: 1; }
+
+.bl-avant { display: flex; align-items: center; min-height: 44px; }
+.bl-avant:empty { display: none; }
+.bl-zone {
+  grid-column: -2 / -1; display: block; width: 100%; min-height: 44px; margin: 0; padding: 7px 4px 7px 2px;
+  border: 0; border-radius: 4px; background: transparent; color: inherit; resize: none; overflow: hidden;
+  font: 20px/30px "Patrick Hand", cursive; field-sizing: content; overflow-wrap: anywhere;
+}
+/* les lignes du carnet, sous chaque ligne écrite */
+.bl-texte .bl-zone, .bl-liste .bl-zone, .bl-numero .bl-zone, .bl-case .bl-zone, .bl-citation .bl-zone, .bl-fantome .bl-zone {
+  background-image: repeating-linear-gradient(180deg, transparent 0 29px, color-mix(in srgb, var(--papier-ligne) 85%, transparent) 29px 30px);
+  background-origin: content-box; background-clip: content-box; background-position: 0 0; background-repeat: repeat-y; background-size: 100% 30px;
+}
+.bl-zone::placeholder { color: var(--encre-douce); opacity: .55; }
+.bl-zone:focus, .bl-zone:focus-visible { outline: none; background-color: color-mix(in srgb, var(--accent) 7%, transparent);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+.bl-fantome .bl-zone::placeholder { opacity: .75; }
+
+.bl-titre { margin-top: 10px; }
+.bl-titre .bl-zone { font: 400 clamp(26px, 7vw, 34px)/1.2 "Permanent Marker", cursive; padding-top: 6px; }
+.bl-sous-titre { margin-top: 6px; }
+.bl-sous-titre .bl-zone { font: 400 21px/30px "Special Elite", monospace; text-decoration: underline; text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px; text-underline-offset: 7px; }
+
+/* puce : une goutte d'encre pas tout à fait ronde */
+.bl-puce { display: inline-block; flex: none; width: 9px; height: 9px; margin: 0 10px 0 4px; border-radius: 55% 45% 60% 40%; background: var(--encre); transform: rotate(-12deg); }
+.bl-num { flex: none; min-width: 26px; margin-right: 4px; font: 20px/1 "Patrick Hand", cursive; font-style: normal; text-align: right; }
+
+/* case à cocher tracée à la main, coche au stylo rouge qui déborde */
+.bl-coche { display: grid; place-items: center; width: 40px; min-height: 44px; cursor: pointer; }
+.bl-coche input {
+  appearance: none; width: 22px; height: 22px; margin: 0; cursor: pointer;
+  border: 2px solid var(--encre); border-radius: 3px 5px 2px 4px; background: transparent; transform: rotate(-3deg);
+}
+.bl-coche input:checked {
+  background: no-repeat 3px -3px / 26px 24px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 24'%3E%3Cpath d='M3 13c3 2 5 5 6 8 3-8 8-14 15-19' fill='none' stroke='%23b3261e' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+[data-amb="nuit"] .bl-coche input:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 24'%3E%3Cpath d='M3 13c3 2 5 5 6 8 3-8 8-14 15-19' fill='none' stroke='%23e2574c' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.bl-coche input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.bl-case.fait .bl-zone { color: var(--encre-douce); text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+
+.bl-citation .bl-avant { align-items: flex-start; }
+.bl-guillemet { margin: -2px 6px 0 2px; font: italic 400 46px/1 "Bodoni Moda", serif; color: var(--accent); }
+.bl-citation .bl-zone { font: italic 400 19px/30px "Bodoni Moda", serif; }
+
+/* séparateur : un trait d'encre ondulé */
+.bl-sep {
+  grid-column: 2 / -1; width: 100%; height: 14px; margin: 15px 0; border: 0; background: var(--encre-douce);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 14'%3E%3Cpath d='M0 7c6-5 10-5 16 0s10 5 16 0 10-5 16 0' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x center / 48px 14px;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 14'%3E%3Cpath d='M0 7c6-5 10-5 16 0s10 5 16 0 10-5 16 0' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x center / 48px 14px;
+}
+
+/* image : polaroïd scotché, un peu de travers */
+.bl-photo {
+  position: relative; grid-column: 2 / -1; justify-self: center; width: min(100%, 440px); margin: 20px 0 12px; padding: 10px 10px 2px;
+  background: #fffdf6; color: #2a1c12; box-shadow: 0 2px 0 rgba(0,0,0,.12), 0 12px 22px -10px rgba(30,15,5,.55); transform: rotate(-1.2deg);
+}
+.bl-image:nth-child(even) .bl-photo { transform: rotate(1deg); }
+.bl-photo img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; background: #eee5d3; }
+.bl-photo figcaption .bl-zone { text-align: center; font-size: 19px; color: #2a1c12; }
+.bl-photo figcaption .bl-zone::placeholder { color: #6b5643; }
+
+/* lien vers une page : une étiquette de malle en kraft, avec son œillet */
+.bl-lien {
+  position: relative; grid-column: 2 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 10px; max-width: 100%;
+  min-height: 44px; margin: 8px 0; padding: 6px 16px 6px 34px; color: #2a1c12; text-decoration: none;
+  background: #dcbc86; font: 17px/1.25 "Special Elite", monospace; transform: rotate(-1deg);
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%); filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
+}
+.bl-lien::before { content: ""; position: absolute; left: 13px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%;
+  background: var(--papier); box-shadow: 0 0 0 2px #a07a44; }
+.bl-lien span { overflow-wrap: anywhere; }
+.bl-lien svg { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+a.bl-lien:hover span { text-decoration: underline; }
+.bl-lien-perdu { opacity: .65; }
+
+.bl-ajouter { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-left: 34px; }
+.bl-ajouter svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+
+/* Blocs jetés : un petit tiroir sous la feuille */
+.bl-jetes { margin-top: 10px; padding: 0 14px; background: color-mix(in srgb, var(--papier) 82%, transparent); color: var(--encre); border-radius: 4px; }
+.bl-jetes summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 15px; }
+.bl-jetes ul { display: grid; gap: 6px; margin: 0; padding: 0 0 12px; list-style: none; }
+.bl-jetes li { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 6px 0; border-top: 1px dashed var(--papier-ligne); }
+.bl-jetes li span { display: grid; min-width: 0; }
+.bl-jetes b { font: 18px/1.3 "Patrick Hand", cursive; overflow-wrap: anywhere; }
+.bl-jetes small { font-size: 13px; color: var(--encre-douce); }
+
+/* Le menu : une feuille qui monte du bas, des étiquettes qui montrent chaque bloc */
+.bl-menu .feuille-titre { margin: 0 0 12px; }
+.bl-menu-sous { margin: 0 0 8px; font-size: 14px; color: var(--encre-douce); }
+.bl-choix { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bl-choix button {
+  display: flex; align-items: center; min-height: 52px; padding: 6px 10px; cursor: pointer; text-align: left;
+  border: 1.5px dashed var(--encre-douce); border-radius: 6px; background: transparent; color: var(--encre);
+  transition: transform .12s ease-out, background-color .15s ease-out;
+}
+.bl-choix button:nth-child(odd) { transform: rotate(-.5deg); }
+.bl-choix button:nth-child(even) { transform: rotate(.5deg); }
+.bl-choix button:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.bl-choix button:active { transform: translateY(1px) scale(.98); }
+.bl-ap { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font: 16px/1.2 "Special Elite", monospace; }
+.bl-ap i { font-style: normal; }
+.bl-ap-texte { font: 19px/1.2 "Patrick Hand", cursive; }
+.bl-ap-titre { font: 400 20px/1.1 "Permanent Marker", cursive; }
+.bl-ap-sous { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.bl-ap .bl-puce { margin: 0 2px; }
+.bl-ap .bl-num { min-width: 0; margin: 0; font-size: 18px; }
+.bl-ap-case { width: 16px; height: 16px; border: 2px solid var(--encre); border-radius: 2px 4px 2px 3px; transform: rotate(-3deg); }
+.bl-ap-cit i { font: italic 30px/.8 "Bodoni Moda", serif; color: var(--accent); }
+.bl-ap-photo { width: 20px; height: 22px; padding: 2px 2px 6px; background: #fffdf6; box-shadow: 0 1px 3px rgba(0,0,0,.35); transform: rotate(-4deg); }
+.bl-ap-photo::before { content: ""; display: block; width: 100%; height: 100%; background: #9a6a34; }
+.bl-ap-tag { width: 24px; height: 14px; background: #dcbc86; clip-path: polygon(7px 0, 100% 0, 100% 100%, 7px 100%, 0 50%); }
+.bl-ap-sep { width: 24px; height: 8px; background: var(--encre-douce);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 8'%3E%3Cpath d='M0 4c3-3 5-3 8 0s5 3 8 0 5-3 8 0' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") center / 24px 8px;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 8'%3E%3Cpath d='M0 4c3-3 5-3 8 0s5 3 8 0 5-3 8 0' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E") center / 24px 8px; }
+.bl-astuce { margin: 14px 0 0; line-height: 1.45; }
+.bl-astuce b { padding: 0 3px; border-radius: 3px; background: color-mix(in srgb, var(--encre) 10%, transparent); font-family: "Special Elite", monospace; }
+.bl-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.bl-actions .btn-sobre { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+.bl-actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bl-actions .bl-jeter { border-color: var(--accent); color: var(--accent); }
+.bl-actions button:disabled { opacity: .4; cursor: default; }
+.bl-choisir-page { display: grid; gap: 6px; }
+.bl-choisir-page select { width: 100%; min-height: 48px; padding: 8px; border: 1.5px solid var(--encre-douce); border-radius: 6px;
+  background: var(--papier); color: var(--encre); font: 16px "Special Elite", monospace; }
+
+@media (min-width: 760px) {
+  .bl-feuille { padding: 30px 28px 20px 14px; }
+  .bl-choix { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl-poignee, .bl-choix button { transition: none; }
+}

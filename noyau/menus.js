@@ -1,9 +1,10 @@
 // Les menus de My memories, façon écran-titre de jeu : de grandes tuiles inclinées, une barre de description
 // en bas qui dit ce que fait la tuile visée, et les flèches du clavier qui sautent d'une tuile à sa voisine.
-// Accueil (#/accueil) → les nœuds de l’arbre (#/n/<id>, ancien nom #/s/<id>) : dossiers en tuiles, pages en carnet ; Ressources.
+// Accueil (#/accueil) → les nœuds de l’arbre (#/n/<id>, ancien nom #/s/<id>) : dossiers en tuiles, pages en blocs ; Ressources.
 import * as store from './store.js';
 import * as arbre from './arbre.js';
 import * as fichiers from './fichiers.js';
+import * as blocs from './blocs.js';
 import { IMG, DENTELLE, EPINGLE, visuel, decoDe } from './plan.js';
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -133,24 +134,16 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
     brancherMenu($('.mm-menu', vue), n.desc || n.nom);
     return;
   }
-  // une page : ses notes et ses fichiers
+  // une page : une feuille en blocs (noyau/blocs.js) et ses fichiers
   let urls = [];
   const dessiner = async () => {
     urls.forEach((u) => URL.revokeObjectURL(u)); urls = [];
-    const [notes, fs] = await Promise.all([store.parMalle(n.id).catch(() => []), fichiers.lister(n.id)]);
+    const fs = await fichiers.lister(n.id);
     const vignette = (f) => { if (!/^image\//.test(f.mime)) return `<span class="mm-fichier-type" aria-hidden="true">${esc((f.nom.split('.').pop() || '').slice(0, 4))}</span>`; const u = URL.createObjectURL(f.blob); urls.push(u); return `<img src="${u}" alt="" loading="lazy">`; };
     vue.innerHTML = `<section class="mm-page" style="--c:${couleur};--e:${encre}" aria-labelledby="mm-titre">
       ${bandeau(n, true)}
       <div class="mm-carnet">
-        <form class="mm-noter" data-noter>
-          <label for="mm-note">Une note pour « ${esc(n.nom)} »</label>
-          <textarea id="mm-note" rows="3" placeholder="Écris ici…"></textarea>
-          <button type="submit" class="btn">Ranger la note</button>
-        </form>
-        ${notes.length ? `<ul class="mm-notes">${notes.filter((x) => x.type !== 'donnee').map((x) => `<li class="mm-note-carte">
-          <p>${esc(x.texte)}</p>
-          <div class="mm-note-pied"><time>${x.cree ? DATEH.format(new Date(x.cree)) : ''}</time>
-          <button type="button" class="btn-sobre" data-jeter="${x.id}">Jeter</button></div></li>`).join('')}</ul>` : '<p class="petit mm-vide">Aucune note pour l’instant.</p>'}
+        <div class="bl-support" data-doc></div>
         <section class="mm-fichiers" aria-labelledby="mm-fichiers-titre">
           <h2 id="mm-fichiers-titre">Fichiers</h2>
           <div class="mm-fichiers-actions">
@@ -164,6 +157,7 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
       </div>
       <dialog class="mm-fiche" data-fiche></dialog>
     </section>${pied}`;
+    await blocs.monter($('[data-doc]', vue), n, { toast });
   };
   await dessiner();
   const fiche = () => $('[data-fiche]', vue);
@@ -192,14 +186,6 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
       </div></form>`;
     d.showModal();
   };
-  vue.onsubmit = async (e) => {
-    if (!e.target.closest('[data-noter]')) return;
-    e.preventDefault();
-    const t = $('#mm-note', vue).value.trim();
-    if (!t) return;
-    await store.ajouter({ malle: n.id, type: 'note', texte: t });
-    await dessiner(); toast('Note rangée'); $('#mm-note', vue)?.focus();
-  };
   vue.onchange = async (e) => {
     const vp = e.target.closest('[data-vers-pc]');
     if (vp && vp.value) {
@@ -221,11 +207,6 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
   };
   vue.onclick = async (e) => {
     const t = e.target;
-    const jeter = t.closest('[data-jeter]');
-    if (jeter) {
-      if (!jeter.classList.contains('sur')) { jeter.classList.add('sur'); jeter.textContent = 'Sûr ?'; setTimeout(() => { if (jeter.isConnected) { jeter.classList.remove('sur'); jeter.textContent = 'Jeter'; } }, 3000); return; }
-      await store.supprimer(jeter.dataset.jeter); await dessiner(); toast('Note jetée'); return;
-    }
     if (t.closest('[data-nouveau-texte]')) { const f = await fichiers.creerTexte(n.id, 'Nouveau texte.txt'); await dessiner(); ouvrirFiche(f.id); return; }
     const o = t.closest('[data-ouvrir-fichier]'); if (o) { ouvrirFiche(o.dataset.ouvrirFichier); return; }
     const form = t.closest('[data-fiche-form]'); if (!form) return;
@@ -249,6 +230,8 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
 }
 
 /* ---------- Ressources : principal, catégories, ressource ---------- */
+// les petits blocs d'une page (titres, éléments de liste, cases) restent dans leur page : Rechercher les trouve
+const COURTS = new Set(['titre', 'sous-titre', 'liste', 'numero', 'case']);
 let urls = [];
 const libelle = (o) => { for (const k of ['titre', 'nom', 'texte', 'lien', 'url']) if (typeof o[k] === 'string' && o[k].trim()) return o[k].trim(); return o.type || 'Sans titre'; };
 const genre = (o) => (o.fichier instanceof Blob ? 'photo' : (o.type === 'lien' || /^https?:\/\//.test(o.texte || '') ? 'lien' : 'note'));
@@ -260,7 +243,7 @@ const ICONES = {
 export async function rendreRessources(vue, onglet = 'principal', { pied }) {
   urls.forEach((u) => URL.revokeObjectURL(u)); urls = [];
   if (!['principal', 'categories', 'ressource'].includes(onglet)) onglet = 'principal';
-  const tous = (await store.tout().catch(() => [])).filter((o) => (o.malle !== 'agenda' || o.titre) && o.type !== 'donnee').sort((a, b) => (b.cree || 0) - (a.cree || 0));
+  const tous = (await store.tout().catch(() => [])).filter((o) => (o.malle !== 'agenda' || o.titre) && o.type !== 'donnee' && o.type !== 'bloc' && !COURTS.has(o.bloc)).sort((a, b) => (b.cree || 0) - (a.cree || 0));
   const carte = (o) => {
     const g = genre(o), p = arbre.pageDe(o.malle);
     let img = '';
@@ -274,7 +257,7 @@ export async function rendreRessources(vue, onglet = 'principal', { pied }) {
     corps = tous.length
       ? `${photos.length ? `<h2 class="res-titre">Les dernières images</h2><ul class="res-mur">${photos.map(carte).join('')}</ul>` : ''}
          ${autres.length ? `<h2 class="res-titre">Les dernières notes et liens</h2><ul class="res-liste">${autres.map(carte).join('')}</ul>` : ''}`
-      : '<p class="mm-chantier">Rien de rangé pour l’instant. Le bouton + capture une idée, un lien ou une photo, et chaque page a son carnet de notes.</p>';
+      : '<p class="mm-chantier">Rien de rangé pour l’instant. Le bouton + capture une idée, un lien ou une photo, et chaque page est une feuille où écrire.</p>';
   } else if (onglet === 'categories') {
     corps = `<ul class="res-categories">${arbre.enfants(arbre.RACINE).map((sec) => {
       const n = tous.filter((o) => arbre.grandePageDe(o.malle)?.id === sec.id).length, c = arbre.couleurs(sec.id);

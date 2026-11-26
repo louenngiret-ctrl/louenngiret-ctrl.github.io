@@ -53,3 +53,9 @@ depuis. Coût : deux modifications du même objet de chaque côté = une seule g
 
 **D15. Tout ce que My memories garde d'un fichier du disque est recopié en mémoire.** Un `File` lu par File System
 Access reste lié au disque et devient illisible si le fichier change ou disparaît (constaté le 26/11/2026).
+
+**D16. Un bloc = un élément de la base.** Les blocs d'une page sont des lignes du store `elements`, comme les notes,
+et non un document unique par page. Raison : les notes existantes deviennent des blocs sans migration, Rechercher,
+Ressources, les apps (`mm.notes`) et la sauvegarde continuent de marcher, et la fusion entre appareils garde les deux
+modifications quand elles touchent des blocs différents. Coût : l'ordre tient dans un champ `ordre` par bloc, et
+réordonner beaucoup peut renuméroter toute la page.

@@ -9,7 +9,7 @@ de compilation : HTML, CSS et modules JavaScript natifs. Elle tourne sur le PC (
 ```
  Interface        accueil.js (tableau de bord)  menus.js (grand menu, dossiers, pages)  admin.js (administration)
                   navigation.js (barre, Explorer, Rechercher, Paramètres)  atelier.js  curiosites.js  hote.js (apps)
-                  dossiers.js (Dossiers épinglés)
+                  dossiers.js (Dossiers épinglés)  blocs.js (pages en blocs)
  Services         arbre.js (arborescence)  fichiers.js  apps.js  sauvegarde.js  pc.js (disque)  decor.js  meteo.js
  Stockage         store.js : IndexedDB « grenier », la source de vérité de l'appareil
  Coquille         sw.js (hors connexion, mises à jour)  manifest.webmanifest  index.html
@@ -26,7 +26,7 @@ Le nom historique « grenier » est gardé : le changer ferait perdre les donné
 
 | Store | Clé | Contenu |
 | --- | --- | --- |
-| `elements` | `id` | Notes, captures, données des apps. `malle` = l'identifiant de la page ou de l'app propriétaire (`personnel/journal`, `boite`, `app:mon-app`). Index `malle`, `modifie`. |
+| `elements` | `id` | Notes, blocs des pages, captures, données des apps. `malle` = l'identifiant de la page ou de l'app propriétaire (`personnel/journal`, `boite`, `app:mon-app`). Un bloc porte en plus `bloc` (genre), `ordre`, et selon le genre `coche`, `fichier` (image) ou `cible` (lien vers une page). Index `malle`, `modifie`. |
 | `meta` | `cle` | Réglages et petits états (cabinet, sauvegarde, version de la graine). |
 | `noeuds` | `id` | L'arborescence : dossiers, pages, liens, apps. Index `parent`. |
 | `versions` | `id` | Anciennes versions : `noeud:<id>`, `fichier:<id>`, `app:<id>`, `arbre`, et les points de restauration `point:auto` / `point:manuel`. Index `cible`, `date`. |
@@ -43,7 +43,7 @@ Autres bases de la même origine : `carnet` (Carnet V2 : `kv`, `thumb`, `full`).
 ## L'arborescence (arbre.js)
 
 - Un nœud : `{ id, parent, ordre, type, nom, desc, sticker | icone | image, couleur, encre, taille, lien, app, epingle, corbeille, cree, modifie }`.
-- Types : `dossier` (menu de tuiles), `page` (notes et fichiers), `lien` (adresse interne ou externe), `app` (ouvre une application).
+- Types : `dossier` (menu de tuiles), `page` (feuille en blocs et fichiers, voir « Les pages en blocs »), `lien` (adresse interne ou externe), `app` (ouvre une application).
 - La racine `racine` est le grand menu. Ses enfants sont les grandes pages.
 - À la première ouverture de la 1.0, la graine (`plan.js`) est copiée dans la base. Les identifiants des sous-onglets
   restent `section/sous-onglet`, identiques aux `malle` des notes écrites en 0.9 : aucune note n'est perdue.
@@ -51,6 +51,21 @@ Autres bases de la même origine : `carnet` (Carnet V2 : `kv`, `thumb`, `full`).
 - Chaque modification garde l'ancienne version (store `versions`). Supprimer = mettre à la corbeille (`corbeille: true`).
 - Les couleurs s'héritent : une page sans couleur prend celle de son dossier.
 - Les menus, l'Explorer, Rechercher et Ressources lisent tous l'arbre. Un événement `mm:arbre` prévient les vues ouvertes.
+
+## Les pages en blocs (blocs.js)
+
+- Une page est une feuille de blocs. Un bloc = un élément du store `elements` (`malle` = id de la page) : pas de
+  nouveau store, pas de migration, et la fusion d'archive (D14) compare bloc par bloc.
+- `bloc` : `texte`, `titre`, `sous-titre`, `liste`, `numero`, `case` (`coche`), `citation` → `type: 'note'` (vus par
+  Rechercher et par `mm.notes`) ; `image` → `type: 'photo'`, Blob dans `fichier`, légende dans `texte` ;
+  `separateur`, `page` (`cible` = id du nœud) → `type: 'bloc'`.
+- Ordre : `ordre` (nombres espacés de 1024, un bloc inséré prend le milieu ; renumérotation quand l'écart est trop
+  petit). Sans `ordre` (notes d'avant la 1.2, notes ajoutées par une app), la date de création sert d'ordre : elles se
+  rangent à la suite.
+- La saisie est enregistrée 600 ms après la dernière touche, en file ; tout est vidé en quittant la page.
+- Bloc jeté avec du contenu : gardé dans `versions` (cible `blocs:<page>`, 30 au plus), « Blocs jetés » sous la feuille.
+- Ressources montre les paragraphes, citations et images ; titres, éléments de liste et cases restent dans leur page
+  (Rechercher les trouve).
 
 ## Routes
 

@@ -1,7 +1,19 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "1.2.0",
+      "date": "2026-11-26",
+      "titre": "Des pages où écrire en blocs",
+      "notes": [
+        "Chaque page devient une feuille de carnet faite de blocs : texte, titres, sous-titres, listes à puces ou numérotées, cases à cocher, citations, images, séparateurs et liens vers d'autres pages.",
+        "Écris directement sur la feuille. Entrée ouvre un nouveau bloc ; en début de ligne, # fait un titre, - une liste, [] une case à cocher, > une citation, --- un séparateur.",
+        "Le petit bouton à six points de chaque bloc le transforme, le monte, le descend ou le jette. Le bouton « Ajouter un bloc » ajoute une image, un lien vers une page ou tout autre bloc.",
+        "Tes anciennes notes sont toujours là : elles sont devenues des blocs de texte, de la plus ancienne à la plus récente.",
+        "Un bloc jeté n'est pas perdu : il attend sous la feuille, dans « Blocs jetés », avec un bouton pour le remettre."
+      ]
+    },
     {
       "version": "1.1.0",
       "date": "2026-11-26",

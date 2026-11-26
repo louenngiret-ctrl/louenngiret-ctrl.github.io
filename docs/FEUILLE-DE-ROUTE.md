@@ -2,8 +2,8 @@
 
 ## Maintenant (prochaines versions, sans dépendance extérieure)
 
-1. **Pages en blocs** : chaque page devient un document (texte, titres, cases à cocher, images, fichiers, liens vers
-   d'autres pages). Les notes existantes deviennent des blocs. Prépare To do list, Habitudes, Objectifs, Journal.
+1. ~~**Pages en blocs**~~ : fait en 1.2.0. Reste à venir : tableaux, bloc « fichier » dans la feuille, glisser-déposer au
+   doigt, page « qui cite celle-ci ».
 2. **Pages spécialisées** à partir des carnets : To do list, Habitudes, Emploi du temps, Économie (chaque sous-page
    de départ a déjà ses notes : la vraie page les reprend).
 3. **SDK v2** : `mm.fichiers.choisir()` (sélecteur de My memories), événements `notes`, mise à disposition des

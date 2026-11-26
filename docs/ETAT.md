@@ -1,4 +1,4 @@
-# État du projet (version 1.1.0, 26 novembre 2026)
+# État du projet (version 1.2.0, 26 novembre 2026)
 
 ## Marche aujourd'hui
 
@@ -8,7 +8,11 @@
 - **Arborescence administrable** : créer, renommer, décrire, déplacer, réordonner, mettre à la corbeille des dossiers,
   pages, liens et apps ; image (31 stickers, 178 icônes, ou une image importée), couleur héritée ou propre, taille de
   tuile, épingle ; anciennes versions ; retour à l'arborescence de départ (l'actuelle est gardée).
-- **Pages** : notes et fichiers (importer, ouvrir, aperçu image, son, vidéo, modifier les textes, renommer,
+- **Pages en blocs** : chaque page est une feuille de blocs (texte, titre, sous-titre, liste à puces, liste
+  numérotée, case à cocher, citation, image, séparateur, lien vers une page). Entrée ouvre un nouveau bloc, raccourcis
+  en début de ligne (`#`, `##`, `-`, `1.`, `[]`, `>`, `---`), menu de bloc (transformer, monter, descendre, jeter),
+  blocs jetés récupérables sous la feuille. Les notes d'avant sont des blocs de texte.
+- **Fichiers des pages** : importer, ouvrir, aperçu image, son, vidéo, modifier les textes, renommer,
   télécharger, jeter) avec 15 anciennes versions par fichier.
 - **Apps** : livrées (Achats, Armoire, Loge, Cours) et ajoutées (dossier ou .zip), isolées, SDK avec permissions,
   mise à jour avec anciennes versions, export .zip, désinstallation récupérable, app modèle.
@@ -32,7 +36,8 @@
 
 ## N'existe pas encore
 
-- Éditeur de pages en blocs (titres, listes, images, tableaux) : les pages sont des carnets de notes et de fichiers.
+- Tableaux et blocs « fichier » dans la feuille (les fichiers restent dans leur section, sous la feuille).
+- Glisser-déposer des blocs au doigt (on les déplace par Monter et Descendre).
 - Rappels et notifications (il faut un serveur qui envoie).
 - Partage entre personnes.
 
