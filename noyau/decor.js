@@ -5,13 +5,14 @@ const CLE = 'grenier.decor';
 export const DECO = new URL('../assets/deco/', import.meta.url).href;
 
 export const DEFAUT = {
-  univers: 'grenier', cadre: 'arche', vue: 'ciel', lierre: true, carillon: true, fanions: true,
+  v: 2, univers: 'memoires', cadre: 'arche', vue: 'ciel', lierre: true, carillon: true, fanions: true,
   horloge: 'laiton', calendrier: 'mural', ephemeride: 'bloc', attache: 'washi', stickers: true, sons: true,
 };
 
 // sombre : true force l'ambiance nuit, false l'ambiance claire, null laisse choisir (Réglages)
 export const UNIVERS = [
-  { id: 'grenier', nom: 'Le grenier', desc: 'Liège, kraft ou nuit, selon l’ambiance', sombre: null },
+  { id: 'memoires', nom: 'My memories', desc: 'Papier crème, trame de points et grain', sombre: false },
+  { id: 'grenier', nom: 'Liège', desc: 'Liège, kraft ou nuit, selon l’ambiance', sombre: null },
   { id: 'foret', nom: 'Forêt dorée', desc: 'Lierre, racines et bijoux d’or', sombre: true },
   { id: 'grunge', nom: 'Grunge', desc: 'Collage sombre, ailes et fleurs à yeux', sombre: true },
   { id: 'patchwork', nom: 'Patchwork', desc: 'Des rubans de washi cousus ensemble', sombre: false },
@@ -40,7 +41,9 @@ const LISTES = { univers: UNIVERS, cadre: CADRES, vue: VUES, horloge: HORLOGES, 
 export function lireDecor() {
   let d = {};
   try { d = JSON.parse(localStorage.getItem(CLE) || '{}') || {}; } catch (e) { d = {}; }
-  const r = { ...DEFAUT, ...d };
+  // version 2 : My memories remplace le grenier comme univers de départ
+  if (!d.v && d.univers === 'grenier') d.univers = 'memoires';
+  const r = { ...DEFAUT, ...d, v: 2 };
   for (const [k, l] of Object.entries(LISTES)) if (!l.some((x) => x.id === r[k])) r[k] = DEFAUT[k];
   return r;
 }

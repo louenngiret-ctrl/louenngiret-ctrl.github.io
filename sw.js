@@ -1,10 +1,10 @@
 // Service worker du Grenier : hors connexion + mises à jour.
 // À CHAQUE NOUVELLE VERSION : changer VERSION ici ET dans version.json.
-const VERSION = '0.8.0';
+const VERSION = '0.9.0';
 const CACHE = `grenier-${VERSION}`;
 // Gros fichiers (Carnet, Suite BTS, moteur et modèles d'essayage) : dans un cache à part,
 // gardé d'une version à l'autre. Changer LOURDS seulement quand Carnet ou la Suite changent.
-const LOURDS = 'grenier-lourds-2';
+const LOURDS = 'grenier-lourds-3';
 const FICHIERS_LOURDS = [
   './malles/carnet/index.html', './malles/cours/suite/index.html',
   // décor de la Loge (images de Louenn découpées) : rarement modifié
@@ -238,6 +238,61 @@ const FICHIERS_LOURDS = [
   './assets/deco/fonds/grunge.webp',
   './assets/deco/fonds/patchwork.webp',
   './assets/deco/fonds/reverie.webp',
+  // My memories : stickers, collages et dentelles des menus
+  './assets/memoires/collage/ange-paon.webp',
+  './assets/memoires/collage/azulejo.webp',
+  './assets/memoires/collage/carreau-rouge.webp',
+  './assets/memoires/collage/frise-pommes.webp',
+  './assets/memoires/collage/frise-souris.webp',
+  './assets/memoires/collage/mosaique.webp',
+  './assets/memoires/collage/nenuphars.webp',
+  './assets/memoires/collage/ornements.webp',
+  './assets/memoires/collage/retro.webp',
+  './assets/memoires/collage/tapis.webp',
+  './assets/memoires/collage/timbre-bresil.webp',
+  './assets/memoires/collage/timbre-chats.webp',
+  './assets/memoires/collage/timbre-klimt.webp',
+  './assets/memoires/collage/vitraux.webp',
+  './assets/memoires/dentelles/d0.webp',
+  './assets/memoires/dentelles/d1.webp',
+  './assets/memoires/dentelles/d2.webp',
+  './assets/memoires/dentelles/d3.webp',
+  './assets/memoires/dentelles/d4.webp',
+  './assets/memoires/dentelles/d5.webp',
+  './assets/memoires/dentelles/d6.webp',
+  './assets/memoires/dentelles/d7.webp',
+  './assets/memoires/dentelles/d8.webp',
+  './assets/memoires/stickers/bourdon-the.webp',
+  './assets/memoires/stickers/bourdon.webp',
+  './assets/memoires/stickers/champi-fantome.webp',
+  './assets/memoires/stickers/champi-fraise.webp',
+  './assets/memoires/stickers/chat-aile.webp',
+  './assets/memoires/stickers/chat-bocal.webp',
+  './assets/memoires/stickers/chat-nouilles.webp',
+  './assets/memoires/stickers/chat-sorcier.webp',
+  './assets/memoires/stickers/chat-tasse.webp',
+  './assets/memoires/stickers/colibri.webp',
+  './assets/memoires/stickers/crapaud-chambre.webp',
+  './assets/memoires/stickers/crapaud-sorcier.webp',
+  './assets/memoires/stickers/crapaud.webp',
+  './assets/memoires/stickers/croissant.webp',
+  './assets/memoires/stickers/faon-tachete.webp',
+  './assets/memoires/stickers/fees.webp',
+  './assets/memoires/stickers/grenouille-amanite.webp',
+  './assets/memoires/stickers/grenouille-chapeau.webp',
+  './assets/memoires/stickers/herisson-fleur.webp',
+  './assets/memoires/stickers/herisson-livre.webp',
+  './assets/memoires/stickers/jonquille.webp',
+  './assets/memoires/stickers/nuage-pleure.webp',
+  './assets/memoires/stickers/oie.webp',
+  './assets/memoires/stickers/papillon-bleu.webp',
+  './assets/memoires/stickers/pie-robe.webp',
+  './assets/memoires/stickers/pleine-lune.webp',
+  './assets/memoires/stickers/ronde-fees.webp',
+  './assets/memoires/stickers/soleil-rouge.webp',
+  './assets/memoires/stickers/souris-archer.webp',
+  './assets/memoires/stickers/souris-champi.webp',
+  './assets/memoires/stickers/souris-escargot.webp',
 ];
 
 const COQUILLE = [
@@ -257,6 +312,9 @@ const COQUILLE = [
   './noyau/curiosites.js',
   './noyau/atelier.js',
   './noyau/navigation.js',
+  './noyau/plan.js',
+  './noyau/menus.js',
+  './noyau/menus.css',
   './noyau/navigation.css',
   './assets/fonts/unifraktur-maguntia.woff2',
   './malles/loge/index.html',
@@ -321,7 +379,7 @@ self.addEventListener('fetch', (e) => {
   // Moteur d'essayage (vendor/) et modèles MediaPipe : cache d'abord, gardé entre les versions.
   const modele = url.hostname === 'storage.googleapis.com' && url.pathname.startsWith('/mediapipe-models/');
   // Les images du décor (assets/deco/) aussi : vues animées, tarot, planches, papiers peints chargés à la demande.
-  if (modele || (url.origin === location.origin && (url.pathname.includes('/vendor/') || url.pathname.includes('/assets/deco/')))) {
+  if (modele || (url.origin === location.origin && (url.pathname.includes('/vendor/') || url.pathname.includes('/assets/deco/') || url.pathname.includes('/assets/memoires/')))) {
     e.respondWith((async () => {
       const l = await caches.open(LOURDS);
       const deja = await l.match(req);

@@ -1,9 +1,10 @@
-// La barre de navigation du Grenier : toujours au même endroit, comme dans un logiciel.
+// La barre de navigation de My memories : toujours au même endroit, comme dans un logiciel.
 // Accueil en haut, Explorer, Rechercher, Paramètres, et Tableau de bord tout en bas.
 // À gauche sur PC, en bas sur téléphone ; déplaçable (poignée ou Paramètres), une place par type d'écran.
 // Réglage sur l'appareil : localStorage « grenier.barre » { pc, tel, noms, ouverts }.
 import * as store from './store.js';
 import { MALLES } from './malles.js';
+import { SECTIONS, lienDe, pageDe } from './plan.js';
 
 const CLE = 'grenier.barre';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -29,36 +30,22 @@ function appliquer() {
   h.dataset.railNoms = r.noms ? '1' : '0';
 }
 
-/* ---------- L'arborescence des malles ---------- */
-// lien : une malle qui existe ; sinon « à venir ».
+/* ---------- L'arborescence : construite à partir du plan (noyau/plan.js) ---------- */
 const lienMalle = (id) => { const m = MALLES.find((x) => x.id === id); return m ? (m.lien || `#/malle/${id}`) : null; };
-const ARBRE = [
-  { id: 'maison', nom: 'La maison', couleur: '#6b8f5e', enfants: [
-    { nom: 'Achats et courses', lien: lienMalle('achats') }, { nom: 'Garde-robe', lien: lienMalle('garde-robe') },
-    { nom: 'Repas et recettes' }, { nom: 'Ménage et lessive' }, { nom: 'Le logement' }] },
-  { id: 'moi', nom: 'Moi', couleur: '#8a5a7a', enfants: [
-    { nom: 'La Loge', lien: lienMalle('loge') }, { nom: 'Habitudes et humeur' }, { nom: 'Journal' }] },
-  { id: 'etudes', nom: 'Les études', couleur: '#4f6e8f', enfants: [
-    { nom: 'Cours et Suite BTS', lien: lienMalle('cours') }, { nom: 'Emploi du temps' }, { nom: 'Fiches de révision' }, { nom: 'Films à voir' }] },
-  { id: 'creation', nom: 'La création', couleur: '#b3261e', enfants: [{ nom: 'Projets Fragmate' }, { nom: 'Idées et inspirations' }] },
-  { id: 'papiers', nom: 'Argent et papiers', couleur: '#9a6a34', enfants: [{ nom: 'Budget du mois' }, { nom: 'Démarches et rendez-vous' }] },
-];
-const RACINE = [{ nom: 'Boîte à trier', lien: '#/boite' }, { nom: 'Cabinet de curiosités', lien: '#/cabinet' }];
-
-function feuilleArbre(f) {
-  return f.lien
-    ? `<li><a class="arbre-ligne" href="${esc(f.lien)}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(f.nom)}</span></a></li>`
-    : `<li><span class="arbre-ligne avenir"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(f.nom)}</span><span class="tampon-avenir">à venir</span></span></li>`;
-}
+const RACINE = [{ nom: 'Ressources', lien: '#/ressources' }, { nom: 'Tableau de bord', lien: '#/' }];
 function vueExplorer() {
   const ouverts = lire().ouverts || {};
-  return `<p class="panneau-note">Toutes tes malles, rangées par pièce du grenier.</p>
-  <ul class="arbre">${ARBRE.map((d) => `<li>
-    <button type="button" class="arbre-ligne dossier" data-dossier="${d.id}" aria-expanded="${!!ouverts[d.id]}" style="--pastille:${d.couleur}">
-      <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><span class="arbre-dossier" aria-hidden="true"></span><span>${esc(d.nom)}</span>
-    </button>
-    <ul ${ouverts[d.id] ? '' : 'hidden'}>${d.enfants.map(feuilleArbre).join('')}</ul></li>`).join('')}
-    ${RACINE.map(feuilleArbre).join('')}</ul>`;
+  const feuille = (sec, so) => `<li><a class="arbre-ligne${so.lien ? '' : ' carnet'}" href="${esc(lienDe(sec.id, so))}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(so.nom)}</span>${so.lien ? '' : '<span class="tampon-avenir">à construire</span>'}</a></li>`;
+  return `<p class="panneau-note">Les six grandes pages et leurs sous-onglets.</p>
+  <ul class="arbre">${SECTIONS.map((d) => `<li>
+    <div class="arbre-dossier-ligne">
+      <button type="button" class="arbre-ligne dossier" data-dossier="${d.id}" aria-expanded="${!!ouverts[d.id]}" style="--pastille:${d.couleur}">
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><span class="arbre-dossier" aria-hidden="true"></span><span>${esc(d.nom)}</span>
+      </button>
+      <a class="arbre-aller" href="#/s/${d.id}" aria-label="Ouvrir la page ${esc(d.nom)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <ul ${ouverts[d.id] ? '' : 'hidden'}>${d.sous.map((so) => feuille(d, so)).join('')}</ul></li>`).join('')}
+    ${RACINE.map((f) => `<li><a class="arbre-ligne" href="${f.lien}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(f.nom)}</span></a></li>`).join('')}</ul>`;
 }
 
 /* ---------- Rechercher : dans toutes les malles, sur l'appareil ---------- */
@@ -67,13 +54,15 @@ const libelle = (o) => { for (const k of CHAMPS) if (typeof o[k] === 'string' &&
 const plat = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 async function sources() {
   const l = [];
-  MALLES.filter((m) => m.etat !== 'vide').forEach((m) => l.push({ t: m.nom, ou: 'Malle', lien: m.lien || (m.id === 'boite' ? '#/boite' : `#/malle/${m.id}`) }));
-  ARBRE.forEach((d) => d.enfants.filter((f) => !f.lien).forEach((f) => l.push({ t: f.nom, ou: 'Malle à venir', lien: null })));
+  SECTIONS.forEach((sec) => {
+    l.push({ t: sec.nom, ou: 'Grande page', lien: `#/s/${sec.id}` });
+    sec.sous.forEach((so) => l.push({ t: so.nom, ou: sec.nom, lien: lienDe(sec.id, so) }));
+  });
   const els = await store.tout().catch(() => []);
   els.forEach((e) => {
     const t = libelle(e); if (!t) return;
-    const m = MALLES.find((x) => x.id === e.malle);
-    l.push({ t, ou: m ? m.nom : (e.malle === 'agenda' ? 'Calendrier' : e.malle), lien: e.malle === 'boite' ? '#/boite' : e.malle === 'agenda' ? '#/' : (m && m.lien) || '#/' });
+    const p = pageDe(e.malle);
+    l.push({ t, ou: p.nom, lien: p.lien });
   });
   try {
     const c = JSON.parse(localStorage.getItem('carnet.state') || 'null');
@@ -97,8 +86,8 @@ async function chercher(q) {
     : `<p class="panneau-note" role="status">Rien ne contient « ${esc(q.trim())} ».</p>`;
 }
 function vueRecherche() {
-  return `<label class="champ-recherche"><span>Chercher dans tout le Grenier</span>
-    <input type="search" id="rail-q" autocomplete="off" placeholder="Une course, une pièce, une note…" enterkeyhint="search"></label>
+  return `<label class="champ-recherche"><span>Chercher dans tout My memories</span>
+    <input type="search" id="rail-q" autocomplete="off" placeholder="Une page, une note, une course…" enterkeyhint="search"></label>
     <div id="rail-resultats"></div>`;
 }
 
@@ -110,13 +99,14 @@ function vueParametres() {
     <button type="button" class="rail-interrupteur" data-noms aria-pressed="${r.noms}"><span>Noms sous les icônes</span><span class="inter" aria-hidden="true"></span></button>
     <ul class="rail-liens">
       <li><a href="#/deco">Atelier de déco</a></li><li><a href="#/reglages">Ambiance, tuiles et sauvegarde</a></li>
-      <li><a href="#/cabinet">Cabinet de curiosités</a></li><li><a href="#/nouveautes">Quoi de neuf</a></li>
+      <li><a href="#/ressources">Ressources</a></li><li><a href="#/cabinet">Cabinet de curiosités</a></li><li><a href="#/nouveautes">Quoi de neuf</a></li>
     </ul>`;
 }
 
 /* ---------- Le panneau ---------- */
 const TITRES = { explorer: 'Explorer', recherche: 'Rechercher', parametres: 'Paramètres' };
 let ouvert = null;
+export function ouvrirPanneau(nom) { if (ouvert !== nom) ouvrir(nom); }
 function ouvrir(nom) {
   const pan = $('#panneau');
   if (ouvert === nom) return fermer();
@@ -140,7 +130,7 @@ function majOnglets() {
   const route = location.hash.replace(/^#\/?/, '').split('/')[0];
   document.querySelectorAll('.rail-onglet').forEach((b) => {
     if (b.dataset.panneau) { b.setAttribute('aria-expanded', String(ouvert === b.dataset.panneau)); b.classList.toggle('actif', ouvert === b.dataset.panneau); return; }
-    const ici = !ouvert && (b.dataset.route === 'accueil' ? route === 'accueil' : route === '');
+    const ici = !ouvert && (b.dataset.route === 'accueil' ? ['accueil', 's', 'ressources'].includes(route) : route === '');
     b.classList.toggle('actif', ici);
     if (ici) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
@@ -195,7 +185,7 @@ const ico = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[n]}</sv
 export function installerNavigation() {
   appliquer();
   const nav = document.createElement('nav');
-  nav.className = 'rail'; nav.setAttribute('aria-label', 'Navigation du Grenier');
+  nav.className = 'rail'; nav.setAttribute('aria-label', 'Navigation de My memories');
   nav.innerHTML = `<button type="button" class="rail-poignee" aria-label="Déplacer la barre"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="6" r="1.8"/><circle cx="16" cy="6" r="1.8"/><circle cx="8" cy="12" r="1.8"/><circle cx="16" cy="12" r="1.8"/><circle cx="8" cy="18" r="1.8"/><circle cx="16" cy="18" r="1.8"/></svg></button>
     <a class="rail-onglet" data-route="accueil" href="#/accueil">${ico('accueil')}<span>Accueil</span></a>
     <button type="button" class="rail-onglet" data-panneau="explorer" aria-controls="panneau" aria-expanded="false">${ico('explorer')}<span>Explorer</span></button>
@@ -229,8 +219,9 @@ export function installerNavigation() {
     if (e.target.closest('[data-fermer]')) return fermer();
     const d = e.target.closest('[data-dossier]');
     if (d) {
+      const liste = d.closest('li').querySelector(':scope > ul');
       const o = { ...(lire().ouverts || {}) }; o[d.dataset.dossier] = !o[d.dataset.dossier]; ecrire({ ouverts: o });
-      d.setAttribute('aria-expanded', String(o[d.dataset.dossier])); d.nextElementSibling.hidden = !o[d.dataset.dossier];
+      d.setAttribute('aria-expanded', String(o[d.dataset.dossier])); liste.hidden = !o[d.dataset.dossier];
       return;
     }
     const p = e.target.closest('[data-place]');

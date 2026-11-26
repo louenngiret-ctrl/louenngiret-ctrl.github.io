@@ -25,7 +25,7 @@ const AMBIANCES = [
   ['auto', 'Automatique', 'liège le jour, nuit le soir'],
   ['liege', 'Liège', 'le tableau en liège'],
   ['kraft', 'Kraft', 'papier brun et carton'],
-  ['nuit', 'Nuit', 'le grenier à la bougie'],
+  ['nuit', 'Nuit', 'à la bougie'],
 ];
 function lireAmbiance() { try { return localStorage.getItem('grenier.ambiance') || 'auto'; } catch (e) { return 'auto'; } }
 // l'ambiance réelle tient compte de l'univers choisi dans l'atelier de déco (voir decor.js)
@@ -88,9 +88,9 @@ function pied() {
   </footer>`;
 }
 
-function barre(titre, retour = '#/') {
-  return `<nav class="barre"><a class="retour" href="${retour}" aria-label="Retour au grenier">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Grenier</span></a>
+function barre(titre, retour = '#/accueil') {
+  return `<nav class="barre"><a class="retour" href="${retour}" aria-label="Retour">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>Retour</span></a>
     <h1>${esc(titre)}</h1></nav>`;
 }
 
@@ -106,7 +106,7 @@ async function vueMalle(id) {
       <span class="scotch" aria-hidden="true"></span>
       <p class="carton-tampon">${m.etat === 'vide' ? 'place libre' : 'déménagement en cours'}</p>
       <p>${esc(m.message)}</p>
-      ${m.etat === 'demenagement' ? `<p class="petit">En attendant, garde une sauvegarde à jour de Carnet V2 : dans Carnet, palette de commandes, « Sauvegarder mes données ». C'est ce fichier que le Grenier importera.</p>` : ''}
+      ${m.etat === 'demenagement' ? `<p class="petit">En attendant, garde une sauvegarde à jour de Carnet V2 : dans Carnet, palette de commandes, « Sauvegarder mes données ». C'est ce fichier que My memories importera.</p>` : ''}
     </div>
   </section>${pied()}`;
 }
@@ -229,7 +229,7 @@ async function vueReglages() {
     <a class="bloc lien-atelier" href="#/deco"><b>L’atelier de déco</b><span>Univers, fenêtre, horloge, calendrier, attaches et stickers</span></a>
     <fieldset class="bloc">
       <legend>Ambiance</legend>
-      ${(() => { const u = UNIVERS.find((x) => x.id === lireDecor().univers); return u && u.sombre !== null ? `<p class="petit">L’univers ${u.nom} impose l’ambiance ${u.sombre ? 'nuit' : 'claire'}. Reviens à l’univers Le grenier, dans l’atelier, pour choisir ici.</p>` : ''; })()}
+      ${(() => { const u = UNIVERS.find((x) => x.id === lireDecor().univers); return u && u.sombre !== null ? `<p class="petit">L’univers ${u.nom} impose l’ambiance ${u.sombre ? 'nuit' : 'claire'}. Reviens à l’univers Liège, dans l’atelier, pour choisir ici.</p>` : ''; })()}
       <div class="ambiances">${AMBIANCES.map(([id, nom, desc]) => `
         <label class="amb amb-${id}">
           <input type="radio" name="amb" value="${id}" ${id === actuelle ? 'checked' : ''}>
@@ -265,7 +265,7 @@ async function vueReglages() {
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `grenier sauvegarde ${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `my memories sauvegarde ${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     await store.ecrireMeta('derniereSauvegarde', Date.now());
@@ -283,11 +283,11 @@ async function vueReglages() {
 /* ---------- Installation ---------- */
 let invitation = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); invitation = e; majBoutonInstaller(); });
-window.addEventListener('appinstalled', () => { invitation = null; majBoutonInstaller(); toast('Le Grenier est installé'); });
+window.addEventListener('appinstalled', () => { invitation = null; majBoutonInstaller(); toast('My memories est installé'); });
 function majBoutonInstaller() {
   const z = $('#installer-zone');
   if (!z) return;
-  z.innerHTML = invitation ? '<button type="button" class="btn installer" id="installer">Installer le Grenier sur cet appareil</button>' : '';
+  z.innerHTML = invitation ? '<button type="button" class="btn installer" id="installer">Installer My memories sur cet appareil</button>' : '';
   const b = $('#installer');
   if (b) b.addEventListener('click', async () => { invitation.prompt(); await invitation.userChoice; invitation = null; majBoutonInstaller(); });
 }
@@ -335,7 +335,7 @@ if (Reco) {
       zone.value = (avant ? avant + ' ' : '') + dit.trim();
     };
     reco.onerror = (ev) => {
-      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') toast('Micro refusé : autorise-le pour le Grenier');
+      if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') toast('Micro refusé : autorise-le pour My memories');
       else if (ev.error === 'network') toast('La dictée a besoin d\'internet');
       else if (ev.error === 'no-speech') toast('Je n\'ai rien entendu');
     };
@@ -406,7 +406,9 @@ async function route() {
   else if (a === 'boite') await vueMalle('boite');
   else if (a === 'nouveautes') await vueNouveautes();
   else if (a === 'reglages') await vueReglages();
-  else if (a === 'accueil') await vueAccueil('accueil');
+  else if (a === 'accueil') { const m = await import('./menus.js'); m.rendreMenu(vue, { pied: pied() }); }
+  else if (a === 's' && b) { const m = await import('./menus.js'); const c = h.split('/')[2]; if (c) await m.rendreSous(vue, b, c, { pied: pied(), toast }); else await m.rendreSection(vue, b, { pied: pied() }); }
+  else if (a === 'ressources') { const m = await import('./menus.js'); await m.rendreRessources(vue, b, { pied: pied() }); }
   else if (a === 'deco') { const { rendreAtelier } = await import('./atelier.js'); await rendreAtelier(vue, { barre, pied, toast }); }
   else if (a === 'cabinet') { const { rendreCabinet } = await import('./curiosites.js'); await rendreCabinet(vue, { barre, pied }); }
   else await vueAccueil();

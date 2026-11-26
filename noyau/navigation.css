@@ -3,8 +3,8 @@
 [data-rail-noms="0"] { --rail-l: 66px; --rail-h: 60px; }
 
 .rail {
-  position: fixed; z-index: 25; display: flex; align-items: center; gap: 4px; color: #ecdab4;
-  background: linear-gradient(var(--rail-sens, 90deg), #4a3020, #3a2618 60%, #2e1e13);
+  position: fixed; z-index: 25; display: flex; align-items: center; gap: 4px; color: #f1e3c8;
+  background: radial-gradient(circle, rgba(255,255,255,.06) 28%, transparent 31%) 0 0 / 8px 8px, linear-gradient(var(--rail-sens, 90deg), #382631, #2a1c25 60%, #20151c);
   box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 0 18px rgba(20,10,4,.45);
 }
 [data-rail="gauche"] .rail, [data-rail="droite"] .rail {
@@ -142,3 +142,13 @@ a.arbre-ligne:hover, button.arbre-ligne:hover { background: rgba(42,28,18,.06); 
   .page-accueil .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-count: auto; gap: 16px; align-items: start; }
   .page-accueil .bento > * { margin: 0; }
 }
+
+/* l'arbre construit depuis le plan : une flèche ouvre directement la grande page */
+.arbre-dossier-ligne { display: flex; align-items: center; gap: 2px; }
+.arbre-dossier-ligne .arbre-ligne { flex: 1 1 auto; }
+.arbre-aller { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 8px; color: #7a2a16; }
+.arbre-aller:hover { background: rgba(42,28,18,.06); }
+.arbre-aller svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.arbre-ligne.carnet { color: #4d3a2c; }
+.arbre-ligne.carnet .tampon-avenir { border-color: #7a5434; color: #7a5434; }
+.panneau-note:empty { display: none; }

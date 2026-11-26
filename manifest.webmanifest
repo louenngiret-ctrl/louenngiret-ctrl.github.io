@@ -1,7 +1,7 @@
 {
-  "name": "Grenier",
-  "short_name": "Grenier",
-  "description": "Le Grenier de Louenn : un seul endroit pour tout ranger.",
+  "name": "My memories",
+  "short_name": "My memories",
+  "description": "My memories, l’appli de Louenn : un seul endroit pour toute sa vie.",
   "lang": "fr",
   "id": "./",
   "start_url": "./#/",

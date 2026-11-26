@@ -1,0 +1,161 @@
+/*
+  My memories : les menus façon écran-titre de jeu (grandes tuiles inclinées, contour d'encre, barre de description),
+  habillés en collage grunge, whimsy, fairy core et hippie : trame de points, grain, dentelle, stickers qui débordent.
+*/
+.mm-menu, .mm-page { --k: 16px; --encre-mm: #231a1f; --papier-mm: #f4ead4; max-width: 1240px; margin: 0 auto; padding: 18px max(3vw, 12px) 10px; }
+
+/* ---------- Une tuile ---------- */
+.mm-tuile { position: relative; isolation: isolate; display: block; min-height: 150px; color: var(--e); text-decoration: none; outline: none;
+  transition: transform .22s cubic-bezier(.3,1.4,.5,1); -webkit-tap-highlight-color: transparent; }
+.mm-tuile::before, .mm-fond { position: absolute; clip-path: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%); }
+.mm-tuile::before { content: ""; inset: -5px; z-index: -1; background: var(--encre-mm); transition: background-color .15s ease-out; }
+.mm-fond { inset: 0; z-index: 0; overflow: hidden;
+  background: linear-gradient(115deg, rgba(255,255,255,.16), transparent 45%), var(--img, none) 50% 50% / cover, var(--c);
+  background-blend-mode: normal, multiply, normal; }
+.mm-fond::before { content: ""; position: absolute; inset: 0; opacity: .5; mix-blend-mode: multiply;
+  background: radial-gradient(circle, rgba(20,10,15,.55) 28%, transparent 31%) 0 0 / 9px 9px;
+  -webkit-mask: linear-gradient(200deg, #000, transparent 55%); mask: linear-gradient(200deg, #000, transparent 55%); }
+.mm-fond::after { content: ""; position: absolute; inset: 0; opacity: .35; mix-blend-mode: overlay;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"); }
+.mm-dentelle { position: absolute; z-index: 1; top: 6px; left: calc(var(--k) + 4px); width: calc(100% - var(--k) * 2 - 8px); height: 18px; object-fit: cover; object-position: 0 50%; opacity: .92; pointer-events: none; }
+.mm-hero { position: absolute; z-index: 3; right: calc(var(--k) + 2%); bottom: -8px; height: 88%; max-width: 58%; object-fit: contain; object-position: 100% 100%;
+  filter: drop-shadow(0 6px 4px rgba(15,8,12,.45)); transition: transform .28s cubic-bezier(.3,1.5,.5,1); transform-origin: 50% 100%; pointer-events: none; }
+.mm-deco { position: absolute; z-index: 2; top: 24px; right: calc(var(--k) + 30%); width: clamp(44px, 9%, 92px); transform: rotate(12deg); opacity: .95; filter: drop-shadow(0 3px 2px rgba(15,8,12,.4)); pointer-events: none; }
+.mm-etiquette { position: absolute; z-index: 4; top: 28px; left: calc(var(--k) + 8px); max-width: 66%; display: grid; gap: 2px; padding: 5px 14px 3px; transform: rotate(-2deg);
+  background: var(--papier-mm); color: var(--encre-mm); box-shadow: 2px 3px 0 rgba(15,8,12,.45);
+  clip-path: polygon(0 4%, 3% 0, 97% 3%, 100% 0, 99% 96%, 96% 100%, 4% 97%, 1% 100%); }
+.mm-etiquette b { font: 400 clamp(19px, 2.2vw, 30px)/1.08 "Permanent Marker", cursive; }
+.mm-etat { width: fit-content; padding: 0 6px; border: 1.5px solid #a3271c; border-radius: 3px; color: #a3271c; font-size: 13px; transform: rotate(-2deg); }
+.existe .mm-etat { border-color: #2f5d3a; color: #2f5d3a; }
+.mm-liste { position: absolute; z-index: 4; left: calc(var(--k) + 2px); bottom: 12px; max-width: 58%; padding: 3px 10px 3px calc(var(--k) / 2);
+  background: rgba(20,10,15,.62); color: #fbf1df; font-size: 13px; line-height: 1.35; }
+.mm-tuile:hover, .mm-tuile:focus-visible { transform: translateY(-4px) scale(1.012); z-index: 6; }
+.mm-tuile:hover .mm-hero, .mm-tuile:focus-visible .mm-hero { transform: translateY(-8px) rotate(-3deg) scale(1.04); }
+.mm-tuile:focus-visible::before { background: #fff3c4; inset: -8px; }
+.mm-tuile:active { transform: translateY(1px) scale(.99); }
+
+/* ---------- L'accueil : la disposition du grand menu ---------- */
+.mm-grille { position: relative; display: grid; gap: 14px; }
+.mm-accueil .mm-grille { grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas: "logo logo" "crea crea" "orga orga" "pers appr" "quot gest" "ress ress" "outi outi"; }
+.mm-creation { grid-area: crea; min-height: 230px; } .mm-organisation { grid-area: orga; min-height: 190px; }
+.mm-personnel { grid-area: pers; } .mm-apprentissage { grid-area: appr; } .mm-quotidien { grid-area: quot; } .mm-gestion { grid-area: gest; }
+.mm-ressources { grid-area: ress; min-height: 128px; }
+.mm-accueil .taille-m .mm-etiquette { max-width: 86%; } .mm-accueil .taille-m .mm-etiquette b { font-size: clamp(17px, 1.7vw, 24px); }
+.mm-accueil .taille-m .mm-liste { display: none; }
+.mm-accueil .taille-m .mm-hero { height: 70%; max-width: 62%; }
+.mm-accueil .taille-m .mm-deco { display: none; }
+.mm-creation .mm-etiquette b { font-size: clamp(30px, 4vw, 58px); }
+.mm-organisation .mm-etiquette b { font-size: clamp(26px, 3.2vw, 46px); }
+.mm-ressources .mm-hero { height: 112%; }
+
+.mm-medaillon { grid-area: logo; position: relative; z-index: 7; justify-self: center; display: grid; place-items: center; align-content: center; width: 150px; height: 150px; border-radius: 50%; text-align: center;
+  background: radial-gradient(circle, transparent 58%, rgba(35,26,31,.15) 59% 60%, transparent 61%), var(--papier-mm);
+  border: 5px solid var(--encre-mm); box-shadow: 0 0 0 4px #c9993a, 0 10px 20px -6px rgba(15,8,12,.55); pointer-events: none; }
+.mm-nom { position: relative; z-index: 2; font: 400 25px/.95 "UnifrakturMaguntia", serif; color: var(--encre-mm); }
+.mm-heure { position: relative; z-index: 2; margin-top: 6px; font-size: 13px; color: #5a4434; }
+.mm-soleil, .mm-lune { position: absolute; width: 52px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+.mm-soleil { top: -16px; right: -18px; transform: rotate(14deg); } .mm-lune { bottom: -10px; left: -18px; width: 44px; transform: rotate(-10deg); }
+
+.mm-outils { grid-area: outi; display: flex; justify-content: space-around; gap: 8px; padding: 6px 0; }
+.mm-rond { display: grid; justify-items: center; gap: 4px; min-width: 76px; padding: 0; border: 0; background: none; color: var(--encre); cursor: pointer; font-size: 13px; }
+.mm-rond svg { box-sizing: content-box; width: 28px; height: 28px; padding: 15px; border-radius: 50%; fill: none; stroke: #fbf1df; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+  background: radial-gradient(circle, rgba(255,255,255,.14) 28%, transparent 31%) 0 0 / 7px 7px, var(--encre-mm); box-shadow: 0 0 0 3px #c9993a, 0 6px 10px -4px rgba(15,8,12,.6); transition: transform .2s cubic-bezier(.3,1.5,.5,1); }
+.mm-rond:hover svg, .mm-rond:focus-visible svg { transform: translateY(-3px) rotate(-6deg); }
+.mm-rond:focus-visible { outline: none; } .mm-rond:focus-visible svg { box-shadow: 0 0 0 5px #fff3c4, 0 0 0 8px var(--encre-mm); }
+
+.mm-desc { margin: 16px 0 0; min-height: 50px; display: flex; align-items: center; padding: 10px calc(var(--k) + 14px);
+  background: var(--encre-mm); color: #fbf1df; font-size: 15px; line-height: 1.35;
+  clip-path: polygon(var(--k) 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%); }
+
+@media (min-width: 760px) {
+  .mm-accueil .mm-grille { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: minmax(250px, 1.35fr) minmax(190px, 1fr) minmax(150px, .8fr);
+    grid-template-areas: "crea crea crea crea crea crea orga orga orga orga orga orga" "crea crea crea crea crea crea pers pers pers appr appr appr" "quot quot quot gest gest gest ress ress ress outi outi outi"; gap: 18px 16px; }
+  .mm-creation, .mm-organisation, .mm-ressources { min-height: 0; }
+  .mm-medaillon { position: absolute; left: 50%; top: calc(33% - 70px); width: 140px; height: 140px; margin-left: -70px; }
+  .mm-organisation .mm-etiquette, .mm-organisation .mm-liste { left: calc(var(--k) + 80px); }
+  .mm-organisation .mm-liste { max-width: 46%; }
+  .mm-personnel .mm-etiquette { left: calc(var(--k) + 60px); }
+  .mm-outils { align-items: center; }
+}
+@media (min-width: 1100px) { .mm-medaillon { width: 160px; height: 160px; margin-left: -80px; top: calc(33% - 80px); } .mm-nom { font-size: 28px; } }
+
+/* ---------- Une grande page ---------- */
+.mm-bandeau { position: relative; margin: 0 0 18px; padding: 14px calc(var(--k) + 92px) 16px calc(var(--k) + 14px); color: var(--e);
+  background: linear-gradient(115deg, rgba(255,255,255,.14), transparent 50%), var(--c);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--k)) 100%, 0 100%); min-height: 120px; }
+.mm-bandeau h1 { margin: 2px 0 4px; font: 400 clamp(30px, 5vw, 48px)/1.05 "Permanent Marker", cursive; }
+.mm-bandeau p { margin: 0; max-width: 60ch; font-size: 15px; line-height: 1.45; }
+.mm-bandeau-img { position: absolute; right: calc(var(--k) + 6px); bottom: 0; height: 88px; max-width: 28%; object-fit: contain; object-position: 100% 100%; filter: drop-shadow(0 4px 3px rgba(15,8,12,.4)); }
+.mm-fil ol { display: flex; flex-wrap: wrap; gap: 0 6px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.mm-fil li + li::before { content: "›"; margin-right: 6px; opacity: .8; }
+.mm-fil a { display: inline-flex; align-items: center; min-height: 32px; color: inherit; }
+.mm-sous { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(150px, auto); }
+.mm-sous .mm-premier { grid-column: span 2; min-height: 200px; }
+.mm-sous .mm-tuile:not(.mm-premier) .mm-etiquette { max-width: 88%; }
+.mm-sous .mm-tuile:not(.mm-premier) .mm-etiquette b { font-size: clamp(17px, 1.8vw, 24px); }
+.mm-sous .mm-hero { height: 74%; max-width: 56%; }
+.a-venir .mm-fond { filter: saturate(.75) brightness(.95); }
+.mm-retour { margin: 14px 0 0; text-align: center; }
+.mm-retour a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (min-width: 760px) {
+  .mm-sous { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(170px, auto); gap: 18px 16px; }
+  .mm-sous .mm-premier { grid-row: span 2; min-height: 0; }
+  .mm-bandeau { padding-right: calc(var(--k) + 150px); }
+  .mm-bandeau-img { height: 140px; }
+}
+
+/* ---------- Un sous-onglet en carnet de notes ---------- */
+.mm-page { max-width: 860px; }
+.petit-bandeau .mm-bandeau-img { height: 96px; }
+.mm-carnet { display: grid; gap: 16px; }
+.mm-chantier { margin: 0; padding: 12px 16px; background: #f7e27c; color: #2a2110; font: 19px/1.35 "Patrick Hand", cursive; transform: rotate(-.6deg); box-shadow: 0 8px 14px -8px rgba(15,8,12,.5); }
+.mm-noter { display: grid; gap: 8px; padding: 16px; background: var(--papier, #fbf5e6); color: var(--encre); border-radius: 4px; box-shadow: var(--ombre); }
+.mm-noter label { font-size: 15px; }
+.mm-noter textarea { width: 100%; padding: 10px 12px; border: 2px solid currentColor; border-radius: 6px; background: transparent; font: 20px/1.4 "Patrick Hand", cursive; resize: vertical; }
+.mm-noter .btn { justify-self: end; }
+.mm-notes { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.mm-note-carte { padding: 14px 16px 10px; background: var(--papier, #fbf5e6); color: var(--encre); border-left: 0; box-shadow: var(--ombre);
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(160,130,90,.2) 27px 28px); }
+.mm-note-carte p { margin: 0 0 8px; font: 20px/1.4 "Patrick Hand", cursive; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mm-note-pied { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--encre-douce); }
+.mm-note-pied .btn-sobre.sur { border-color: var(--accent); color: var(--accent); }
+.mm-vide { text-align: center; }
+
+/* ---------- Ressources ---------- */
+.res-tete { margin: 0 0 18px; padding: 16px 18px 0; background: #1c1a1b; color: #ece4d6; border-radius: 6px 6px 0 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.06) 28%, transparent 31%); background-size: 8px 8px; }
+.res-tete h1 { margin: 4px 0 2px; font: 400 clamp(30px, 5vw, 44px)/1.05 "Permanent Marker", cursive; }
+.res-tete p { margin: 0 0 10px; font-size: 14px; opacity: .85; }
+.res-tete .mm-fil a { color: #ece4d6; }
+.res-onglets { display: flex; flex-wrap: wrap; gap: 4px 28px; }
+.res-onglets a { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 2px; color: #ece4d6; text-decoration: none; font-size: 17px; border-bottom: 3px solid transparent; }
+.res-onglets a span { border-bottom: 1px dashed rgba(236,228,214,.5); }
+.res-onglets a[aria-current="page"] { border-bottom-color: #c9993a; }
+.res-onglets svg { width: 24px; height: 24px; fill: rgba(236,228,214,.85); fill-opacity: .25; stroke: #ece4d6; stroke-width: 1.8; stroke-linejoin: round; }
+.res-titre { margin: 18px 0 10px; font: 400 22px "Permanent Marker", cursive; }
+.res-mur { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.res-mur .res-carte a { display: grid; gap: 6px; padding: 10px 10px 12px; background: #fffdf6; color: #2a1c12; text-decoration: none; box-shadow: var(--ombre); transform: rotate(var(--r, -1deg)); }
+.res-mur li:nth-child(2n) a { --r: 1.2deg; }
+.res-mur img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #e8e0cc; }
+.res-liste { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.res-liste .res-carte a { display: grid; gap: 2px; padding: 12px 14px; background: var(--papier, #fbf5e6); color: var(--encre); text-decoration: none; box-shadow: var(--ombre); }
+.res-liste img { width: 72px; height: 72px; object-fit: cover; float: right; margin-left: 10px; }
+.res-carte b { font-weight: 400; font-size: 16px; overflow-wrap: anywhere; }
+.res-carte small { font-size: 13px; color: var(--encre-douce); }
+.res-mur .res-carte small { color: #5a4434; }
+.res-genre { width: fit-content; padding: 0 6px; border: 1.5px solid currentColor; border-radius: 3px; font-size: 13px; opacity: .8; }
+.res-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.res-categories a { position: relative; display: grid; align-content: end; gap: 2px; min-height: 140px; padding: 14px 16px; overflow: hidden; color: var(--e); text-decoration: none;
+  background: linear-gradient(115deg, rgba(255,255,255,.14), transparent 50%), var(--c); clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+.res-categories img { position: absolute; top: 8px; right: 14px; height: 70px; max-width: 45%; object-fit: contain; filter: drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.res-categories b { position: relative; font: 400 21px/1.1 "Permanent Marker", cursive; }
+.res-categories small { position: relative; font-size: 13px; }
+.res-filtres { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.res-filtres button { min-height: 44px; padding: 0 14px; border: 2px solid var(--encre); border-radius: 999px; background: transparent; color: var(--encre); cursor: pointer; }
+.res-filtres button[aria-pressed="true"] { background: var(--encre); color: var(--papier); }
+@media (min-width: 760px) {
+  .res-mur { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .res-categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .mm-tuile, .mm-hero, .mm-rond svg { transition: none; } }

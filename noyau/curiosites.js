@@ -230,7 +230,7 @@ export async function rendreCabinet(vue, { barre, pied }) {
   const cartes = [...e.cartes].reverse().slice(0, 12);
   vue.innerHTML = `${barre('Le cabinet de curiosités')}
   <section class="page cabinet" style="--bord:url('${DECO}bordures/b2.webp');--bord2:url('${DECO}bordures/b6.webp')">
-    <p class="cab-chiffres"><b>${n}</b> trouvés sur ${TOUT.length}. ${s > 1 ? `Tu passes au grenier depuis ${s} jours d’affilée.` : 'Reviens demain : un autre trésor se cachera sur l’accueil.'}</p>
+    <p class="cab-chiffres"><b>${n}</b> trouvés sur ${TOUT.length}. ${s > 1 ? `Tu passes ici depuis ${s} jours d’affilée.` : 'Reviens demain : un autre trésor se cachera sur l’accueil.'}</p>
     <div class="meuble">
       <h2 class="meuble-titre">Les objets</h2>
       <ul class="etageres">${vitrine(OBJETS)}</ul>

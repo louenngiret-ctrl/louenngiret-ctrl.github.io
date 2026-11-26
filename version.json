@@ -1,7 +1,20 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.0",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "0.9.0",
+      "date": "2026-11-26",
+      "titre": "My memories",
+      "notes": [
+        "Le Grenier s'appelle maintenant My memories, avec un nouveau look : papier crème, trame de points, collages et stickers.",
+        "L'Accueil devient un grand menu façon jeu : Création et Organisation en grand, puis Personnel, Apprentissage, Vie quotidienne, Gestion et administration.",
+        "Chaque grande page a son propre menu de sous-onglets. Courses et achats, Armoire, Loge et le BTS y sont déjà.",
+        "Les sous-onglets pas encore construits servent déjà de carnet de notes : rien de ce que tu y écris ne sera perdu.",
+        "Ressources : tout ce que tu as rangé, en trois vues (principal, catégories, ressource).",
+        "Explorer, Rechercher et Paramètres sont aussi dans le grand menu. Au clavier, les flèches passent d'une tuile à l'autre."
+      ]
+    },
     {
       "version": "0.8.0",
       "date": "2026-11-26",

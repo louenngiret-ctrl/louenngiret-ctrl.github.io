@@ -182,7 +182,7 @@ export async function ouvrir(vue, { store, retour }) {
       <label class="reglage"><span>Hauteur</span><input type="range" id="f-hauteur" min="-1.5" max="1.5" step="0.1" value="0"></label>
       <label class="reglage" id="f-force-l" hidden><span>Intensité</span><input type="range" id="f-force" min="0.3" max="1" step="0.05" value="0.85"></label>
     </div>
-    <p class="petit">Tout se calcule sur ton appareil : l’image de la caméra ne quitte jamais le Grenier. Les photos prises vont dans le miroir.</p>
+    <p class="petit">Tout se calcule sur ton appareil : l’image de la caméra ne quitte jamais ton appareil. Les photos prises vont dans le miroir.</p>
   </section>`;
 
   const toile = $('#f-toile');
