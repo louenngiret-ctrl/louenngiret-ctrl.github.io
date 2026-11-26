@@ -1,6 +1,6 @@
 # Sauvegarde et restauration
 
-## Ce qui existe (version 1.0)
+## Ce qui existe (version 1.1.0)
 
 | Outil | Où | Contenu | Quand |
 | --- | --- | --- | --- |

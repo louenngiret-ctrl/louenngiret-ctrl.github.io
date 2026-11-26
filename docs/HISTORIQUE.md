@@ -7,7 +7,7 @@
 | 0.7.0 | 26/11/2026 | Décor : univers, fenêtres, horloges, calendriers, attaches, stickers, cabinet de curiosités, carte du jour. |
 | 0.8.0 | 26/11/2026 | Barre de navigation déplaçable (Accueil, Explorer, Rechercher, Paramètres, Tableau de bord). |
 | 0.9.0 | 26/11/2026 | My memories : grand menu façon jeu, six grandes pages, Ressources. |
-| 1.1.0 | 26/11/2026 | Dossiers épinglés (fichiers de l’appareil dans My memories), échange entre appareils par fusion d’archive, sans serveur. |
 | 1.0.0 | 26/11/2026 | Arborescence administrable, fichiers dans les pages, apps intégrables isolées, sauvegarde complète, points de restauration, corbeille, documentation d'architecture. |
+| 1.1.0 | 26/11/2026 | Dossiers épinglés (fichiers de l’appareil dans My memories), échange entre appareils par fusion d’archive, sans serveur. |
 
 Le détail de chaque version est dans `version.json` (écran « Quoi de neuf ») et dans la Bible.
