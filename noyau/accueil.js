@@ -2,6 +2,8 @@
 // le calendrier, le temps qui passe, les priorités, et un aperçu de chaque malle.
 import * as store from './store.js';
 import * as meteo from './meteo.js';
+import * as decor from './decor.js';
+import * as cab from './curiosites.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -18,7 +20,7 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const WIDGETS = [
   ['lucarne', 'La lucarne (heure et ciel)'], ['horloge', 'L’horloge'], ['ephemeride', 'L’éphéméride'], ['meteo', 'La météo'],
-  ['calendrier', 'Le calendrier'], ['priorites', 'Les priorités'], ['temps', 'Le temps qui passe'], ['courses', 'Les courses'],
+  ['carte', 'La carte du jour'], ['cabinet', 'Le cabinet de curiosités'], ['calendrier', 'Le calendrier'], ['priorites', 'Les priorités'], ['temps', 'Le temps qui passe'], ['courses', 'Les courses'],
   ['armoire', 'L’armoire'], ['loge', 'La Loge'], ['boite', 'La Boîte à trier'], ['cours', 'Les cours'], ['musique', 'La musique'], ['devise', 'La devise'],
 ];
 export const widgetsCaches = () => lire('grenier.accueil.caches', []);
@@ -99,33 +101,93 @@ function ciel(now, m) {
 /* ---------- Les tuiles ---------- */
 const SALUT = (h) => (h < 5 ? 'Bonne nuit' : h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir');
 
+/* La lucarne : un cadre (arche, hublot, vitrail, croisée), une vue (le vrai ciel ou une scène animée),
+   et ses garnitures (lierre et lanternes, carillon). Un appui sur la vitre change la vue. */
+function arcGothique(asp = 0.72, r = 0.6) { // ogive en pourcentages : deux arcs de rayon r (en largeurs) qui se rejoignent en pointe
+  const debut = Math.acos((0.5 - r) / r), haut = r * Math.sin(debut) * asp * 100, pts = [];
+  for (let i = 0; i <= 16; i++) { const t = Math.PI - (Math.PI - debut) * (i / 16); pts.push([(r + r * Math.cos(t)) * 100, haut - r * Math.sin(t) * asp * 100]); }
+  const g = pts.map(([x, y]) => `${x.toFixed(1)}% ${y.toFixed(1)}%`), d = pts.slice(0, -1).reverse().map(([x, y]) => `${(100 - x).toFixed(1)}% ${y.toFixed(1)}%`);
+  return `polygon(0 100%, ${g.join(', ')}, ${d.join(', ')}, 100% 100%)`;
+}
+const OGIVE = arcGothique();
+function surVitre(cadre) {
+  if (cadre === 'hublot') return `<svg class="sur-vitre" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47.5" fill="none" stroke="#b8913f" stroke-width="5"/><circle cx="50" cy="50" r="45" fill="none" stroke="#6d5126" stroke-width=".8"/>${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<circle cx="${(50 + 47.5 * Math.cos(a)).toFixed(2)}" cy="${(50 + 47.5 * Math.sin(a)).toFixed(2)}" r="1.5" fill="#f3d68e" stroke="#5a3f16" stroke-width=".5"/>`; }).join('')}</svg>`;
+  if (cadre === 'vitrail') {
+    let l = '';
+    for (let i = -100; i <= 100; i += 12.5) { l += `<path d="M${i} 100 L${i + 100} 0"/><path d="M${i + 100} 100 L${i} 0"/>`; }
+    return `<svg class="sur-vitre" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g class="plombs">${l}</g></svg>`;
+  }
+  if (cadre === 'croisee') return '<span class="croisillons" aria-hidden="true"></span>';
+  return '<span class="croisee" aria-hidden="true"></span>';
+}
+function contenuVue(vue, svgCiel) {
+  if (vue === 'ciel') return svgCiel;
+  const src = `${decor.DECO}vues/${vue}`;
+  return `<picture><source media="(prefers-reduced-motion: reduce)" srcset="${src}-fixe.webp"><img class="vue-anim" src="${src}.webp" alt="" decoding="async"></picture>`;
+}
 function tLucarne(now, m) {
+  const d = decor.lireDecor();
   const { ph, svg } = ciel(now, m);
   const c = m?.d?.current;
   const temps = c ? `${meteo.decrire(c.weather_code).mot}, ${Math.round(c.temperature_2m)}°` : 'Choisis ta ville pour le ciel réel';
-  return `<article class="tuile t-lucarne ph-${ph}" data-w="lucarne" aria-label="La lucarne : heure et ciel">
-    <div class="vitre">${svg}<span class="croisee" aria-hidden="true"></span><span class="reflet" aria-hidden="true"></span></div>
+  const vue = decor.VUES.find((v) => v.id === d.vue);
+  return `<article class="tuile t-lucarne ph-${ph} cadre-${d.cadre} vue-${d.vue}" data-w="lucarne" aria-label="La lucarne : heure et ciel">
+    <div class="vitre">
+      ${d.cadre === 'croisee' ? '<span class="volet g" aria-hidden="true"></span><span class="volet d" aria-hidden="true"></span>' : ''}
+      <button type="button" class="verre" data-vue-suivante aria-label="Vue : ${esc(vue.nom)}. Changer la vue"${d.cadre === 'vitrail' ? ` style="clip-path:${OGIVE}"` : ''}>${contenuVue(d.vue, svg)}${surVitre(d.cadre)}<span class="reflet" aria-hidden="true"></span></button>
+      ${d.cadre === 'vitrail' ? `<span class="ogive-bord" aria-hidden="true" style="clip-path:${OGIVE}"></span>` : ''}
+      ${d.lierre ? `<img class="lierre" src="${decor.DECO}fenetre/lierre.webp" alt="" aria-hidden="true">` : ''}
+      ${d.carillon ? `<button type="button" class="carillon" data-carillon aria-label="Faire tinter le carillon"><img src="${decor.DECO}fenetre/carillon.webp" alt=""></button>` : ''}
+    </div>
     <div class="rebord">
       <p class="lu-heure"><time>${HEURE.format(now)}</time></p>
       <div class="lu-texte"><p class="lu-salut">${SALUT(now.getHours())} Louenn</p>
       <p class="lu-date">${cap(JOURS[now.getDay()])} ${now.getDate()} ${MOIS[now.getMonth()]}</p><p class="lu-temps">${esc(temps)}</p></div>
+      <a class="etiq-deco" href="#/deco"><span>Changer le décor</span></a>
     </div>
   </article>`;
 }
 
+/* L'horloge : sept cadrans (le laiton dessiné, six cadrans anciens) et trois aiguilles qui tournent
+   en CSS, la trotteuse comprise. Un appui change de cadran. */
+const AIG = {
+  laiton: { cx: 50, cy: 50, k: 1, c: '#2a1c12', s: '#b3261e', forme: 'baton' },
+  engrenages: { cx: 52.8, cy: 50.3, k: 0.74, c: '#17130f', s: '#d2a75a', forme: 'fleche' },
+  bistrot: { cx: 50, cy: 50, k: 0.93, c: '#ddb763', s: '#f3e6c4', forme: 'lance' },
+  squelette: { cx: 50, cy: 50, k: 0.92, c: '#e6d3a3', s: '#c0392b', forme: 'pique' },
+  atelier: { cx: 50, cy: 50, k: 0.8, c: '#16110e', s: '#a3271c', forme: 'pique' },
+  gare: { cx: 49.4, cy: 50, k: 0.8, c: '#141210', s: '#9c2f1f', forme: 'ornee' },
+  chateau: { cx: 50, cy: 50, k: 0.93, c: '#151110', s: '#e0bd62', forme: 'pique' },
+};
+function aiguille(forme, cx, cy, L, l, c) {
+  const y = cy - L, f = (n) => n.toFixed(2);
+  if (forme === 'baton') return `<path d="M${f(cx)} ${f(cy + 4)}V${f(y)}" stroke="${c}" stroke-width="${l}" stroke-linecap="round"/>`;
+  if (forme === 'lance') return `<path d="M${f(cx - l * 0.4)} ${f(cy + 7)}V${f(y + 7)}H${f(cx - l)}L${f(cx)} ${f(y)}L${f(cx + l)} ${f(y + 7)}H${f(cx + l * 0.4)}V${f(cy + 7)}Z" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width=".3"/><circle cx="${f(cx)}" cy="${f(cy + 8)}" r="${f(l * 0.9)}" fill="${c}"/>`;
+  if (forme === 'pique') return `<path d="M${f(cx - l * 0.35)} ${f(cy + 5)}V${f(y + L * 0.3)}H${f(cx + l * 0.35)}V${f(cy + 5)}Z" fill="${c}"/><path d="M${f(cx)} ${f(y)}C${f(cx + l * 1.7)} ${f(y + L * 0.16)} ${f(cx + l * 1.5)} ${f(y + L * 0.27)} ${f(cx)} ${f(y + L * 0.33)}C${f(cx - l * 1.5)} ${f(y + L * 0.27)} ${f(cx - l * 1.7)} ${f(y + L * 0.16)} ${f(cx)} ${f(y)}Z" fill="${c}"/><circle cx="${f(cx)}" cy="${f(cy + 6)}" r="${f(l * 0.8)}" fill="${c}"/>`;
+  if (forme === 'fleche') return `<path d="M${f(cx)} ${f(cy + 5)}V${f(y + 5)}" stroke="${c}" stroke-width="${l * 0.55}"/><path d="M${f(cx)} ${f(y)}L${f(cx + l)} ${f(y + 6)}L${f(cx)} ${f(y + 4.5)}L${f(cx - l)} ${f(y + 6)}Z" fill="${c}"/>`;
+  // ornee : fine, avec un petit ornement aux deux tiers
+  return `<path d="M${f(cx)} ${f(cy + 5)}V${f(y)}" stroke="${c}" stroke-width="${l * 0.5}" stroke-linecap="round"/><circle cx="${f(cx)}" cy="${f(cy - L * 0.62)}" r="${f(l * 0.9)}" fill="none" stroke="${c}" stroke-width="${l * 0.45}"/><path d="M${f(cx - l * 1.3)} ${f(cy - L * 0.45)}Q${f(cx)} ${f(cy - L * 0.3)} ${f(cx + l * 1.3)} ${f(cy - L * 0.45)}" fill="none" stroke="${c}" stroke-width="${l * 0.45}"/>`;
+}
 function tHorloge(now) {
-  const h = now.getHours() % 12, mi = now.getMinutes();
-  const graduations = Array.from({ length: 60 }, (_, i) => { const a = i * 6, long = i % 5 === 0; return `<line x1="50" y1="${long ? 9 : 10.5}" x2="50" y2="${long ? 15 : 13}" transform="rotate(${a} 50 50)" stroke-width="${long ? 1.6 : 0.7}"/>`; }).join('');
-  const chiffres = [['12', 50, 24], ['3', 77, 53.5], ['6', 50, 82], ['9', 23, 53.5]].map(([t, x, y]) => `<text x="${x}" y="${y}">${t}</text>`).join('');
-  return `<article class="tuile t-horloge" data-w="horloge" aria-label="Horloge : ${HEURE.format(now)}">
-    <svg viewBox="0 0 100 100" class="cadran" aria-hidden="true">
-      <defs><radialGradient id="laiton-g" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#f6dc9a"/><stop offset=".45" stop-color="#c79f55"/><stop offset="1" stop-color="#7a5a26"/></radialGradient></defs>
-      <circle cx="50" cy="50" r="48" class="anneau"/><circle cx="50" cy="50" r="42.5" class="fond-cadran"/>
-      <g class="grad">${graduations}</g><g class="chiffres">${chiffres}</g>
-      <line x1="50" y1="50" x2="50" y2="29" class="aiguille h" transform="rotate(${h * 30 + mi * 0.5} 50 50)"/>
-      <line x1="50" y1="54" x2="50" y2="17" class="aiguille m" transform="rotate(${mi * 6} 50 50)"/>
-      <circle cx="50" cy="50" r="2.6" class="axe"/>
-    </svg>
+  const style = decor.lireDecor().horloge, a = AIG[style] || AIG.laiton;
+  const sec = now.getSeconds() + now.getMilliseconds() / 1000, min = now.getMinutes() + sec / 60, h = (now.getHours() % 12) + min / 60;
+  const R = 40 * a.k, o = `transform-origin:${a.cx}px ${a.cy}px`;
+  let cadran;
+  if (style === 'laiton') {
+    const graduations = Array.from({ length: 60 }, (_, i) => { const g = i * 6, long = i % 5 === 0; return `<line x1="50" y1="${long ? 9 : 10.5}" x2="50" y2="${long ? 15 : 13}" transform="rotate(${g} 50 50)" stroke-width="${long ? 1.6 : 0.7}"/>`; }).join('');
+    const chiffres = [['12', 50, 24], ['3', 77, 53.5], ['6', 50, 82], ['9', 23, 53.5]].map(([t, x, y]) => `<text x="${x}" y="${y}">${t}</text>`).join('');
+    cadran = `<defs><radialGradient id="laiton-g" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#f6dc9a"/><stop offset=".45" stop-color="#c79f55"/><stop offset="1" stop-color="#7a5a26"/></radialGradient></defs>
+      <circle cx="50" cy="50" r="48" class="anneau"/><circle cx="50" cy="50" r="42.5" class="fond-cadran"/><g class="grad">${graduations}</g><g class="chiffres">${chiffres}</g>`;
+  } else cadran = `<image href="${decor.DECO}horloges/${style}.webp" x="0" y="0" width="100" height="100"/>`;
+  const sw = a.forme === 'baton' ? [3.2, 2] : a.forme === 'lance' ? [2.3, 1.8] : a.forme === 'pique' ? [1.9, 1.5] : [2, 1.6];
+  return `<article class="tuile t-horloge h-${style}" data-w="horloge">
+    <button type="button" class="horloge-btn" data-horloge-suivante><span class="sr">Horloge ${esc(decor.nomDe('horloge', style))}, il est ${HEURE.format(now)}. Changer de cadran</span>
+    <svg viewBox="0 0 100 100" class="cadran" aria-hidden="true">${cadran}
+      <g class="aig h" style="${o};animation-delay:-${(h * 3600).toFixed(1)}s">${aiguille(a.forme, a.cx, a.cy, R * 0.56, sw[0] * a.k * 1.25, a.c)}</g>
+      <g class="aig m" style="${o};animation-delay:-${(min * 60).toFixed(1)}s">${aiguille(a.forme, a.cx, a.cy, R * 0.84, sw[1] * a.k * 1.25, a.c)}</g>
+      <g class="aig s" style="${o};animation-delay:-${sec.toFixed(2)}s"><path d="M${a.cx} ${a.cy + R * 0.24}V${a.cy - R * 0.9}" stroke="${a.s}" stroke-width="${0.7 * Math.max(a.k, 0.85)}" stroke-linecap="round"/><circle cx="${a.cx}" cy="${a.cy + R * 0.2}" r="${1.9 * a.k}" fill="${a.s}"/></g>
+      <circle cx="${a.cx}" cy="${a.cy}" r="${2.4 * Math.max(a.k, 0.8)}" fill="${a.s}" stroke="rgba(0,0,0,.4)" stroke-width=".4"/>
+    </svg></button>
   </article>`;
 }
 
@@ -135,8 +197,9 @@ function tEphemeride(now, m, evAujourdhui) {
   const { lever, coucher, connu } = soleilDuJour(m);
   const hm = (x) => `${Math.floor(x / 60)} h ${deux(x % 60)}`;
   const annee = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100) || now.getFullYear() % 400 === 0 ? 366 : 365;
-  return `<article class="tuile t-ephemeride" data-w="ephemeride" aria-label="Éphéméride">
-    <div class="eph-reliure" aria-hidden="true"></div>
+  const style = decor.lireDecor().ephemeride;
+  return `<article class="tuile t-ephemeride eph-${style}" data-w="ephemeride" aria-label="Éphéméride">
+    ${style === 'ticket' ? `<p class="tk-tete"><span>No. ${deux(jourDeLAnnee(now)).padStart(3, '0')}</span><b>Ticket</b></p>` : '<div class="eph-reliure" aria-hidden="true"></div>'}
     <p class="eph-jour">${cap(JOURS[now.getDay()])}</p>
     <p class="eph-num">${now.getDate()}</p>
     <p class="eph-mois">${MOIS[now.getMonth()]} ${now.getFullYear()}</p>
@@ -171,13 +234,13 @@ function tMeteo(m) {
     return `<li><span>${cap(JOURS[dt.getDay()].slice(0, 3))}.</span>${meteo.picto(d.daily.weather_code[i])}<b>${Math.round(d.daily.temperature_2m_max[i])}°</b><small>${Math.round(d.daily.temperature_2m_min[i])}°</small></li>`;
   }).join('');
   const quand = HEURE.format(new Date(m.t));
-  return `<article class="tuile t-meteo" data-w="meteo" aria-label="Météo à ${esc(l.nom)}">
+  return `<article class="tuile t-meteo" data-w="meteo" aria-label="Météo à ${esc(l.nom)}"><span class="scotch" data-cle="meteo" aria-hidden="true"></span>
     <div class="me-haut">
       <div class="me-actuel">${meteo.picto(c.weather_code, jour)}<p class="me-temp">${Math.round(c.temperature_2m)}°</p></div>
       <div class="me-mots"><h2 class="t-titre">${esc(l.nom)}</h2><p>${esc(meteo.decrire(c.weather_code).mot)}</p>
       <p class="petit">Ressenti ${Math.round(c.apparent_temperature)}°, vent ${Math.round(c.wind_speed_10m)} km/h, humidité ${c.relative_humidity_2m} %</p></div>
     </div>
-    <ul class="me-heures">${heures.join('')}</ul>
+    <ul class="me-heures" tabindex="0" aria-label="Les prochaines heures">${heures.join('')}</ul>
     <ul class="me-jours">${jours}</ul>
     <p class="me-source">${m.ancien ? 'Hors connexion, dernier relevé' : 'Relevé'} à ${quand}. Données <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>. <button type="button" class="lien" data-changer-ville>Changer de ville</button></p>
   </article>`;
@@ -203,10 +266,15 @@ function tCalendrier(evts) {
   const choisi = (parJour[calJour] || []).sort((a, b) => (a.heure || '99').localeCompare(b.heure || '99'));
   const dj = new Date(calJour + 'T12:00');
   const avenir = evts.filter((e) => e.date >= dateLocale(auj)).sort((a, b) => (a.date + (a.heure || '')).localeCompare(b.date + (b.heure || ''))).slice(0, 3);
-  return `<article class="tuile t-calendrier" data-w="calendrier" aria-label="Calendrier">
+  const style = decor.lireDecor().calendrier;
+  const titre = style === 'vitrail'
+    ? `<h2 class="t-titre cal-plaque" style="--plaque:url('${decor.DECO}calendrier/plaque.webp')"><span class="sr">${cap(MOIS[premier.getMonth()])} ${premier.getFullYear()}</span><span aria-hidden="true">${cap(MOIS[premier.getMonth()])}</span><small aria-hidden="true">${premier.getFullYear()}</small></h2>`
+    : `<h2 class="t-titre">${cap(MOIS[premier.getMonth()])} ${premier.getFullYear()}</h2>`;
+  return `<article class="tuile t-calendrier cal-${style}" data-w="calendrier" aria-label="Calendrier">
+    ${style === 'etiquette' ? '<span class="oeillet" aria-hidden="true"></span>' : '<span class="scotch" data-cle="calendrier" aria-hidden="true"></span>'}
     <header class="cal-tete">
       <button type="button" class="cal-fleche" data-mois="-1" aria-label="Mois précédent"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <h2 class="t-titre">${cap(MOIS[premier.getMonth()])} ${premier.getFullYear()}</h2>
+      ${titre}
       <button type="button" class="cal-fleche" data-mois="1" aria-label="Mois suivant"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </header>
     <div class="cal-grille"><span class="js">L</span><span class="js">M</span><span class="js">M</span><span class="js">J</span><span class="js">V</span><span class="js">S</span><span class="js">D</span>${cases}</div>
@@ -234,7 +302,7 @@ function tTemps(now) {
     vie = `<div class="vie"><h3>Ma vie en années</h3><div class="vie-points" role="img" aria-label="${Math.floor(ans)} années vécues sur 90">${Array.from({ length: 90 }, (_, i) => `<i class="${i < Math.floor(ans) ? 'v' : i === Math.floor(ans) ? 'en' : ''}"${i === Math.floor(ans) ? ` style="--p:${((ans % 1) * 100).toFixed(0)}%"` : ''}></i>`).join('')}</div>
       <p class="petit">${Math.floor(ans)} ans et ${Math.floor((ans % 1) * 365)} jours. <button type="button" class="lien" data-naissance-oublier>Retirer</button></p></div>`;
   } else vie = `<form class="vie-regler" data-naissance><label for="naiss">Ta date de naissance, pour voir ta vie en années (gardée sur cet appareil)</label><span><input id="naiss" name="d" type="date" required><button class="btn-sobre">Afficher</button></span></form>`;
-  return `<article class="tuile t-temps" data-w="temps" aria-label="Le temps qui passe">
+  return `<article class="tuile t-temps" data-w="temps" aria-label="Le temps qui passe"><span class="scotch" data-cle="temps" aria-hidden="true"></span>
     <h2 class="t-titre">Le temps qui passe</h2>
     <ul class="rubans">
       ${ruban('La journée', pJour)}
@@ -248,7 +316,7 @@ function tTemps(now) {
 
 function tPriorites(liste) {
   return `<article class="tuile t-priorites" data-w="priorites" aria-label="Priorités du moment">
-    <span class="punaise" aria-hidden="true"></span>
+    <span class="scotch" data-cle="priorites" aria-hidden="true"></span>
     <h2 class="t-titre">Priorités du moment</h2>
     ${liste.length ? `<ul class="prio">${liste.map((p) => `<li><label><input type="checkbox" data-prio="${esc(p.id)}" ${p.fait ? 'checked' : ''}><span>${esc(p.texte)}</span></label></li>`).join('')}</ul>` : '<p class="prio-vide">Note ici les deux ou trois choses qui comptent cette semaine.</p>'}
     <form class="prio-ajout" data-prio-ajout><label class="sr" for="prio-t">Nouvelle priorité</label><input id="prio-t" name="t" placeholder="Ajouter une priorité" autocomplete="off" required maxlength="90"><button class="btn-sobre" aria-label="Ajouter">+</button></form>
@@ -263,7 +331,7 @@ function tCourses(s) {
   const courses = items.filter((i) => cats.get(i.cat) === 'course' && !i.checked);
   const achats = items.filter((i) => (cats.get(i.cat) || 'achat') === 'achat' && i.status !== 'done');
   const reste = achats.reduce((a, i) => a + (+i.price || 0) * (+i.qty || 1), 0);
-  return `<a class="tuile t-courses" data-w="courses" href="malles/carnet/index.html#/list/course" aria-label="Courses : ${courses.length} à prendre">
+  return `<a class="tuile t-courses" data-w="courses" href="malles/carnet/index.html#/list/course">
     <span class="spirale" aria-hidden="true"></span>
     <h2 class="t-titre">Les courses</h2>
     ${courses.length ? `<ul class="liste-courses">${courses.slice(0, 6).map((i) => `<li>${esc(i.name || 'Sans nom')}${+i.qty > 1 ? ` <small>×${esc(i.qty)}</small>` : ''}</li>`).join('')}</ul>${courses.length > 6 ? `<p class="petit">et ${courses.length - 6} autres</p>` : ''}` : '<p class="petit">Rien à acheter pour l’instant.</p>'}
@@ -275,7 +343,7 @@ function tArmoire(s) {
   const pieces = w.pieces || [], tenues = w.outfits || [];
   const prevue = w.plan?.[dateLocale()] ? tenues.find((o) => o.id === w.plan[dateLocale()]) : null;
   const coul = [...new Set(pieces.map((p) => p.color).filter(Boolean))].slice(0, 14);
-  return `<a class="tuile t-armoire" data-w="armoire" href="malles/carnet/index.html#/armoire" aria-label="L'armoire : ${pieces.length} pièces">
+  return `<a class="tuile t-armoire" data-w="armoire" href="malles/carnet/index.html#/armoire"><span class="scotch" data-cle="armoire" aria-hidden="true"></span>
     <h2 class="t-titre">L’armoire</h2>
     <div class="coupons" aria-hidden="true">${(coul.length ? coul : ['#7b5a7e', '#5e6e3a', '#c7948f', '#3b2e25', '#d8c9a8']).map((c, i) => `<i style="--c:${esc(c)};--r:${(i % 3 - 1) * 4}deg"></i>`).join('')}</div>
     <p>${pieces.length ? `<b>${pieces.length}</b> pièce${pieces.length > 1 ? 's' : ''}, <b>${tenues.length}</b> tenue${tenues.length > 1 ? 's' : ''}` : 'L’armoire attend ses premières pièces.'}</p>
@@ -288,20 +356,20 @@ function tLoge(loge, routine) {
   const faits = routine?.date === dateLocale() ? routine.faits.length : 0;
   const fin = (e) => { if (!e.ouverture || !e.mois) return null; const d = new Date(e.ouverture + 'T12:00'); d.setMonth(d.getMonth() + Number(e.mois)); return d; };
   const bientot = loge.map((e) => ({ e, f: fin(e) })).filter((x) => x.f && (x.f - Date.now()) / 864e5 <= 30).sort((a, b) => a.f - b.f);
-  return `<a class="tuile t-loge" data-w="loge" href="malles/loge/index.html#soin" aria-label="La Loge">
+  return `<a class="tuile t-loge" data-w="loge" href="malles/loge/index.html#soin"><span class="scotch" data-cle="loge" aria-hidden="true"></span>
     <h2 class="t-titre">La Loge</h2>
     ${etapes ? `<p>Routine du jour</p><div class="metre petit-metre" role="progressbar" aria-valuemin="0" aria-valuemax="${etapes}" aria-valuenow="${Math.min(faits, etapes)}" aria-label="Routine du jour"><span style="width:${Math.min(100, faits / etapes * 100)}%"></span></div><p class="petit">${Math.min(faits, etapes)} sur ${etapes}</p>` : '<p class="petit">Ajoute tes soins pour suivre ta routine ici.</p>'}
     ${bientot.length ? `<p class="lo-alerte">${esc(bientot[0].e.titre || 'Un produit')} ${bientot[0].f < Date.now() ? 'est à jeter' : 'arrive à sa date limite'}${bientot.length > 1 ? `, et ${bientot.length - 1} autre${bientot.length > 2 ? 's' : ''}` : ''}</p>` : ''}
   </a>`;
 }
 function tBoite(boite) {
-  return `<a class="tuile t-boite" data-w="boite" href="#/boite" aria-label="Boîte à trier : ${boite.length} choses">
+  return `<a class="tuile t-boite" data-w="boite" href="#/boite"><span class="scotch" data-cle="boite" aria-hidden="true"></span>
     <h2 class="t-titre">La Boîte à trier</h2>
     ${boite.length ? `<ul class="mini-postits">${boite.slice(0, 3).map((b, i) => `<li style="--r:${[-3, 2, -1][i]}deg">${esc((b.texte || b.titre || 'Une photo').slice(0, 60))}</li>`).join('')}</ul><p class="petit">${boite.length} à trier</p>` : '<p class="petit">Vide. Le bouton + y jette une idée, d’où que tu sois.</p>'}
   </a>`;
 }
 function tCours() {
-  return `<a class="tuile t-cours" data-w="cours" href="malles/cours/suite/index.html" aria-label="Ouvrir la Suite BTS">
+  return `<a class="tuile t-cours" data-w="cours" href="malles/cours/suite/index.html"><span class="scotch" data-cle="cours" aria-hidden="true"></span>
     <span class="ecran-mini" aria-hidden="true"><span>SUITE<br>BTS<br><i>&gt; ouvrir</i></span></span>
     <h2 class="t-titre">Les cours</h2><p class="petit">La Suite BTS Audiovisuel</p>
   </a>`;
@@ -327,54 +395,84 @@ function tDevise() {
 }
 
 /* ---------- Rendu et interactions ---------- */
+/** Les trois objets du haut, pour l'aperçu de l'atelier de déco. */
+export function teteAccueil() {
+  const now = new Date(), m = meteo.releve();
+  return `<div class="accueil-bento en-apercu"><div class="bento-tete">${tLucarne(now, m)}${tEphemeride(now, m, [])}${tHorloge(now)}</div></div>`;
+}
+function guirlande() {
+  const y = (f) => { const t = f < 0.5 ? f / 0.5 : (f - 0.5) / 0.5; return f < 0.5 ? (1 - t) ** 2 * 6 + 2 * (1 - t) * t * 40 + t * t * 26 : (1 - t) ** 2 * 26 + 2 * (1 - t) * t * 12 + t * t * 8; };
+  const f = Array.from({ length: 9 }, (_, i) => `<img src="${decor.DECO}papiers/fanion-${(i % 4) + 1}.webp" alt="" style="left:${((i + 0.5) / 9 * 100).toFixed(1)}%;top:${(y((i + 0.5) / 9) - 3).toFixed(1)}px;--r:${[-4, 3, -2, 5, -3, 2, -5, 4, -1][i]}deg">`).join('');
+  return `<div class="guirlande" aria-hidden="true"><svg viewBox="0 0 1000 60" preserveAspectRatio="none"><path d="M0 6 Q250 40 500 26 T1000 8" fill="none" stroke="#5b4330" stroke-width="2.5"/></svg><div class="fanions">${f}</div></div>`;
+}
 let minuteur = 0;
 export async function rendreAccueil(vue, ctx) {
   const { malles, carteMalle, comptes, pied } = ctx;
   const now = new Date();
-  const [boite, loge, agenda, prio, routine] = await Promise.all([
+  const [boite, loge, agenda, prio, routine, cabinet] = await Promise.all([
     store.parMalle('boite').catch(() => []), store.parMalle('loge').catch(() => []), store.parMalle('agenda').catch(() => []),
-    store.lireMeta('accueil.priorites').catch(() => null), store.lireMeta('loge.routine').catch(() => null),
+    store.lireMeta('accueil.priorites').catch(() => null), store.lireMeta('loge.routine').catch(() => null), cab.jour().catch(() => null),
   ]);
   const m = meteo.releve();
   const s = carnet();
+  const d = decor.lireDecor();
   const caches = new Set(widgetsCaches());
   const evAuj = agenda.filter((e) => e.date === dateLocale(now));
+  const e = cabinet || { trouves: {}, jours: [], cartes: [], carte: { n: 0 } };
   const tuiles = {
     lucarne: () => tLucarne(now, m), horloge: () => tHorloge(now), ephemeride: () => tEphemeride(now, m, evAuj), meteo: () => tMeteo(m),
     calendrier: () => tCalendrier(agenda), priorites: () => tPriorites(prio || []), temps: () => tTemps(now),
     courses: () => tCourses(s), armoire: () => tArmoire(s), loge: () => tLoge(loge, routine), boite: () => tBoite(boite),
-    cours: () => tCours(), musique: () => tMusique(), devise: () => tDevise(),
+    cours: () => tCours(), musique: () => tMusique(), devise: () => tDevise(), carte: () => cab.tCarte(e), cabinet: () => cab.tCabinet(e),
   };
   vue.innerHTML = `<section class="accueil-bento" aria-label="Accueil">
     <h1 class="sr">Accueil</h1>
+    ${d.fanions ? guirlande() : ''}
     <div class="bento-tete">${['lucarne', 'ephemeride', 'horloge'].filter((id) => !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
-    <div class="bento">${['meteo', 'priorites', 'devise', 'cours', 'calendrier', 'courses', 'armoire', 'temps', 'loge', 'boite', 'musique'].filter((id) => !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
+    <div class="bento">${['meteo', 'carte', 'priorites', 'devise', 'cabinet', 'cours', 'calendrier', 'courses', 'armoire', 'temps', 'loge', 'boite', 'musique'].filter((id) => !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
     <section class="etagere-malles" aria-labelledby="t-malles"><h2 id="t-malles" class="t-section">Les malles</h2>
       <div class="malles">${malles.map((x) => carteMalle(x, comptes[x.id])).join('')}</div></section>
     <div id="installer-zone"></div>
     ${pied}
   </section>`;
+  if (cabinet) cab.decorer(vue, e, d.stickers);
   brancher(vue, ctx);
   // la météo se met à jour en arrière-plan, puis on redessine ce qui en dépend
   if (meteo.lieu() && (!m || Date.now() - m.t > 30 * 60e3)) meteo.previsions().then((n) => { if (n && vue.isConnected && $('.accueil-bento', vue)) rafraichirMeteo(vue, n, agenda); });
   clearInterval(minuteur);
   minuteur = setInterval(() => {
     if (!$('.accueil-bento', vue)) return clearInterval(minuteur);
-    if (document.hidden) return;
-    const n = new Date();
-    remplacer(vue, 'horloge', tHorloge(n));
-    remplacer(vue, 'lucarne', tLucarne(n, meteo.releve()));
+    if (!document.hidden) majLucarne(vue, new Date(), meteo.releve());
   }, 20000);
+  document.onvisibilitychange = () => {
+    if (document.hidden || !$('.accueil-bento', vue)) return;
+    remplacer(vue, 'horloge', tHorloge(new Date())); // les aiguilles repartent à l'heure exacte
+    majLucarne(vue, new Date(), meteo.releve());
+  };
+}
+// Met l'heure et le ciel à jour sans redessiner la lucarne (la vue animée et le carillon ne sautent pas).
+function majLucarne(vue, now, m) {
+  const t = $('[data-w="lucarne"]', vue);
+  if (!t) return;
+  $('.lu-heure time', t).textContent = HEURE.format(now);
+  $('.lu-salut', t).textContent = `${SALUT(now.getHours())} Louenn`;
+  const c = $('.lucarne-ciel', t);
+  if (c) { const { ph, svg } = ciel(now, m); const tp = document.createElement('template'); tp.innerHTML = svg.trim(); c.replaceWith(tp.content.firstElementChild); t.className = t.className.replace(/ph-\w+/, `ph-${ph}`); }
 }
 function remplacer(vue, id, html) {
   const el = $(`[data-w="${id}"]`, vue);
   if (!el) return;
   const t = document.createElement('template'); t.innerHTML = html.trim();
-  el.replaceWith(t.content.firstElementChild);
+  const neuf = t.content.firstElementChild;
+  // on garde le trésor et les stickers posés sur la tuile
+  el.querySelectorAll(':scope > .sticker, :scope > .tresor').forEach((x) => neuf.appendChild(x));
+  el.replaceWith(neuf);
 }
 function rafraichirMeteo(vue, m, agenda) {
   const now = new Date();
-  remplacer(vue, 'lucarne', tLucarne(now, m));
+  majLucarne(vue, now, m);
+  const lu = $('.lu-temps', vue), c = m?.d?.current;
+  if (lu && c) lu.textContent = `${meteo.decrire(c.weather_code).mot}, ${Math.round(c.temperature_2m)}°`;
   remplacer(vue, 'meteo', tMeteo(m));
   remplacer(vue, 'ephemeride', tEphemeride(now, m, agenda.filter((e) => e.date === dateLocale(now))));
 }
@@ -383,6 +481,38 @@ function brancher(vue, ctx) {
   const redessiner = () => rendreAccueil(vue, ctx);
   vue.onclick = async (e) => {
     const t = e.target;
+    if (t.closest('[data-vue-suivante]')) {
+      const v = decor.suivant('vue'); remplacer(vue, 'lucarne', tLucarne(new Date(), meteo.releve()));
+      $('[data-vue-suivante]', vue)?.focus({ preventScroll: true }); return ctx.toast(`Vue : ${v.nom}`);
+    }
+    const car = t.closest('[data-carillon]');
+    if (car) { car.classList.remove('tinte'); void car.offsetWidth; car.classList.add('tinte'); decor.tinter(); navigator.vibrate?.(8); return; }
+    if (t.closest('[data-horloge-suivante]')) {
+      const h = decor.suivant('horloge'); remplacer(vue, 'horloge', tHorloge(new Date()));
+      $('[data-horloge-suivante]', vue)?.focus({ preventScroll: true }); return ctx.toast(`Horloge : ${h.nom}`);
+    }
+    if (t.closest('[data-carte]')) {
+      const art = t.closest('.t-carte');
+      if (art.classList.contains('retournee')) return;
+      await cab.retournerCarte();
+      art.classList.add('retournee'); decor.tintement();
+      const b = $('[data-carte]', art); b.setAttribute('aria-hidden', 'true'); b.tabIndex = -1;
+      $('.carte-invite', art).hidden = true;
+      const tx = $('.carte-texte', art); tx.hidden = false; tx.tabIndex = -1; setTimeout(() => tx.focus({ preventScroll: true }), 50);
+      const img = $('.recto img', art); img.alt = `${$('h3', tx).textContent}, carte du tarot`;
+      return;
+    }
+    const tr = t.closest('[data-tresor]');
+    if (tr) {
+      const id = tr.dataset.tresor, o = cab.objet(id);
+      const st = await cab.ramasser(id);
+      tr.classList.add('ramasse'); setTimeout(() => tr.remove(), 320);
+      navigator.vibrate?.([10, 40, 14]);
+      cab.ouvrirFiche(o, { nouveau: true, trouve: st.trouves[id] });
+      if (o.type === 'sticker' && decor.lireDecor().stickers) cab.collerSticker(vue, st, id);
+      const c = $('[data-w="cabinet"]', vue); if (c) remplacer(vue, 'cabinet', cab.tCabinet(st));
+      return;
+    }
     if (t.closest('[data-geo]')) {
       t.closest('[data-geo]').textContent = 'Je cherche…';
       try { meteo.choisirLieu(await meteo.positionActuelle()); await meteo.previsions(true); }

@@ -1,0 +1,275 @@
+/*
+  Le décor de l'accueil, l'atelier de déco et le cabinet de curiosités.
+  IDEA : un mur qu'on aménage soi-même ; chaque option est un objet réel (un cadre de fenêtre, un cadran ancien,
+         une plaque de vitrail, un rouleau de washi, une pince à dessin) tiré des planches de Louenn.
+  Polices : UnifrakturMaguntia pour la plaque du vitrail (comme les plaques gothiques), le reste reprend le Grenier.
+*/
+@font-face { font-family: "UnifrakturMaguntia"; src: url(../assets/fonts/unifraktur-maguntia.woff2) format("woff2"); font-display: swap; }
+
+/* ==================== La fenêtre ==================== */
+.lucarne-ciel, .vue-anim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+.verre picture { display: contents; }
+.sur-vitre { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* hublot en laiton */
+.cadre-hublot .vitre { padding: 4px 0; }
+.cadre-hublot .verre { flex: 0 0 auto; aspect-ratio: 1; width: auto; border-radius: 50%; box-shadow: 0 0 0 3px #6d5126, 0 0 0 7px rgba(255,236,200,.18), 0 12px 18px rgba(0,0,0,.45); }
+
+/* vitrail : une ogive, des plombs en losanges et un bord de verre coloré */
+.cadre-vitrail .vitre { padding-top: 12px; }
+.cadre-vitrail .verre { z-index: 1; flex: 0 0 auto; aspect-ratio: .72; width: auto; }
+.ogive-bord { position: absolute; left: 50%; bottom: 0; height: calc(100% - 2px); aspect-ratio: .72; transform: translateX(-50%) scale(1.12, 1.055); transform-origin: 50% 100%;
+  background: repeating-conic-gradient(from 3deg at 50% 66%, #8a1f1f 0 1.9%, #c9952f 0 3.8%, #24456e 0 5.7%, #c9952f 0 7.6%), #2a2520; }
+.ogive-bord::after { content: ""; position: absolute; inset: 0; background: repeating-conic-gradient(from 3deg at 50% 66%, transparent 0 1.65%, #221d18 1.65% 1.9%); }
+.plombs path { stroke: #26211c; stroke-width: 1.6; vector-effect: non-scaling-stroke; opacity: .8; }
+
+/* croisée à volets : bois peint, six carreaux, deux volets entrouverts */
+.cadre-croisee .vitre { perspective: 600px; }
+.cadre-croisee .verre { flex: 0 0 60%; border: 7px solid #ece4d1; border-bottom-width: 9px; border-radius: 2px; box-shadow: 0 0 0 2px #8f8670, 0 10px 16px rgba(0,0,0,.35); }
+.croisillons { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent calc(50% - 3px), #ece4d1 calc(50% - 3px) calc(50% + 3px), transparent 0),
+    linear-gradient(transparent calc(33% - 3px), #ece4d1 calc(33% - 3px) calc(33% + 3px), transparent 0 calc(66% - 3px), #ece4d1 calc(66% - 3px) calc(66% + 3px), transparent 0);
+  filter: drop-shadow(0 2px 1px rgba(0,0,0,.25)); }
+.volet { position: absolute; top: 2%; bottom: 0; width: 18%; border: 3px solid #3f5a3c; border-radius: 2px;
+  background: repeating-linear-gradient(180deg, #607f5d 0 9px, #4a6747 9px 11px); box-shadow: inset 0 0 0 4px rgba(0,0,0,.08), 0 8px 12px rgba(0,0,0,.35); }
+.volet.g { left: 1.5%; transform: rotateY(28deg); transform-origin: 100% 50%; }
+.volet.d { right: 1.5%; transform: rotateY(-28deg); transform-origin: 0 50%; }
+
+/* garnitures */
+.lierre { position: absolute; z-index: 3; top: -12px; right: -6px; height: calc(100% + 10px); width: auto; max-width: 78%; object-fit: contain; object-position: 100% 0; pointer-events: none; filter: drop-shadow(0 8px 6px rgba(0,0,0,.4)); }
+[data-amb="nuit"] .lierre, .ph-nuit .lierre { filter: drop-shadow(0 0 9px rgba(255,186,92,.55)) drop-shadow(0 8px 6px rgba(0,0,0,.5)); }
+.carillon { position: absolute; z-index: 4; top: -14px; left: 1%; width: clamp(64px, 21%, 118px); padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 50% 4%; }
+.carillon img { display: block; width: 100%; filter: drop-shadow(0 8px 6px rgba(0,0,0,.45)); }
+.carillon.tinte { animation: balance 1.9s cubic-bezier(.25,.8,.3,1); }
+@keyframes balance { 0% { transform: rotate(0); } 12% { transform: rotate(8deg); } 30% { transform: rotate(-6deg); } 50% { transform: rotate(3.5deg); } 70% { transform: rotate(-1.8deg); } 86% { transform: rotate(.8deg); } 100% { transform: rotate(0); } }
+
+/* l'étiquette qui mène à l'atelier */
+.etiq-deco { position: relative; flex: none; margin-left: auto; align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 6px 14px 6px 30px;
+  color: #2a1c12; font-size: 14px; text-decoration: none; transform: rotate(-3deg);
+  background: linear-gradient(rgba(248,238,212,.62), rgba(248,238,212,.62)), url(../assets/deco/papiers/etiquette-longue.webp) 0 0 / 100% 100%;
+  clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%); filter: drop-shadow(0 3px 2px rgba(0,0,0,.35)); transition: transform .18s ease-out; }
+.etiq-deco::before { content: ""; position: absolute; left: 12px; top: 50%; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: #3b281b; box-shadow: 0 0 0 2px #b8913f; }
+.etiq-deco:active { transform: rotate(-3deg) translateY(2px); }
+@media (hover: hover) { .etiq-deco:hover { transform: rotate(-1deg) translateY(-2px); } }
+
+/* ==================== L'horloge ==================== */
+.horloge-btn { display: grid; place-items: center; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; }
+.horloge-btn:focus-visible { outline-offset: 2px; }
+.aig { transform-box: view-box; animation: tour linear infinite; }
+.aig.h { animation-duration: 43200s; } .aig.m { animation-duration: 3600s; } .aig.s { animation-duration: 60s; }
+@keyframes tour { to { transform: rotate(360deg); } }
+.t-horloge:not(.h-laiton) .cadran { filter: drop-shadow(0 12px 12px rgba(30,15,5,.5)); }
+.aig g, .aig path { filter: drop-shadow(0 1px .6px rgba(0,0,0,.35)); }
+@media (prefers-reduced-motion: reduce) { .aig.s { animation-timing-function: steps(60); } }
+
+/* ==================== L'éphéméride en ticket ==================== */
+.eph-ticket { padding: 12px 18px 14px; border-radius: 2px;
+  background: repeating-linear-gradient(180deg, transparent 0 21px, rgba(58,44,30,.08) 21px 22px), var(--grain), #f1e6c9;
+  box-shadow: inset 0 0 0 2px #3a2c1e, inset 0 0 0 6px #f1e6c9, inset 0 0 0 7px #3a2c1e, 0 18px 24px -12px rgba(40,20,5,.6);
+  -webkit-mask: radial-gradient(circle 6px at 0 50%, transparent 97%, #000) 0 0 / 51% 22px repeat-y, radial-gradient(circle 6px at 100% 50%, transparent 97%, #000) 100% 0 / 51% 22px repeat-y;
+  mask: radial-gradient(circle 6px at 0 50%, transparent 97%, #000) 0 0 / 51% 22px repeat-y, radial-gradient(circle 6px at 100% 50%, transparent 97%, #000) 100% 0 / 51% 22px repeat-y; }
+.tk-tete { display: grid; justify-items: center; margin: 4px 0 6px; padding-bottom: 6px; border-bottom: 1.5px solid #3a2c1e; }
+.tk-tete span { font-size: 13px; }
+.tk-tete b { font: 400 24px/1 "Special Elite", monospace; letter-spacing: .08em; text-transform: uppercase; }
+.eph-ticket .eph-jour, .eph-ticket .eph-rdv { color: #7d1a1a; }
+
+/* ==================== Le calendrier en vitrail ==================== */
+.cal-vitrail, .cal-etiquette { color-scheme: light; --papier: #f4ead0; --papier-ligne: #d6c79f; --encre: #22160e; --encre-douce: #4d3a2c; --accent: #8c1c1c; color: var(--encre); }
+.cal-vitrail { background: #efe3c4; background-image: radial-gradient(ellipse at 50% 0, rgba(255,255,255,.5), transparent 70%); border-radius: 4px; }
+.cal-vitrail .cal-tete { align-items: center; }
+.cal-plaque { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 !important; }
+.cal-plaque > span[aria-hidden] { display: grid; place-items: center; width: min(100%, 250px); aspect-ratio: 238 / 85; padding: 0 18%; background: var(--plaque) 50% 50% / 100% 100% no-repeat;
+  font: 400 clamp(19px, 5.4vw, 26px)/1 "UnifrakturMaguntia", serif; color: #1a120b; text-shadow: 0 1px 0 rgba(255,244,210,.7); white-space: nowrap; }
+.cal-plaque small { font: 13px "Special Elite", monospace; }
+.cal-vitrail .cal-grille { gap: 3px; padding: 3px; background: #2a2520; border-radius: 4px; }
+.cal-vitrail .cal-grille > * { background: #f6ecd2; border-radius: 2px; }
+.cal-vitrail .cal-grille .js { padding: 4px 0; background: #35573a; color: #f4ead0; opacity: 1; }
+.cal-vitrail .cal-grille > :nth-child(7n+6), .cal-vitrail .cal-grille > :nth-child(7n) { background: #e6d4a4; }
+.cal-vitrail .cal-grille > .js:nth-child(n) { background: #35573a; }
+.cal-vitrail .cal-grille > .case.vide { background: #4a423a; }
+.cal-vitrail .case.choisi { background: #d5a13f !important; }
+.cal-vitrail .case.aujourdhui { background: #8c1c1c !important; color: #fbe9bd; }
+.cal-vitrail .case.aujourdhui::after { display: none; }
+.cal-vitrail .case i { width: 7px; height: 7px; margin-left: -3.5px; border-radius: 0; transform: rotate(45deg); background: #b7862b; }
+.cal-vitrail .case.aujourdhui i { background: #fbe9bd; }
+
+/* ==================== Le calendrier en grande étiquette ==================== */
+.cal-etiquette { padding-top: 46px; border-radius: 3px;
+  background: linear-gradient(rgba(246,238,215,.86), rgba(246,238,215,.9)), url(../assets/deco/papiers/etiquette-large.webp) 50% 50% / cover;
+  clip-path: polygon(15% 0, 85% 0, 100% 6%, 100% 100%, 0 100%, 0 6%); }
+.oeillet { position: absolute; top: 14px; left: 50%; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #3b281b; box-shadow: 0 0 0 4px #c49a52, 0 0 0 5px #6d5126, inset 0 2px 3px rgba(0,0,0,.6); }
+.cal-etiquette .t-titre { padding: 2px 10px; border: 2.5px solid #8c1c1c; border-radius: 4px; color: #8c1c1c; font: 400 20px/1.2 "Special Elite", monospace; transform: rotate(-2deg); }
+.cal-etiquette .case.aujourdhui::after { border-color: #8c1c1c; border-style: double; border-width: 4px; }
+.cal-vitrail input, .cal-etiquette input { background: rgba(255,255,255,.65) !important; color: #22160e !important; }
+
+/* ==================== Attaches sur les tuiles ==================== */
+.tuile > .scotch { z-index: 6; left: 74%; }
+[data-attache="pinces"] .tuile > .scotch { top: -31px; }
+.t-priorites { padding-top: 26px; }
+.t-loge > .scotch, .t-cours > .scotch, .t-temps > .scotch { top: -10px; }
+[data-attache="scotch"] .tuile > .scotch { opacity: .85; }
+
+/* ==================== Stickers et trésors ==================== */
+.sticker { position: absolute; z-index: 7; width: clamp(46px, 13vw, 64px); height: auto; pointer-events: none; transform: rotate(var(--r, 0deg)); filter: drop-shadow(0 2px 1.5px rgba(0,0,0,.4)); }
+[data-stickers="0"] .sticker { display: none; }
+.coin-hg { top: -16px; left: -10px; } .coin-hd { top: -16px; right: -10px; }
+.coin-bg { bottom: -14px; left: -10px; } .coin-bd { bottom: -14px; right: -10px; }
+.sticker.neuf { animation: colle .5s cubic-bezier(.3,1.6,.5,1); }
+@keyframes colle { from { transform: rotate(var(--r)) scale(.3); opacity: 0; } to { transform: rotate(var(--r)) scale(1); opacity: 1; } }
+.tresor { position: absolute; z-index: 8; width: 66px; height: 66px; padding: 4px; border: 0; background: none; cursor: pointer; transform: rotate(var(--r, 0deg));
+  transition: transform .3s cubic-bezier(.3,1.4,.5,1), opacity .3s ease-out; }
+.tresor.coin-hd { top: -22px; right: 6px; } .tresor.coin-bd { bottom: -20px; right: 8px; } .tresor.coin-bg { bottom: -20px; left: 8px; }
+.tresor img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 5px rgba(255,228,150,.85)) drop-shadow(0 3px 2px rgba(0,0,0,.45)); }
+.tresor::after { content: ""; position: absolute; right: 2px; top: 2px; width: 14px; height: 14px; background: #fff7d6;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: scintille 1.6s ease-out .8s 3 both; }
+@keyframes scintille { 0%, 100% { transform: scale(.4) rotate(0); opacity: .2; } 50% { transform: scale(1.1) rotate(45deg); opacity: 1; } }
+.tresor:active { transform: rotate(var(--r)) scale(.92); }
+.tresor.ramasse { transform: rotate(0) scale(1.5) translateY(-20px); opacity: 0; }
+
+/* ==================== La carte du jour ==================== */
+.t-carte { color: #f2e8d2; border-radius: 8px; background: #1d3a2b;
+  background-image: radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.1), transparent 60%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='1.2' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 .1 0 0 0 0 .05 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow: inset 0 0 0 3px #b8913f, inset 0 0 0 5px #1d3a2b, inset 0 0 0 6px rgba(184,145,63,.6), 0 16px 26px -14px rgba(0,0,0,.65); }
+.carte-jeu { display: flex; gap: 14px; align-items: center; }
+.carte-3d { flex: none; position: relative; width: clamp(96px, 30vw, 124px); aspect-ratio: 300 / 520; padding: 0; border: 0; background: none; cursor: pointer; perspective: 900px; border-radius: 8px; }
+.face { position: absolute; inset: 0; overflow: hidden; border-radius: 7px; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 8px 14px rgba(0,0,0,.5);
+  transition: transform .65s cubic-bezier(.3,1.15,.4,1); }
+.dos { display: grid; place-items: end center; background: var(--dos) 50% 40% / cover, #1b2a3a; border: 5px solid #ecdfc2; outline: 1px solid #b8913f; outline-offset: -9px; }
+.dos span { margin-bottom: 10px; padding: 2px 8px; background: #ecdfc2; color: #2a1c12; border-radius: 3px; font: 15px/1.2 "Patrick Hand", cursive; }
+.recto { transform: rotateY(180deg); background: #ecdfc2; }
+.recto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.retournee .dos { transform: rotateY(-180deg); }
+.retournee .recto { transform: rotateY(0); }
+.carte-invite { margin: 0; font: 20px/1.3 "Patrick Hand", cursive; }
+.carte-texte h3 { margin: 0 0 6px; font: 400 23px/1.1 "Permanent Marker", cursive; color: #f3d68e; }
+.carte-texte p { margin: 0; font: 20px/1.3 "Patrick Hand", cursive; }
+.carte-texte:focus { outline: none; }
+.carte-note { margin: 12px 0 0; font-size: 13px; opacity: .8; }
+@media (prefers-reduced-motion: reduce) { .face { transition: none; } }
+
+/* ==================== Le cabinet (tuile) ==================== */
+.t-cabinet { color: #f3e7d3; border-radius: 6px 6px 3px 3px; background: linear-gradient(90deg, rgba(0,0,0,.25), transparent 12%, transparent 88%, rgba(0,0,0,.25)), linear-gradient(#5a3a24, #3c2617);
+  box-shadow: inset 0 0 0 4px #2b1a0f, inset 0 0 0 6px #7a5434, 0 16px 26px -14px rgba(0,0,0,.65); }
+.cab-rayon { display: flex; align-items: flex-end; gap: 8px; min-height: 78px; margin: 2px 0 8px; padding: 0 6px 16px; background: var(--bord) 0 100% / auto 16px repeat-x; }
+.cab-rayon img { height: 62px; width: auto; max-width: 25%; object-fit: contain; filter: drop-shadow(0 4px 3px rgba(0,0,0,.55)); }
+.cab-rayon .petit { align-self: center; color: inherit; opacity: .85; }
+.t-cabinet .petit { color: inherit; opacity: .9; }
+
+/* ==================== La guirlande de fanions ==================== */
+.guirlande { position: relative; height: 92px; margin: -14px -12px -18px; pointer-events: none; }
+.guirlande svg { position: absolute; left: 0; top: 0; width: 100%; height: 60px; }
+.guirlande img { position: absolute; width: clamp(30px, 8.5vw, 54px); margin-left: calc(clamp(30px, 8.5vw, 54px) / -2); transform: rotate(var(--r)); transform-origin: 50% 0; filter: drop-shadow(0 4px 3px rgba(0,0,0,.35)); }
+@media (min-width: 760px) { .guirlande { margin: -22px -22px -24px; height: 104px; } }
+
+/* ==================== La fiche d'un objet ==================== */
+.fiche .fiche-corps { display: grid; justify-items: center; text-align: center; gap: 4px; padding: 22px 18px calc(18px + env(safe-area-inset-bottom)); }
+.fiche-tampon { margin: 0 0 4px; padding: 0 10px; border: 2px solid var(--accent); border-radius: 4px; color: var(--accent); transform: rotate(-3deg); font-size: 14px; }
+.fiche-img { width: min(62vw, 220px); max-height: 240px; object-fit: contain; filter: drop-shadow(0 10px 10px rgba(0,0,0,.4)); animation: apparait .45s cubic-bezier(.3,1.4,.5,1); }
+@keyframes apparait { from { transform: scale(.6) rotate(-8deg); opacity: 0; } }
+.fiche h2 { margin: 6px 0 0; font: 400 26px/1.15 "Permanent Marker", cursive; }
+.fiche-texte { margin: 0; max-width: 34ch; font: 21px/1.35 "Patrick Hand", cursive; }
+.fiche .feuille-actions { margin-top: 12px; width: 100%; }
+.fiche a.btn-sobre { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .fiche-img, .sticker.neuf { animation: none; } .tresor::after { animation: none; opacity: .8; } .carillon.tinte { animation: none; } }
+
+/* ==================== La page du cabinet ==================== */
+.cabinet { display: grid; gap: 26px; }
+.cab-chiffres { margin: 0; padding: 8px 14px; background: var(--papier); box-shadow: var(--ombre); transform: rotate(-.6deg); font: 20px/1.35 "Patrick Hand", cursive; }
+.cab-chiffres b { font: italic 400 30px "Bodoni Moda", serif; }
+.meuble { padding: 14px 12px 6px; border-radius: 10px 10px 4px 4px; color: #f3e7d3;
+  background: linear-gradient(90deg, rgba(0,0,0,.3), transparent 6%, transparent 94%, rgba(0,0,0,.3)), url(../assets/textures/woodfloor.png) 0 0 / 260px, #4a2f1c; background-blend-mode: normal, multiply, normal;
+  box-shadow: inset 0 0 0 5px #2a190e, inset 0 0 0 8px #8a6340, 0 20px 30px -16px rgba(0,0,0,.7); }
+.meuble-titre, .planche-stickers h2, .cartes-tirees h2 { margin: 2px 4px 12px; font: 400 24px/1.1 "Permanent Marker", cursive; }
+.etageres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.etageres li { display: grid; padding: 8px 4px 18px; background: var(--bord) 0 100% / auto 16px repeat-x; }
+.cab-objet { display: grid; justify-items: center; align-content: end; gap: 4px; min-height: 128px; padding: 4px; border: 0; background: none; color: inherit; font: 13px/1.2 "Special Elite", monospace; text-align: center; cursor: pointer; border-radius: 8px; }
+.cab-objet img { height: 82px; width: 100%; object-fit: contain; filter: drop-shadow(0 6px 4px rgba(0,0,0,.55)); transition: transform .2s cubic-bezier(.3,1.4,.5,1); }
+button.cab-objet:active img { transform: scale(.94); }
+@media (hover: hover) { button.cab-objet:hover img { transform: translateY(-4px) rotate(-3deg); } }
+.cab-objet.manque { cursor: default; opacity: .9; }
+.cab-objet.manque img { filter: brightness(0) opacity(.32); }
+.cab-objet.manque span { opacity: .7; font: 22px/1 "Permanent Marker", cursive; }
+.planche-stickers { padding: 16px 14px; background: #fbf7ee; color: #2a1c12; border-radius: 6px; box-shadow: var(--ombre);
+  background-image: linear-gradient(rgba(42,28,18,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(42,28,18,.06) 1px, transparent 1px); background-size: 22px 22px; }
+.planche-stickers .petit { color: #4d3a2c; margin: -6px 4px 10px; }
+.stickers-liste { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.stickers-liste .cab-objet { min-height: 112px; }
+.stickers-liste .cab-objet img { height: 70px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
+.stickers-liste .cab-objet.manque img { filter: grayscale(1) opacity(.18); }
+.stickers-liste .cab-objet.manque { outline: 2px dashed rgba(42,28,18,.25); outline-offset: -4px; }
+.cartes-tirees ul { display: flex; gap: 12px; margin: 0; padding: 4px 2px 10px; list-style: none; overflow-x: auto; scrollbar-width: thin; }
+.cartes-tirees li { flex: none; display: grid; gap: 6px; width: 96px; font-size: 13px; }
+.cartes-tirees img { width: 96px; border-radius: 5px; box-shadow: 0 6px 10px rgba(0,0,0,.4); }
+.cartes-tirees b { display: block; font: 17px/1.15 "Patrick Hand", cursive; font-weight: normal; }
+.cartes-tirees small { opacity: .85; }
+.cartes-tirees h2 { color: var(--encre); }
+.planche-semaine { position: relative; margin: 10px auto 0; max-width: 520px; padding: 14px 14px 12px; background: #fbf7ee; color: #2a1c12; box-shadow: var(--ombre); transform: rotate(.6deg); }
+.planche-semaine img { display: block; width: 100%; height: auto; }
+.planche-semaine figcaption { margin-top: 10px; font-size: 14px; line-height: 1.4; }
+.planche-semaine figcaption b { display: block; font: 400 20px "Permanent Marker", cursive; }
+.credits { text-align: center; }
+@media (min-width: 760px) {
+  .etageres { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .stickers-liste { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .cabinet { max-width: 1000px; margin: 0 auto; }
+}
+
+/* ==================== L'atelier de déco ==================== */
+.atelier { display: grid; gap: 22px; max-width: 1100px; margin: 0 auto; }
+.atelier-intro { margin: 0; padding: 10px 14px; background: var(--papier); box-shadow: var(--ombre); font: 19px/1.35 "Patrick Hand", cursive; transform: rotate(-.4deg); }
+.apercu-tete .accueil-bento { padding: 0; }
+.apercu-tete .bento-tete { margin: 0; }
+.bloc-deco { margin: 0; padding: 18px 14px 14px; border: 0; background: var(--papier); border-radius: 6px; box-shadow: var(--ombre); min-width: 0; }
+.bloc-deco legend { float: left; width: 100%; margin: 0 0 8px; padding: 0; font: 400 25px/1.1 "Permanent Marker", cursive; }
+.bloc-deco .sous-titre { clear: both; margin: 16px 0 8px; font: 21px "Patrick Hand", cursive; }
+.bloc-deco > .petit { clear: both; margin: 0 0 12px; }
+.grille-deco { clear: both; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 4px; }
+.grille-deco + .grille-deco { margin-top: 14px; }
+.choix-deco { position: relative; display: grid; gap: 6px; padding: 8px; border: 2px solid transparent; border-radius: 10px; cursor: pointer; background: rgba(0,0,0,.035); }
+[data-amb="nuit"] .choix-deco { background: rgba(255,255,255,.04); }
+.choix-deco input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.choix-deco:has(input:checked) { border-color: var(--encre); background: rgba(247,226,124,.28); }
+[data-amb="nuit"] .choix-deco:has(input:checked) { background: rgba(247,226,124,.1); }
+.choix-deco:has(input:checked)::after { content: "choisi"; position: absolute; top: 6px; right: 6px; padding: 0 6px; border: 2px solid var(--accent); border-radius: 4px; background: var(--papier); color: var(--accent); font-size: 13px; transform: rotate(4deg); }
+.bascule:has(input:checked)::after { content: "posé"; }
+.choix-deco:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.choix-deco .nm { font-size: 15px; line-height: 1.25; }
+.choix-deco small { display: block; margin-top: 2px; font-size: 13px; color: var(--encre-douce); }
+.ap { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 6px; background: #d9cbb0; }
+.ap img { width: 100%; height: 100%; object-fit: cover; }
+.ap-horloge, .ap-bascule { background: rgba(0,0,0,.05); }
+.ap-horloge img, .ap-bascule img { object-fit: contain; padding: 6px; }
+.grille-deco.large .ap { aspect-ratio: 16 / 10; }
+.ap-univers.ap-grenier { background: var(--grain), #c99a62; }
+.ap-univers.ap-foret { background: url(../assets/deco/fonds/foret.webp) 50% 30% / cover; }
+.ap-univers.ap-grunge { background: url(../assets/deco/fonds/grunge.webp) 50% 10% / cover; }
+.ap-univers.ap-patchwork { background: url(../assets/deco/fonds/patchwork.webp) 0 0 / 320px; }
+.ap-univers.ap-reverie { background: url(../assets/deco/fonds/reverie.webp) 0 0 / 360px; }
+.mini-ciel, .mini-verre { display: block; background: linear-gradient(#4f8fd0, #cfe7f2); }
+.mini-ciel { width: 100%; height: 100%; }
+.mini-verre { height: 80%; }
+.m-arche { width: 76%; border: 5px solid #7a4f2c; border-bottom: 0; border-radius: 46% 46% 3px 3px / 36% 36% 3px 3px; }
+.m-hublot { aspect-ratio: 1; border-radius: 50%; border: 6px solid #b8913f; box-shadow: 0 0 0 2px #6d5126; }
+.m-vitrail { aspect-ratio: .72; clip-path: polygon(0 100%, 0 42%, 8% 21%, 22% 9%, 50% 0, 78% 9%, 92% 21%, 100% 42%, 100% 100%); border: 4px solid #7d1a1a; outline: 3px solid #c38e2b; outline-offset: -8px; }
+.m-croisee { width: 54%; border: 4px solid #ece4d1; box-shadow: -14px 0 0 -2px #4a6747, 14px 0 0 -2px #4a6747; background: linear-gradient(90deg, transparent 47%, #ece4d1 47% 53%, transparent 0), linear-gradient(transparent 31%, #ece4d1 31% 36%, transparent 0 64%, #ece4d1 64% 69%, transparent 0), linear-gradient(#4f8fd0, #cfe7f2); }
+.mini-laiton { width: 70%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #fbf5e6 0 62%, #7a5a26 63% 64%, transparent 65%), radial-gradient(circle at 35% 30%, #f6dc9a, #c79f55 45%, #7a5a26); }
+.mini-cal { position: relative; display: block; width: 74%; height: 80%; background: #fbf5e6 repeating-linear-gradient(transparent 0 10px, #d9cdb2 10px 11px); box-shadow: 0 4px 6px rgba(0,0,0,.25); }
+.mini-cal i { position: absolute; left: 0; right: 0; top: 0; height: 26%; background: #2a1c12; }
+.mc-vitrail { background: #f6ecd2; background-image: linear-gradient(90deg, #2a2520 2px, transparent 2px), linear-gradient(#2a2520 2px, transparent 2px); background-size: 14% 18%; }
+.mc-vitrail i { height: 30%; background: var(--plaque) 50% 50% / 100% 100%; }
+.mc-etiquette { clip-path: polygon(15% 0, 85% 0, 100% 10%, 100% 100%, 0 100%, 0 10%); background: #ece0c0; }
+.mc-etiquette i { left: 44%; right: 44%; top: 8%; height: auto; aspect-ratio: 1; border-radius: 50%; background: #3b281b; box-shadow: 0 0 0 3px #c49a52; }
+.mini-eph { display: grid; place-items: center; width: 52%; height: 84%; font: 600 34px/1 "Bodoni Moda", serif; color: #2a1c12; background: #fbf7ee; border-top: 9px solid #b3261e; box-shadow: 0 3px 0 #e9dfc9, 0 6px 0 #ddd0b2, 0 8px 10px rgba(0,0,0,.25); }
+.me-ticket { border-top: 0; background: #f1e6c9; box-shadow: inset 0 0 0 2px #3a2c1e, inset 0 0 0 5px #f1e6c9, inset 0 0 0 6px #3a2c1e, 0 6px 10px rgba(0,0,0,.25); }
+.mini-papier { position: relative; display: block; width: 64%; height: 58%; margin-top: 16%; background: #fbf5e6; box-shadow: 0 4px 8px rgba(0,0,0,.25); }
+.ap-attache { overflow: visible; background: #c99a62; background-image: var(--grain); }
+.atelier-fin { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.atelier-fin .btn { display: inline-flex; align-items: center; text-decoration: none; }
+.atelier-fin .btn-sobre.sur { border-color: var(--accent); color: var(--accent); }
+.lien-atelier { display: grid; gap: 2px; text-decoration: none; }
+.lien-atelier b { font: 400 22px "Permanent Marker", cursive; }
+.lien-atelier span { font-size: 14px; color: var(--encre-douce); }
+@media (min-width: 760px) {
+  .grille-deco { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grille-deco.large { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}

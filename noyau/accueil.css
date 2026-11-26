@@ -27,12 +27,14 @@ a.tuile:active { transform: translateY(2px) scale(.99); }
 [data-amb="nuit"] .tuile input:not([type="checkbox"]):not([type="radio"]) { background: rgba(0,0,0,.25); }
 
 /* Spans : téléphone (2 colonnes) */
-.t-lucarne, .t-meteo, .t-calendrier, .t-priorites, .t-temps, .t-musique, .t-devise, .t-cours { grid-column: span 2; }
+.t-lucarne, .t-meteo, .t-calendrier, .t-priorites, .t-temps, .t-musique, .t-devise, .t-cours, .t-carte { grid-column: span 2; }
 
 /* ---------- La lucarne ---------- */
 .t-lucarne { padding: 14px 14px 0; background: url(../assets/textures/plaster.png) 0 0 / 180px, #6d5240; background-blend-mode: multiply; color: #f6ecdf; overflow: hidden; }
-.vitre { position: relative; aspect-ratio: 16 / 9.5; border: 9px solid #7a4f2c; border-bottom-width: 0; border-radius: 46% 46% 4px 4px / 34% 34% 4px 4px; overflow: hidden;
-  box-shadow: inset 0 0 0 2px #4a2f19, inset 0 8px 18px rgba(0,0,0,.35); background: #16244b; }
+.vitre { position: relative; aspect-ratio: 16 / 9.5; display: flex; justify-content: center; }
+.verre { position: relative; display: block; flex: 1 1 auto; height: 100%; margin: 0; padding: 0; border: 0; overflow: hidden; background: #16244b; color: inherit; cursor: pointer; }
+.verre:focus-visible { outline-offset: -5px; }
+.cadre-arche .verre { border: 9px solid #7a4f2c; border-bottom-width: 0; border-radius: 46% 46% 4px 4px / 34% 34% 4px 4px; }
 .lucarne-ciel { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .croisee { position: absolute; inset: 0; background: linear-gradient(90deg, transparent calc(50% - 4px), #7a4f2c calc(50% - 4px), #8c5d35 50%, #7a4f2c calc(50% + 4px), transparent calc(50% + 4px)), linear-gradient(transparent calc(55% - 4px), #7a4f2c calc(55% - 4px), #8c5d35 55%, #7a4f2c calc(55% + 4px), transparent calc(55% + 4px)); filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
 .reflet { position: absolute; inset: 0; background: linear-gradient(118deg, transparent 30%, rgba(255,255,255,.16) 38%, transparent 44%, transparent 60%, rgba(255,255,255,.08) 64%, transparent 68%); pointer-events: none; }
@@ -155,7 +157,6 @@ a.tuile:active { transform: translateY(2px) scale(.99); }
 /* ---------- Les priorités : un post-it punaisé ---------- */
 .t-priorites { padding: 26px 16px 14px; background: var(--postit); color: #2a2110; border-radius: 2px; transform: rotate(-.6deg);
   box-shadow: 0 1px 1px rgba(0,0,0,.15), 0 18px 22px -12px rgba(0,0,0,.55); }
-.punaise { position: absolute; top: 8px; left: 50%; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f08a80, #b3261e 60%, #6e1510); box-shadow: 0 3px 3px rgba(0,0,0,.35); }
 .prio { margin: 0 0 8px; padding: 0; list-style: none; }
 .prio label { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font: 21px/1.2 "Patrick Hand", cursive; }
 .prio input { flex: none; width: 22px; height: 22px; accent-color: #2a2110; }
@@ -229,7 +230,7 @@ a.tuile:active { transform: translateY(2px) scale(.99); }
   .accueil-bento { padding: 22px 22px 0; }
   .bento-tete { grid-template-columns: minmax(0, 3.2fr) minmax(0, 1.15fr) minmax(0, 1.15fr); gap: 16px; margin-bottom: 16px; align-items: stretch; }
   .bento-tete .t-lucarne { grid-column: auto; display: flex; flex-direction: column; }
-  .t-lucarne .vitre { flex: 1; aspect-ratio: auto; min-height: 260px; }
+  .t-lucarne .vitre { flex: 1; aspect-ratio: auto; min-height: 270px; }
   .t-ephemeride { display: flex; flex-direction: column; justify-content: center; }
   .bento { display: block; column-count: 2; column-gap: 16px; }
   .bento > .tuile { break-inside: avoid; margin: 0 0 16px; width: 100%; }

@@ -18,7 +18,8 @@ La référence complète est la Bible du Grenier : https://claude.ai/artifact/Mb
 - Suite BTS (`malles/cours/suite/index.html`) : fichier de Louenn, mis à jour par Louenn de temps en temps. Pour une nouvelle version : remplacer le fichier tel quel, remettre le lien « Grenier » avant le dernier `</body>`, et changer `LOURDS` dans `sw.js`. Même règle (`LOURDS`) quand Carnet change.
 - Les gros fichiers (Carnet, Suite, `vendor/`, modèles MediaPipe) vivent dans le cache `LOURDS`, gardé d'une version à l'autre : ne pas les mettre dans `COQUILLE`.
 - Filtre coiffure (`malles/loge/filtre.js`, `cheveux.js`) : MediaPipe et three.js sont embarqués dans `vendor/`, modèles compris. Dans `vendor/mediapipe/vision_bundle.mjs`, l'envoi de statistiques vers Google est coupé : à refaire si on met à jour MediaPipe (voir `vendor/mediapipe/NOTICE.md`).
-- Noms de classes : vérifier qu'un nom n'existe pas déjà ailleurs (`.miroir`, `.flash`, `.rayon` ont déjà causé des bugs).
+- Noms de classes : vérifier qu'un nom n'existe pas déjà ailleurs (`.miroir`, `.flash`, `.rayon`, `.apercu`, `.sticker` ont déjà causé des bugs).
+- Décor (`noyau/decor.js`, `decor.css`) : un seul réglage (localStorage `grenier.decor`) appliqué sur toutes les pages via `appliquerAmbiance()` d'`outils.js`. L'univers impose l'ambiance (nuit ou claire). Les attaches s'appliquent à tout élément `.scotch`. Images dans `assets/deco/` (crédits dans `assets/deco/CREDITS.md`) : gardées dans le cache `LOURDS`, donc pour modifier une image, lui donner un nouveau nom plutôt que l'écraser. Rituels (trésor du jour, carte du jour, cabinet) : `noyau/curiosites.js`, état dans la meta IndexedDB `cabinet`.
 - Mobile d'abord (Samsung A14), cibles tactiles de 44 px minimum, rien qui dépasse à 360 px.
 - Textes visibles et noms de fichiers livrés : vrais espaces, jamais de tirets du bas.
 - Tester en local (serveur http + navigateur) avant d'envoyer : rendu 360 px et PC, service worker, hors connexion.

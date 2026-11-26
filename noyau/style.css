@@ -322,3 +322,60 @@ main { outline: none; padding-bottom: calc(110px + env(safe-area-inset-bottom));
 .noscript { padding: 30px; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ==========================================================================
+   Le décor (noyau/decor.js) : univers et attaches, sur toutes les pages
+   ========================================================================== */
+/* Univers : un papier peint fixe derrière tout ; l'ambiance jour ou nuit suit l'univers. */
+html:not([data-univers="grenier"]) body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+[data-univers="foret"] { --accent: #e3b14f; }
+[data-univers="foret"] body::before { background: linear-gradient(rgba(18,12,6,.36), rgba(18,12,6,.66)), url(../assets/deco/fonds/foret.webp) 50% 0 / cover; }
+[data-univers="grunge"] { --accent: #d98447; }
+[data-univers="grunge"] body::before { background: linear-gradient(rgba(6,9,7,.42), rgba(6,9,7,.7)), url(../assets/deco/fonds/grunge.webp) 50% 0 / cover; }
+[data-univers="patchwork"] body::before { background: linear-gradient(rgba(251,245,230,.12), rgba(251,245,230,.12)), url(../assets/deco/fonds/patchwork.webp) 0 0 / 640px auto; }
+[data-univers="reverie"] { --accent: #8a3f86; --postit: #f3dcef; }
+[data-univers="reverie"] body::before { background: url(../assets/deco/fonds/reverie.webp) 0 0 / 720px; }
+/* sur un papier peint chargé, les titres posés au mur deviennent des étiquettes */
+html:not([data-univers="grenier"]) :is(.t-section, .pied) { background: var(--papier); box-shadow: var(--ombre); }
+html:not([data-univers="grenier"]) .t-section { display: table; padding: 4px 14px 2px; transform: rotate(-1.2deg); }
+html:not([data-univers="grenier"]) .pied { width: fit-content; margin-inline: auto; border-radius: 4px; }
+
+/* Attaches : washi, pinces, punaises ou scotch (chaque .scotch reçoit ses variables dans decor.js).
+   Chaque style pose toutes ses propriétés, pour que les aperçus de l'atelier (data-attache-demo) gagnent. */
+[data-attache="washi"] .scotch {
+  width: 86px; height: 22px; margin-left: -43px; top: -11px; z-index: 4; border-radius: 0; filter: none; opacity: .94;
+  background: var(--washi, rgba(250,245,225,.72)) var(--wx, 0) 50% / auto 100% repeat-x;
+  transform: rotate(var(--wr, 2deg)); box-shadow: none;
+  clip-path: polygon(0 8%, 4% 0, 2% 22%, 5% 40%, 1% 62%, 4% 82%, 0 100%, 96% 100%, 100% 86%, 97% 64%, 100% 44%, 96% 24%, 99% 4%, 96% 0);
+}
+[data-attache="pinces"] .scotch {
+  width: 40px; height: 46px; margin-left: -20px; top: -27px; z-index: 4; border-radius: 0; opacity: 1;
+  background: var(--pince) 50% 50% / contain no-repeat; clip-path: none; box-shadow: none;
+  transform: rotate(calc(var(--wr, 0deg) / 2)); filter: drop-shadow(0 3px 2px rgba(0,0,0,.45));
+}
+[data-attache="punaises"] .scotch {
+  width: 18px; height: 18px; margin-left: -9px; top: -6px; z-index: 4; border-radius: 50%; clip-path: none; opacity: 1; filter: none;
+  background: radial-gradient(circle at 34% 30%, #fbe3b0, #c7963d 45%, #6b4513 80%); transform: none;
+  box-shadow: 0 4px 3px -1px rgba(0,0,0,.45);
+}
+.choix-deco .mini-papier[data-attache-demo="washi"] .scotch {
+  width: 86px; height: 22px; margin-left: -43px; top: -11px; z-index: 4; border-radius: 0; filter: none; opacity: .94;
+  background: var(--washi, rgba(250,245,225,.72)) var(--wx, 0) 50% / auto 100% repeat-x;
+  transform: rotate(var(--wr, 2deg)); box-shadow: none;
+  clip-path: polygon(0 8%, 4% 0, 2% 22%, 5% 40%, 1% 62%, 4% 82%, 0 100%, 96% 100%, 100% 86%, 97% 64%, 100% 44%, 96% 24%, 99% 4%, 96% 0);
+}
+.choix-deco .mini-papier[data-attache-demo="pinces"] .scotch {
+  width: 40px; height: 46px; margin-left: -20px; top: -27px; z-index: 4; border-radius: 0; opacity: 1;
+  background: var(--pince) 50% 50% / contain no-repeat; clip-path: none; box-shadow: none;
+  transform: rotate(calc(var(--wr, 0deg) / 2)); filter: drop-shadow(0 3px 2px rgba(0,0,0,.45));
+}
+.choix-deco .mini-papier[data-attache-demo="punaises"] .scotch {
+  width: 18px; height: 18px; margin-left: -9px; top: -6px; z-index: 4; border-radius: 50%; clip-path: none; opacity: 1; filter: none;
+  background: radial-gradient(circle at 34% 30%, #fbe3b0, #c7963d 45%, #6b4513 80%); transform: none;
+  box-shadow: 0 4px 3px -1px rgba(0,0,0,.45);
+}
+.choix-deco .mini-papier[data-attache-demo="scotch"] .scotch {
+  width: 58px; height: 18px; margin-left: -29px; top: -9px; border-radius: 0; opacity: 1; filter: none;
+  background: rgba(250, 245, 225, .72); transform: rotate(3deg); box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  clip-path: polygon(3% 0, 97% 4%, 100% 100%, 0 94%);
+}

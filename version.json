@@ -1,7 +1,24 @@
 {
-  "version": "0.6.0",
-  "date": "2026-11-25",
+  "version": "0.7.0",
+  "date": "2026-11-26",
   "historique": [
+    {
+      "version": "0.7.0",
+      "date": "2026-11-26",
+      "titre": "L'atelier de déco et le cabinet de curiosités",
+      "notes": [
+        "L'atelier de déco : choisis l'univers, la fenêtre, la vue, l'horloge, le calendrier, l'éphéméride et les attaches. Tout s'applique sur toutes les pages.",
+        "Cinq univers : le grenier, Forêt dorée, Grunge, Patchwork et Rêverie.",
+        "La fenêtre : arche, hublot, vitrail ou croisée à volets, avec du lierre, des lanternes et un carillon qui tinte quand on le touche.",
+        "Six vues : le vrai ciel, la pluie d'étoiles, la lune et les lucioles, le tourbillon, la phalène, le cactus en fleur. Touche la vitre pour changer.",
+        "L'horloge a une trotteuse et sept cadrans. Touche-la pour changer.",
+        "Le calendrier en vitrail ou en grande étiquette, l'éphéméride en ticket ancien.",
+        "Washi, pinces, punaises ou scotch tiennent tes papiers.",
+        "Chaque jour, un trésor se cache sur l'accueil : ramasse-le pour ton cabinet de curiosités. Les stickers trouvés se collent sur ton accueil.",
+        "Chaque jour, une carte de tarot à retourner : une question pour la journée.",
+        "Dans le cabinet, une planche d'Ernst Haeckel change chaque semaine."
+      ]
+    },
     {
       "version": "0.6.0",
       "date": "2026-11-25",

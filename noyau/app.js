@@ -1,6 +1,7 @@
 // Noyau du Grenier : navigation, accueil, capture rapide, ambiances, mises à jour.
 import * as store from './store.js';
 import { MALLES, malle } from './malles.js';
+import { brancherDecor, appliquerDecor, lireDecor, UNIVERS } from './decor.js';
 // carton ouvert, dessiné pour la Boîte vide
 const CARTON = `<svg class="carton-vide" viewBox="0 0 160 120" aria-hidden="true">
   <path d="M30 52 L80 64 L130 52 L130 104 L80 116 L30 104 Z" fill="#b98a55" stroke="#6e4a26" stroke-width="2"/>
@@ -26,14 +27,9 @@ const AMBIANCES = [
   ['nuit', 'Nuit', 'le grenier à la bougie'],
 ];
 function lireAmbiance() { try { return localStorage.getItem('grenier.ambiance') || 'auto'; } catch (e) { return 'auto'; } }
-function appliquerAmbiance(a) {
-  const h = new Date().getHours();
-  const reelle = a === 'auto' ? (h >= 20 || h < 7 ? 'nuit' : 'liege') : a;
-  document.documentElement.dataset.amb = reelle;
-  const meta = $('meta[name="theme-color"]');
-  if (meta) meta.content = { liege: '#3a2618', kraft: '#4a3622', nuit: '#14110f' }[reelle];
-}
-function choisirAmbiance(a) { try { localStorage.setItem('grenier.ambiance', a); } catch (e) { /* rien */ } appliquerAmbiance(a); }
+// l'ambiance réelle tient compte de l'univers choisi dans l'atelier de déco (voir decor.js)
+function appliquerAmbiance() { appliquerDecor(); }
+function choisirAmbiance(a) { try { localStorage.setItem('grenier.ambiance', a); } catch (e) { /* rien */ } appliquerAmbiance(); }
 
 /* ---------- Petits outils ---------- */
 let toastTimer;
@@ -83,6 +79,8 @@ async function vueAccueil() {
 
 function pied() {
   return `<footer class="pied">
+    <a href="#/deco">Atelier de déco</a><span aria-hidden="true">·</span>
+    <a href="#/cabinet">Cabinet</a><span aria-hidden="true">·</span>
     <a href="#/reglages">Réglages</a><span aria-hidden="true">·</span>
     <a href="#/nouveautes">Quoi de neuf</a><span aria-hidden="true">·</span>
     <span>version ${esc(VERSION)}</span>
@@ -227,8 +225,10 @@ async function vueReglages() {
   const caches = new Set(widgetsCaches());
   vue.innerHTML = `${barre('Réglages')}
   <section class="page reglages">
+    <a class="bloc lien-atelier" href="#/deco"><b>L’atelier de déco</b><span>Univers, fenêtre, horloge, calendrier, attaches et stickers</span></a>
     <fieldset class="bloc">
       <legend>Ambiance</legend>
+      ${(() => { const u = UNIVERS.find((x) => x.id === lireDecor().univers); return u && u.sombre !== null ? `<p class="petit">L’univers ${u.nom} impose l’ambiance ${u.sombre ? 'nuit' : 'claire'}. Reviens à l’univers Le grenier, dans l’atelier, pour choisir ici.</p>` : ''; })()}
       <div class="ambiances">${AMBIANCES.map(([id, nom, desc]) => `
         <label class="amb amb-${id}">
           <input type="radio" name="amb" value="${id}" ${id === actuelle ? 'checked' : ''}>
@@ -405,6 +405,8 @@ async function route() {
   else if (a === 'boite') await vueMalle('boite');
   else if (a === 'nouveautes') await vueNouveautes();
   else if (a === 'reglages') await vueReglages();
+  else if (a === 'deco') { const { rendreAtelier } = await import('./atelier.js'); await rendreAtelier(vue, { barre, pied, toast }); }
+  else if (a === 'cabinet') { const { rendreCabinet } = await import('./curiosites.js'); await rendreCabinet(vue, { barre, pied }); }
   else await vueAccueil();
   window.scrollTo(0, 0);
 }
@@ -448,7 +450,7 @@ function annoncerPartage() {
 
 /* ---------- Démarrage ---------- */
 annoncerPartage();
-appliquerAmbiance(lireAmbiance());
-setInterval(() => appliquerAmbiance(lireAmbiance()), 10 * 60 * 1000);
+brancherDecor();
+setInterval(appliquerAmbiance, 10 * 60 * 1000);
 chargerVersion().finally(route);
 brancherServiceWorker();

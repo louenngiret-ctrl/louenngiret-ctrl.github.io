@@ -1,4 +1,5 @@
 // Petits outils partagés par les malles (Loge, Cours…).
+import { brancherDecor } from './decor.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -31,13 +32,8 @@ const urls = [];
 export function urlPhoto(blob) { const u = URL.createObjectURL(blob); urls.push(u); return u; }
 export function libererPhotos() { while (urls.length) URL.revokeObjectURL(urls.pop()); }
 
-// Ambiance choisie dans le Grenier (même réglage partout).
-export function appliquerAmbiance() {
-  let a = 'auto';
-  try { a = localStorage.getItem('grenier.ambiance') || 'auto'; } catch (e) { /* rien */ }
-  const h = new Date().getHours();
-  document.documentElement.dataset.amb = a === 'auto' ? (h >= 20 || h < 7 ? 'nuit' : 'liege') : a;
-}
+// Ambiance et décor choisis dans le Grenier (même réglage partout : univers, attaches, stickers).
+export function appliquerAmbiance() { brancherDecor(); }
 
 export const JOUR = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 export const aujourdhui = () => new Date().toISOString().slice(0, 10);
