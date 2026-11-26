@@ -4,7 +4,8 @@
 // Réglage sur l'appareil : localStorage « grenier.barre » { pc, tel, noms, ouverts }.
 import * as store from './store.js';
 import { MALLES } from './malles.js';
-import { SECTIONS, lienDe, pageDe } from './plan.js';
+import * as arbre from './arbre.js';
+import { EPINGLE } from './plan.js';
 
 const CLE = 'grenier.barre';
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -30,21 +31,30 @@ function appliquer() {
   h.dataset.railNoms = r.noms ? '1' : '0';
 }
 
-/* ---------- L'arborescence : construite à partir du plan (noyau/plan.js) ---------- */
+/* ---------- L'arborescence : lue dans l'arbre (noyau/arbre.js), modifiable dans l'administration ---------- */
 const lienMalle = (id) => { const m = MALLES.find((x) => x.id === id); return m ? (m.lien || `#/malle/${id}`) : null; };
-const RACINE = [{ nom: 'Ressources', lien: '#/ressources' }, { nom: 'Tableau de bord', lien: '#/' }];
+const RACINE = [{ nom: 'Ressources', lien: '#/ressources' }, { nom: 'Tableau de bord', lien: '#/' }, { nom: 'Administration', lien: '#/admin' }];
+const ETIQ = { page: 'carnet', lien: '', app: 'app' };
+function branche(n, ouverts, prof = 0) {
+  if (n.type !== 'dossier') {
+    const vide = n.type === 'page';
+    return `<li><a class="arbre-ligne${vide ? ' carnet' : ''}" href="${esc(arbre.lienDe(n))}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(n.nom)}</span>${ETIQ[n.type] ? `<span class="tampon-avenir">${ETIQ[n.type]}</span>` : ''}</a></li>`;
+  }
+  const e = arbre.enfants(n.id), ouvert = !!ouverts[n.id];
+  return `<li><div class="arbre-dossier-ligne">
+      <button type="button" class="arbre-ligne dossier" data-dossier="${esc(n.id)}" aria-expanded="${ouvert}" style="--pastille:${arbre.couleurs(n.id).couleur}">
+        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><span class="arbre-dossier" aria-hidden="true"></span><span>${esc(n.nom)}</span>
+      </button>
+      <a class="arbre-aller" href="${esc(arbre.lienDe(n))}" aria-label="Ouvrir ${esc(n.nom)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <ul ${ouvert ? '' : 'hidden'}>${e.length ? e.map((x) => branche(x, ouverts, prof + 1)).join('') : '<li class="arbre-vide">Dossier vide</li>'}</ul></li>`;
+}
 function vueExplorer() {
   const ouverts = lire().ouverts || {};
-  const feuille = (sec, so) => `<li><a class="arbre-ligne${so.lien ? '' : ' carnet'}" href="${esc(lienDe(sec.id, so))}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(so.nom)}</span>${so.lien ? '' : '<span class="tampon-avenir">à construire</span>'}</a></li>`;
-  return `<p class="panneau-note">Les six grandes pages et leurs sous-onglets.</p>
-  <ul class="arbre">${SECTIONS.map((d) => `<li>
-    <div class="arbre-dossier-ligne">
-      <button type="button" class="arbre-ligne dossier" data-dossier="${d.id}" aria-expanded="${!!ouverts[d.id]}" style="--pastille:${d.couleur}">
-        <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg><span class="arbre-dossier" aria-hidden="true"></span><span>${esc(d.nom)}</span>
-      </button>
-      <a class="arbre-aller" href="#/s/${d.id}" aria-label="Ouvrir la page ${esc(d.nom)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    </div>
-    <ul ${ouverts[d.id] ? '' : 'hidden'}>${d.sous.map((so) => feuille(d, so)).join('')}</ul></li>`).join('')}
+  const ep = arbre.epingles();
+  return `${ep.length ? `<p class="panneau-note panneau-epingles"><img src="${EPINGLE}" alt="" aria-hidden="true">Épinglé</p><ul class="arbre arbre-epingles">${ep.map((n) => `<li><a class="arbre-ligne" href="${esc(arbre.lienDe(n))}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(n.nom)}</span></a></li>`).join('')}</ul>` : ''}
+  <p class="panneau-note">Toutes les pages, dossiers et applications. <a href="#/admin/arbre">Réorganiser</a></p>
+  <ul class="arbre">${arbre.enfants(arbre.RACINE).map((n) => branche(n, ouverts)).join('')}
     ${RACINE.map((f) => `<li><a class="arbre-ligne" href="${f.lien}"><span class="arbre-malle" aria-hidden="true"></span><span>${esc(f.nom)}</span></a></li>`).join('')}</ul>`;
 }
 
@@ -54,16 +64,18 @@ const libelle = (o) => { for (const k of CHAMPS) if (typeof o[k] === 'string' &&
 const plat = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 async function sources() {
   const l = [];
-  SECTIONS.forEach((sec) => {
-    l.push({ t: sec.nom, ou: 'Grande page', lien: `#/s/${sec.id}` });
-    sec.sous.forEach((so) => l.push({ t: so.nom, ou: sec.nom, lien: lienDe(sec.id, so) }));
+  arbre.tous().filter((n) => n.id !== arbre.RACINE && !n.corbeille).forEach((n) => {
+    const parent = arbre.noeud(n.parent);
+    l.push({ t: n.nom, ou: n.parent === arbre.RACINE ? 'Grande page' : parent?.nom || '', lien: arbre.lienDe(n) });
   });
   const els = await store.tout().catch(() => []);
   els.forEach((e) => {
     const t = libelle(e); if (!t) return;
-    const p = pageDe(e.malle);
+    if (e.type === 'donnee') return;
+    const p = arbre.pageDe(e.malle);
     l.push({ t, ou: p.nom, lien: p.lien });
   });
+  (await store.lireTout('fichiers').catch(() => [])).filter((f) => !f.corbeille).forEach((f) => { const p = arbre.pageDe(f.parent); l.push({ t: f.nom, ou: `Fichier, ${p.nom}`, lien: p.lien }); });
   try {
     const c = JSON.parse(localStorage.getItem('carnet.state') || 'null');
     if (c) {
@@ -98,7 +110,7 @@ function vueParametres() {
     <div class="rail-places-grille">${PLACES.map(([id, nom]) => `<button type="button" data-place="${id}" aria-pressed="${p === id}">${nom}</button>`).join('')}</div></fieldset>
     <button type="button" class="rail-interrupteur" data-noms aria-pressed="${r.noms}"><span>Noms sous les icônes</span><span class="inter" aria-hidden="true"></span></button>
     <ul class="rail-liens">
-      <li><a href="#/deco">Atelier de déco</a></li><li><a href="#/reglages">Ambiance, tuiles et sauvegarde</a></li>
+      <li><a href="#/admin">Administration : pages, apps, sauvegardes</a></li><li><a href="#/deco">Atelier de déco</a></li><li><a href="#/reglages">Ambiance, tuiles et sauvegarde</a></li>
       <li><a href="#/ressources">Ressources</a></li><li><a href="#/cabinet">Cabinet de curiosités</a></li><li><a href="#/nouveautes">Quoi de neuf</a></li>
     </ul>`;
 }

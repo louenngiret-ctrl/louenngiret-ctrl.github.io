@@ -1,8 +1,10 @@
 // Les menus de My memories, façon écran-titre de jeu : de grandes tuiles inclinées, une barre de description
 // en bas qui dit ce que fait la tuile visée, et les flèches du clavier qui sautent d'une tuile à sa voisine.
-// Accueil (#/accueil) → six grandes pages (#/s/<id>) → sous-onglets (#/s/<id>/<sous>) ; Ressources (#/ressources).
+// Accueil (#/accueil) → les nœuds de l’arbre (#/n/<id>, ancien nom #/s/<id>) : dossiers en tuiles, pages en carnet ; Ressources.
 import * as store from './store.js';
-import { SECTIONS, section, sousOnglet, lienDe, rangement, pageDe, sectionDe, IMG, DENTELLE, COLLAGE } from './plan.js';
+import * as arbre from './arbre.js';
+import * as fichiers from './fichiers.js';
+import { IMG, DENTELLE, EPINGLE, visuel, decoDe } from './plan.js';
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const $ = (s, r = document) => r.querySelector(s);
@@ -11,17 +13,21 @@ const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' })
 const externe = (l) => l && !l.startsWith('#');
 
 /* ---------- Ce qui est commun aux menus ---------- */
+const ICONE_RE = /\/icones\//;
 function tuile(t, { cls = '', liste = '', etat = '' } = {}) {
-  return `<a class="mm-tuile ${cls}" href="${esc(t.lien)}" data-desc="${esc(t.desc)}" style="--c:${t.couleur};--e:${t.encre}">
+  return `<a class="mm-tuile ${cls}${t.epingle ? ' epinglee' : ''}" href="${esc(t.lien)}" data-desc="${esc(t.desc || t.nom)}" style="--c:${t.couleur};--e:${t.encre}">
     <span class="mm-fond" aria-hidden="true"${t.fond ? ` style="--img:url('${t.fond}')"` : ''}></span>
     ${t.dentelle != null ? `<img class="mm-dentelle" src="${DENTELLE(t.dentelle)}" alt="" aria-hidden="true">` : ''}
-    ${t.deco ? `<img class="mm-deco" src="${t.deco.startsWith('timbre') ? COLLAGE(t.deco) : IMG(t.deco)}" alt="" aria-hidden="true" loading="lazy">` : ''}
-    <img class="mm-hero" src="${IMG(t.hero)}" alt="" aria-hidden="true">
+    ${t.deco ? `<img class="mm-deco" src="${decoDe(t.deco)}" alt="" aria-hidden="true" loading="lazy">` : ''}
+    <img class="mm-hero${ICONE_RE.test(t.img) ? ' est-icone' : ''}" src="${t.img}" alt="" aria-hidden="true">
+    ${t.epingle ? `<img class="mm-epingle" src="${EPINGLE}" alt="" aria-hidden="true">` : ''}
     <span class="mm-etiquette"><b>${esc(t.nom)}</b>${etat ? `<span class="mm-etat">${etat}</span>` : ''}</span>
     ${liste ? `<span class="mm-liste">${esc(liste)}</span>` : ''}
-    <span class="sr">. ${esc(t.desc)}</span>
+    <span class="sr">. ${esc(t.desc || '')}</span>
   </a>`;
 }
+/** Les données d'une tuile à partir d'un nœud de l'arbre (couleurs héritées de sa grande page). */
+const versTuile = (n) => ({ ...n, ...arbre.couleurs(n.id), img: visuel(n), lien: arbre.lienDe(n) });
 // La barre du bas dit ce que fait la tuile visée ; les flèches déplacent le focus vers la tuile voisine.
 function brancherMenu(racine, defaut) {
   const bar = $('.mm-desc', racine);
@@ -49,15 +55,20 @@ function brancherMenu(racine, defaut) {
 const filAriane = (morceaux) => `<nav class="mm-fil" aria-label="Où tu es"><ol>${morceaux.map(([n, l], i) => `<li>${l && i < morceaux.length - 1 ? `<a href="${l}">${esc(n)}</a>` : `<span aria-current="page">${esc(n)}</span>`}</li>`).join('')}</ol></nav>`;
 
 /* ---------- L'accueil : le grand menu ---------- */
+const DISPOSITION = ['creation', 'organisation', 'personnel', 'apprentissage', 'quotidien', 'gestion'];
 export function rendreMenu(vue, { pied }) {
   const now = new Date();
-  const tuiles = SECTIONS.map((sec) => tuile({ ...sec, lien: `#/s/${sec.id}` }, { cls: `mm-${sec.id} taille-${sec.taille}`, liste: sec.sous.map((x) => x.nom).join(', ') })).join('');
+  const grandes = arbre.enfants(arbre.RACINE);
+  // la disposition sur mesure tient tant que les six grandes pages de départ sont là, dans leur ordre ;
+  // sinon la grille suit l'ordre choisi dans l'administration
+  const surMesure = grandes.map((n) => n.id).join() === DISPOSITION.join();
+  const tuiles = grandes.map((n) => tuile(versTuile(n), { cls: `${surMesure ? `mm-${n.id} ` : ''}taille-${n.taille || 'm'}`, liste: arbre.enfants(n.id).map((x) => x.nom).join(', ') })).join('');
   const defaut = 'Choisis une grande page pour l’ouvrir. Au clavier, les flèches passent d’une tuile à l’autre.';
   vue.innerHTML = `<section class="mm-menu mm-accueil" aria-labelledby="mm-titre">
     <h1 id="mm-titre" class="sr">Accueil de My memories</h1>
-    <div class="mm-grille">
+    <div class="mm-grille${surMesure ? '' : ' mm-libre'}">
       ${tuiles}
-      ${tuile({ nom: 'Ressources', lien: '#/ressources', couleur: '#1f1a1c', encre: '#f4ead6', hero: 'crapaud-sorcier', deco: 'papillon-bleu', dentelle: 0,
+      ${tuile({ nom: 'Ressources', lien: '#/ressources', couleur: '#1f1a1c', encre: '#f4ead6', img: IMG('crapaud-sorcier'), deco: 'papillon-bleu', dentelle: 0,
         desc: 'Tout ce que tu as rangé, au même endroit : le principal, par catégorie, ou la liste entière.' }, { cls: 'mm-ressources', liste: 'Principal, catégories, ressource' })}
       <div class="mm-outils" role="group" aria-label="Aller plus vite">
         <button type="button" class="mm-rond" data-ouvrir="explorer" data-desc="Explorer : toutes les pages et leurs sous-onglets, en arbre."><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3z"/><path d="M3 7V5h6"/></svg><span>Explorer</span></button>
@@ -79,76 +90,147 @@ export function rendreMenu(vue, { pied }) {
   });
 }
 
-/* ---------- Une grande page : son menu de sous-onglets ---------- */
-export async function rendreSection(vue, id, { pied }) {
-  const sec = section(id);
-  if (!sec) { location.hash = '#/accueil'; return; }
-  const tous = await store.tout().catch(() => []);
-  const compte = (so) => tous.filter((x) => x.malle === rangement(sec.id, so.id)).length;
-  const tuiles = sec.sous.map((so, i) => {
-    const n = compte(so);
-    const etat = so.lien ? (externe(so.lien) ? 'ouvert' : 'ouvert') : (n ? `${n} note${n > 1 ? 's' : ''}` : 'à construire');
-    return tuile({ nom: so.nom, desc: so.desc, lien: lienDe(sec.id, so), couleur: sec.couleur, encre: sec.encre, hero: so.sticker, dentelle: i === 0 ? sec.dentelle : null, fond: i === 0 ? sec.fond : null },
-      { cls: `${i === 0 ? 'mm-premier' : ''} ${so.lien ? 'existe' : 'a-venir'}`, etat });
-  }).join('');
-  vue.innerHTML = `<section class="mm-menu mm-section" style="--c:${sec.couleur};--e:${sec.encre}" aria-labelledby="mm-titre">
-    <header class="mm-bandeau">
-      ${filAriane([['Accueil', '#/accueil'], [sec.nom]])}
-      <h1 id="mm-titre">${esc(sec.nom)}</h1>
-      <p>${esc(sec.desc)}</p>
-      <img class="mm-bandeau-img" src="${IMG(sec.hero)}" alt="" aria-hidden="true">
-    </header>
-    <div class="mm-grille mm-sous">${tuiles}</div>
-    <p class="mm-desc" aria-hidden="true">${esc(sec.desc)}</p>
-    <p class="mm-retour"><a href="#/accueil">Revenir au grand menu</a></p>
-  </section>${pied}`;
-  brancherMenu($('.mm-menu', vue), sec.desc);
-}
-
-/* ---------- Un sous-onglet pas encore construit : déjà un carnet de notes ---------- */
+/* ---------- Un nœud de l'arbre : un dossier (menu de tuiles) ou une page (notes et fichiers) ---------- */
 const DATEH = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-export async function rendreSous(vue, idSec, idSous, { pied, toast }) {
-  const sec = section(idSec), so = sousOnglet(idSec, idSous);
-  if (!sec || !so) { location.hash = '#/accueil'; return; }
-  if (so.lien) { location.href = so.lien; return; }
-  const malle = rangement(sec.id, so.id);
+const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+function bandeau(n, petit = false) {
+  const fil = [['Accueil', '#/accueil'], ...arbre.chemin(n.id).map((x, i, l) => [x.nom, i < l.length - 1 ? arbre.lienDe(x) : null])];
+  return `<header class="mm-bandeau${petit ? ' petit-bandeau' : ''}">
+    ${filAriane(fil)}
+    <h1 id="mm-titre">${esc(n.nom)}</h1>
+    ${n.desc ? `<p>${esc(n.desc)}</p>` : ''}
+    <a class="mm-modifier" href="#/admin/arbre/${encodeURIComponent(n.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span>Modifier</span></a>
+    <img class="mm-bandeau-img${/\/icones\//.test(visuel(n)) ? ' est-icone' : ''}" src="${visuel(n)}" alt="" aria-hidden="true">
+  </header>`;
+}
+export async function rendreNoeud(vue, id, { pied, toast }) {
+  const n = arbre.noeud(id);
+  if (!n || n.corbeille) {
+    vue.innerHTML = `<section class="mm-page" aria-labelledby="mm-titre"><header class="mm-bandeau petit-bandeau">${filAriane([['Accueil', '#/accueil'], ['Introuvable']])}<h1 id="mm-titre">Page introuvable</h1>
+      <p>${n ? 'Cette page est dans la corbeille.' : 'Cette page n’existe pas ou plus.'}</p></header>
+      <p class="mm-retour">${n ? '<a class="btn" href="#/admin/corbeille">Ouvrir la corbeille</a> ' : ''}<a href="#/accueil">Revenir au grand menu</a></p></section>${pied}`;
+    return;
+  }
+  if (n.id === arbre.RACINE) { location.replace('#/accueil'); return; }
+  if (n.type === 'lien' || n.type === 'app') { location.replace(arbre.lienDe(n)); return; }
+  const { couleur, encre } = arbre.couleurs(n.id);
+  if (n.type === 'dossier') {
+    const tous = await store.tout().catch(() => []);
+    const enfants = arbre.enfants(n.id);
+    const etatDe = (x) => {
+      if (x.type === 'dossier') return pluriel(arbre.enfants(x.id).length, 'page');
+      if (x.type === 'page') { const k = tous.filter((e) => e.malle === x.id).length; return k ? pluriel(k, 'note') : 'vide'; }
+      return 'ouvrir';
+    };
+    const tuiles = enfants.map((x, i) => tuile({ ...versTuile(x), dentelle: i === 0 ? n.dentelle : null, fond: i === 0 ? n.fond : null },
+      { cls: `${i === 0 ? 'mm-premier' : ''} ${x.type === 'page' ? 'a-venir' : 'existe'} type-${x.type}`, etat: etatDe(x) })).join('');
+    vue.innerHTML = `<section class="mm-menu mm-section" style="--c:${couleur};--e:${encre}" aria-labelledby="mm-titre">
+      ${bandeau(n)}
+      ${enfants.length ? `<div class="mm-grille mm-sous">${tuiles}</div>` : `<p class="mm-chantier">Ce dossier est vide. <a href="#/admin/arbre/${encodeURIComponent(n.id)}">Ajoute une page ou un dossier ici</a>.</p>`}
+      <p class="mm-desc" aria-hidden="true">${esc(n.desc || n.nom)}</p>
+      <p class="mm-retour"><a href="${n.parent === arbre.RACINE ? '#/accueil' : arbre.lienDe(arbre.noeud(n.parent))}">Revenir ${n.parent === arbre.RACINE ? 'au grand menu' : `à « ${esc(arbre.noeud(n.parent)?.nom)} »`}</a></p>
+    </section>${pied}`;
+    brancherMenu($('.mm-menu', vue), n.desc || n.nom);
+    return;
+  }
+  // une page : ses notes et ses fichiers
+  let urls = [];
   const dessiner = async () => {
-    const notes = (await store.parMalle(malle).catch(() => [])).sort((a, b) => (b.cree || '').localeCompare(a.cree || ''));
-    vue.innerHTML = `<section class="mm-page" style="--c:${sec.couleur};--e:${sec.encre}" aria-labelledby="mm-titre">
-      <header class="mm-bandeau petit-bandeau">
-        ${filAriane([['Accueil', '#/accueil'], [sec.nom, `#/s/${sec.id}`], [so.nom]])}
-        <h1 id="mm-titre">${esc(so.nom)}</h1>
-        <p>${esc(so.desc)}</p>
-        <img class="mm-bandeau-img" src="${IMG(so.sticker)}" alt="" aria-hidden="true">
-      </header>
+    urls.forEach((u) => URL.revokeObjectURL(u)); urls = [];
+    const [notes, fs] = await Promise.all([store.parMalle(n.id).catch(() => []), fichiers.lister(n.id)]);
+    const vignette = (f) => { if (!/^image\//.test(f.mime)) return `<span class="mm-fichier-type" aria-hidden="true">${esc((f.nom.split('.').pop() || '').slice(0, 4))}</span>`; const u = URL.createObjectURL(f.blob); urls.push(u); return `<img src="${u}" alt="" loading="lazy">`; };
+    vue.innerHTML = `<section class="mm-page" style="--c:${couleur};--e:${encre}" aria-labelledby="mm-titre">
+      ${bandeau(n, true)}
       <div class="mm-carnet">
-        <p class="mm-chantier">Cette page sera construite plus tard. En attendant, ce que tu notes ici est gardé, et la vraie page le reprendra.</p>
         <form class="mm-noter" data-noter>
-          <label for="mm-note">Une note pour « ${esc(so.nom)} »</label>
+          <label for="mm-note">Une note pour « ${esc(n.nom)} »</label>
           <textarea id="mm-note" rows="3" placeholder="Écris ici…"></textarea>
           <button type="submit" class="btn">Ranger la note</button>
         </form>
-        ${notes.length ? `<ul class="mm-notes">${notes.map((n) => `<li class="mm-note-carte">
-          <p>${esc(n.texte)}</p>
-          <div class="mm-note-pied"><time>${n.cree ? DATEH.format(new Date(n.cree)) : ''}</time>
-          <button type="button" class="btn-sobre" data-jeter="${n.id}">Jeter</button></div></li>`).join('')}</ul>` : '<p class="petit mm-vide">Aucune note pour l’instant.</p>'}
+        ${notes.length ? `<ul class="mm-notes">${notes.filter((x) => x.type !== 'donnee').map((x) => `<li class="mm-note-carte">
+          <p>${esc(x.texte)}</p>
+          <div class="mm-note-pied"><time>${x.cree ? DATEH.format(new Date(x.cree)) : ''}</time>
+          <button type="button" class="btn-sobre" data-jeter="${x.id}">Jeter</button></div></li>`).join('')}</ul>` : '<p class="petit mm-vide">Aucune note pour l’instant.</p>'}
+        <section class="mm-fichiers" aria-labelledby="mm-fichiers-titre">
+          <h2 id="mm-fichiers-titre">Fichiers</h2>
+          <div class="mm-fichiers-actions">
+            <label class="btn-sobre mm-importer"><input type="file" multiple data-importer hidden><span>Importer des fichiers</span></label>
+            <button type="button" class="btn-sobre" data-nouveau-texte>Nouveau texte</button>
+          </div>
+          ${fs.length ? `<ul class="mm-fichiers-liste">${fs.map((f) => `<li class="mm-fichier">
+            <button type="button" class="mm-fichier-ouvrir" data-ouvrir-fichier="${f.id}">${vignette(f)}<span><b>${esc(f.nom)}</b><small>${fichiers.poids(f.taille)}, ${DATEH.format(new Date(f.modifie))}</small></span></button>
+          </li>`).join('')}</ul>` : '<p class="petit mm-vide">Aucun fichier. Images, PDF, textes, sons : tout se range ici, sur cet appareil.</p>'}
+        </section>
       </div>
+      <dialog class="mm-fiche" data-fiche></dialog>
     </section>${pied}`;
   };
   await dessiner();
+  const fiche = () => $('[data-fiche]', vue);
+  const ouvrirFiche = async (fid) => {
+    const f = (await fichiers.lister(n.id)).find((x) => x.id === fid);
+    if (!f) return;
+    const d = fiche(), texte = fichiers.estTexte(f);
+    let apercu = '';
+    if (/^image\//.test(f.mime)) { const u = URL.createObjectURL(f.blob); urls.push(u); apercu = `<img class="mm-fiche-img" src="${u}" alt="${esc(f.nom)}">`; }
+    else if (/^audio\//.test(f.mime)) { const u = URL.createObjectURL(f.blob); urls.push(u); apercu = `<audio controls src="${u}"></audio>`; }
+    else if (/^video\//.test(f.mime)) { const u = URL.createObjectURL(f.blob); urls.push(u); apercu = `<video controls src="${u}"></video>`; }
+    else if (texte) apercu = `<label class="mm-fiche-texte"><span>Contenu</span><textarea rows="12" data-contenu spellcheck="false">${esc(await f.blob.text())}</textarea></label>`;
+    const vs = await fichiers.versions(f.id);
+    d.innerHTML = `<form method="dialog" class="mm-fiche-corps" data-fiche-form="${f.id}">
+      <label><span>Nom</span><input data-nom value="${esc(f.nom)}" maxlength="120"></label>
+      ${apercu}
+      <p class="petit">${fichiers.poids(f.taille)}${f.mime ? `, ${esc(f.mime)}` : ''}. Modifié le ${DATEH.format(new Date(f.modifie))}.</p>
+      ${vs.length ? `<details><summary>${pluriel(vs.length, 'ancienne version')}</summary><ul class="mm-versions">${vs.map((v) => `<li><span>${DATEH.format(new Date(v.date))}, ${esc(v.raison)}</span><button type="button" class="btn-sobre" data-version="${v.id}">Revenir à celle-ci</button></li>`).join('')}</ul></details>` : ''}
+      <div class="mm-fiche-actions">
+        <button type="button" class="btn" data-enregistrer>Enregistrer</button>
+        <button type="button" class="btn-sobre" data-telecharger>Télécharger</button>
+        <button type="button" class="btn-sobre" data-jeter-fichier>Jeter</button>
+        <button type="submit" class="btn-sobre">Fermer</button>
+      </div></form>`;
+    d.showModal();
+  };
   vue.onsubmit = async (e) => {
     if (!e.target.closest('[data-noter]')) return;
     e.preventDefault();
     const t = $('#mm-note', vue).value.trim();
     if (!t) return;
-    await store.ajouter({ malle, type: 'note', texte: t });
+    await store.ajouter({ malle: n.id, type: 'note', texte: t });
     await dessiner(); toast('Note rangée'); $('#mm-note', vue)?.focus();
   };
+  vue.onchange = async (e) => {
+    const inp = e.target.closest('[data-importer]');
+    if (!inp || !inp.files.length) return;
+    for (const f of inp.files) await fichiers.ajouterFichier(n.id, f);
+    toast(inp.files.length > 1 ? `${inp.files.length} fichiers rangés` : 'Fichier rangé');
+    await dessiner();
+  };
   vue.onclick = async (e) => {
-    const b = e.target.closest('[data-jeter]');
-    if (!b) return;
-    if (!b.classList.contains('sur')) { b.classList.add('sur'); b.textContent = 'Sûr ?'; setTimeout(() => { if (b.isConnected) { b.classList.remove('sur'); b.textContent = 'Jeter'; } }, 3000); return; }
-    await store.supprimer(b.dataset.jeter); await dessiner(); toast('Note jetée');
+    const t = e.target;
+    const jeter = t.closest('[data-jeter]');
+    if (jeter) {
+      if (!jeter.classList.contains('sur')) { jeter.classList.add('sur'); jeter.textContent = 'Sûr ?'; setTimeout(() => { if (jeter.isConnected) { jeter.classList.remove('sur'); jeter.textContent = 'Jeter'; } }, 3000); return; }
+      await store.supprimer(jeter.dataset.jeter); await dessiner(); toast('Note jetée'); return;
+    }
+    if (t.closest('[data-nouveau-texte]')) { const f = await fichiers.creerTexte(n.id, 'Nouveau texte.txt'); await dessiner(); ouvrirFiche(f.id); return; }
+    const o = t.closest('[data-ouvrir-fichier]'); if (o) { ouvrirFiche(o.dataset.ouvrirFichier); return; }
+    const form = t.closest('[data-fiche-form]'); if (!form) return;
+    const fid = form.dataset.ficheForm;
+    if (t.closest('[data-enregistrer]')) {
+      const nom = $('[data-nom]', form).value.trim(), zone = $('[data-contenu]', form);
+      const f = (await fichiers.lister(n.id)).find((x) => x.id === fid);
+      if (zone && zone.value !== await f.blob.text()) await fichiers.remplacerContenu(fid, zone.value);
+      if (nom && nom !== f.nom) await fichiers.renommer(fid, nom);
+      fiche().close(); await dessiner(); toast('Enregistré'); return;
+    }
+    if (t.closest('[data-telecharger]')) { const f = (await fichiers.lister(n.id)).find((x) => x.id === fid); fichiers.telecharger(f); return; }
+    const jf = t.closest('[data-jeter-fichier]');
+    if (jf) {
+      if (!jf.classList.contains('sur')) { jf.classList.add('sur'); jf.textContent = 'Sûr ? Il ira dans la corbeille'; setTimeout(() => { if (jf.isConnected) { jf.classList.remove('sur'); jf.textContent = 'Jeter'; } }, 3500); return; }
+      await fichiers.jeter(fid); fiche().close(); await dessiner(); toast('Fichier mis à la corbeille'); return;
+    }
+    const v = t.closest('[data-version]');
+    if (v) { await fichiers.revenirA(v.dataset.version); fiche().close(); await dessiner(); toast('Ancienne version remise'); }
   };
 }
 
@@ -164,9 +246,9 @@ const ICONES = {
 export async function rendreRessources(vue, onglet = 'principal', { pied }) {
   urls.forEach((u) => URL.revokeObjectURL(u)); urls = [];
   if (!['principal', 'categories', 'ressource'].includes(onglet)) onglet = 'principal';
-  const tous = (await store.tout().catch(() => [])).filter((o) => o.malle !== 'agenda' || o.titre).sort((a, b) => (b.cree || '').localeCompare(a.cree || ''));
+  const tous = (await store.tout().catch(() => [])).filter((o) => (o.malle !== 'agenda' || o.titre) && o.type !== 'donnee').sort((a, b) => (b.cree || 0) - (a.cree || 0));
   const carte = (o) => {
-    const g = genre(o), p = pageDe(o.malle);
+    const g = genre(o), p = arbre.pageDe(o.malle);
     let img = '';
     if (g === 'photo') { const u = URL.createObjectURL(o.fichier); urls.push(u); img = `<img src="${u}" alt="" loading="lazy">`; }
     const t = libelle(o);
@@ -180,9 +262,9 @@ export async function rendreRessources(vue, onglet = 'principal', { pied }) {
          ${autres.length ? `<h2 class="res-titre">Les dernières notes et liens</h2><ul class="res-liste">${autres.map(carte).join('')}</ul>` : ''}`
       : '<p class="mm-chantier">Rien de rangé pour l’instant. Le bouton + capture une idée, un lien ou une photo, et chaque page a son carnet de notes.</p>';
   } else if (onglet === 'categories') {
-    corps = `<ul class="res-categories">${SECTIONS.map((sec) => {
-      const n = tous.filter((o) => sectionDe(o.malle)?.id === sec.id).length;
-      return `<li><a href="#/s/${sec.id}" style="--c:${sec.couleur};--e:${sec.encre}"><img src="${IMG(sec.hero)}" alt="" aria-hidden="true"><b>${esc(sec.nom)}</b><small>${n} rangé${n > 1 ? 's' : ''}, ${sec.sous.length} sous-onglets</small></a></li>`;
+    corps = `<ul class="res-categories">${arbre.enfants(arbre.RACINE).map((sec) => {
+      const n = tous.filter((o) => arbre.grandePageDe(o.malle)?.id === sec.id).length, c = arbre.couleurs(sec.id);
+      return `<li><a href="${arbre.lienDe(sec)}" style="--c:${c.couleur};--e:${c.encre}"><img src="${visuel(sec)}" alt="" aria-hidden="true"><b>${esc(sec.nom)}</b><small>${n} rangé${n > 1 ? 's' : ''}, ${pluriel(arbre.enfants(sec.id).length, 'page')}</small></a></li>`;
     }).join('')}</ul>`;
   } else {
     corps = `<div class="res-filtres" role="group" aria-label="Filtrer">

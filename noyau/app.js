@@ -3,6 +3,7 @@ import * as store from './store.js';
 import { MALLES, malle } from './malles.js';
 import { brancherDecor, appliquerDecor, lireDecor, UNIVERS } from './decor.js';
 import { installerNavigation } from './navigation.js';
+import * as arbre from './arbre.js';
 // carton ouvert, dessiné pour la Boîte vide
 const CARTON = `<svg class="carton-vide" viewBox="0 0 160 120" aria-hidden="true">
   <path d="M30 52 L80 64 L130 52 L130 104 L80 116 L30 104 Z" fill="#b98a55" stroke="#6e4a26" stroke-width="2"/>
@@ -252,24 +253,26 @@ async function vueReglages() {
     </div>
     <div class="bloc">
       <h2>Mes données</h2>
-      <p class="petit">Tout reste sur cet appareil${persiste ? ', protégé contre le nettoyage automatique du navigateur' : ''}. La synchronisation entre le PC et le téléphone arrive plus tard : d'ici là, garde une sauvegarde.</p>
-      <button type="button" class="btn" id="sauver">Télécharger une sauvegarde</button>
+      <p class="petit">Tout reste sur cet appareil${persiste ? ', protégé contre le nettoyage automatique du navigateur' : ''}. La synchronisation entre le PC et le téléphone n’existe pas encore : d’ici là, l’archive complète passe tout d’un appareil à l’autre.</p>
+      <button type="button" class="btn" id="sauver">Télécharger l’archive complète</button>
+      <a class="btn-sobre" href="#/admin/sauvegardes">Restaurer, points de restauration, sauvegarde auto</a>
     </div>
   </section>${pied()}`;
   vue.querySelectorAll('input[name="amb"]').forEach((r) => r.addEventListener('change', () => choisirAmbiance(r.value)));
   vue.querySelectorAll('input[name="w"]').forEach((c) => c.addEventListener('change', () => {
     cacherWidgets([...vue.querySelectorAll('input[name="w"]')].filter((x) => !x.checked).map((x) => x.value));
   }));
-  $('#sauver').addEventListener('click', async () => {
-    const data = await store.exporter();
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `my memories sauvegarde ${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    await store.ecrireMeta('derniereSauvegarde', Date.now());
-    toast('Sauvegarde téléchargée');
+  $('#sauver').addEventListener('click', async (e) => {
+    const bt = e.currentTarget; bt.disabled = true;
+    try {
+      const sv = await import('./sauvegarde.js');
+      const blob = await sv.fabriquerArchive();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = sv.nomArchive();
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 8000);
+      toast('Archive téléchargée');
+    } catch (err) { toast(`Archive impossible : ${err.message}`); } finally { bt.disabled = false; }
   });
   $('#verifier').addEventListener('click', async () => {
     const reg = await navigator.serviceWorker?.getRegistration();
@@ -401,13 +404,17 @@ async function route() {
   const [a, b] = h.split('/');
   fermerCapture();
   vue.onclick = vue.onchange = vue.onsubmit = null; // gestionnaires posés par l'Accueil
+  if (a !== 'app') import('./hote.js').then((m) => m.quitter()).catch(() => {});
+  $('#capture-btn').hidden = a === 'app'; // dans une app, le bouton + ne cache pas son contenu
   if (a === 'capture') { await vueAccueil(); ouvrirCapture(); history.replaceState(null, '', '#/'); }
   else if (a === 'malle' && b) await vueMalle(b);
   else if (a === 'boite') await vueMalle('boite');
   else if (a === 'nouveautes') await vueNouveautes();
   else if (a === 'reglages') await vueReglages();
   else if (a === 'accueil') { const m = await import('./menus.js'); m.rendreMenu(vue, { pied: pied() }); }
-  else if (a === 's' && b) { const m = await import('./menus.js'); const c = h.split('/')[2]; if (c) await m.rendreSous(vue, b, c, { pied: pied(), toast }); else await m.rendreSection(vue, b, { pied: pied() }); }
+  else if ((a === 'n' || a === 's') && b) { const m = await import('./menus.js'); await m.rendreNoeud(vue, decodeURIComponent(h.split('/').slice(1).join('/')), { pied: pied(), toast }); }
+  else if (a === 'app' && b) { const { rendreApp } = await import('./hote.js'); await rendreApp(vue, decodeURIComponent(b), { pied: pied(), toast }); }
+  else if (a === 'admin') { const { rendreAdmin } = await import('./admin.js'); await rendreAdmin(vue, b, h.split('/').slice(2).join('/'), { barre, pied, toast }); }
   else if (a === 'ressources') { const m = await import('./menus.js'); await m.rendreRessources(vue, b, { pied: pied() }); }
   else if (a === 'deco') { const { rendreAtelier } = await import('./atelier.js'); await rendreAtelier(vue, { barre, pied, toast }); }
   else if (a === 'cabinet') { const { rendreCabinet } = await import('./curiosites.js'); await rendreCabinet(vue, { barre, pied }); }
@@ -457,5 +464,9 @@ annoncerPartage();
 brancherDecor();
 installerNavigation();
 setInterval(appliquerAmbiance, 10 * 60 * 1000);
-chargerVersion().finally(route);
+// l'arborescence (pages, dossiers, apps) est lue dans la base avant le premier affichage
+Promise.all([chargerVersion(), arbre.charger().catch((e) => console.error('Arborescence illisible', e))]).finally(route);
+window.addEventListener('mm:arbre', () => { if (/^#\/(accueil|n\/|s\/|ressources)/.test(location.hash)) route(); });
+// sauvegardes automatiques (point de restauration du jour, dossier du PC), quand l'appli est au calme
+setTimeout(() => import('./sauvegarde.js').then((m) => m.auto()), 6000);
 brancherServiceWorker();

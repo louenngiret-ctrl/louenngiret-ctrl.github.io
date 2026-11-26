@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>App modèle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <img src="icone.svg" alt="" width="56" height="56">
+    <div>
+      <h1>App modèle</h1>
+      <p>Elle tourne isolée : elle ne voit que ce que tu lui as permis.</p>
+    </div>
+  </header>
+
+  <section>
+    <h2>Ses propres données</h2>
+    <p>Un compteur gardé avec <code>mm.stockage</code> : il survit quand tu fermes l’appli et part dans les sauvegardes.</p>
+    <p class="compteur"><output id="compte">0</output> fois</p>
+    <button type="button" id="plus">Encore une fois</button>
+    <button type="button" id="zero" class="sobre">Remettre à zéro</button>
+  </section>
+
+  <section>
+    <h2>Les pages de My memories</h2>
+    <p>Avec la permission « voir la liste des pages », l’app lit l’arborescence.</p>
+    <label for="page">Choisis une page</label>
+    <select id="page"></select>
+    <p>Avec « lire » et « ajouter des notes », elle écrit dans cette page :</p>
+    <textarea id="note" rows="3" placeholder="Une note envoyée par l’app modèle"></textarea>
+    <button type="button" id="noter">Ranger la note dans la page</button>
+    <ul id="notes"></ul>
+  </section>
+
+  <section>
+    <h2>Ce que My memories lui dit</h2>
+    <pre id="infos"></pre>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

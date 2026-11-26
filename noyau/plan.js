@@ -1,7 +1,6 @@
-// Le plan de My memories : la seule liste des grandes pages et de leurs sous-onglets.
-// Le menu d'accueil, les menus de section, l'Explorer, Rechercher et Ressources se construisent tous à partir d'ici.
-// Pour ajouter une page plus tard : une ligne ici suffit. Sans « lien », la page existe déjà comme carnet de notes
-// (malle « section/sous-onglet » dans IndexedDB), donc rien n'est perdu quand la vraie page arrive.
+// La graine de My memories : les six grandes pages et leurs sous-onglets de départ, et les images (stickers, icônes).
+// Depuis la 1.0, l'arborescence vivante est dans la base (noyau/arbre.js) et se modifie dans l'administration ;
+// cette liste n'est copiée qu'une fois, à la première ouverture, ou quand Louenn revient à l'arborescence de départ.
 
 const ICI = new URL('../assets/memoires/', import.meta.url).href;
 export const IMG = (n) => `${ICI}stickers/${n}.webp`;
@@ -82,23 +81,16 @@ export const SECTIONS = [
   },
 ];
 
-export const section = (id) => SECTIONS.find((x) => x.id === id);
-export const sousOnglet = (sec, id) => section(sec)?.sous.find((x) => x.id === id);
-/** Où mène un sous-onglet : sa vraie page si elle existe, sinon son carnet de notes. */
-export const lienDe = (sec, so) => so.lien || `#/s/${sec}/${so.id}`;
-/** L'identifiant de rangement des notes d'un sous-onglet (champ « malle » dans IndexedDB). */
-export const rangement = (sec, so) => `${sec}/${so}`;
-export const tousLesSous = () => SECTIONS.flatMap((sec) => sec.sous.map((so) => ({ sec, so, lien: lienDe(sec.id, so) })));
-/** Retrouve la page d'un élément enregistré, d'après sa malle. */
-export function pageDe(malle) {
-  if (!malle) return { nom: '', lien: '#/' };
-  if (malle.includes('/')) { const [a, b] = malle.split('/'); const so = sousOnglet(a, b); return so ? { nom: `${section(a).nom}, ${so.nom}`, lien: `#/s/${a}/${b}` } : { nom: malle, lien: '#/' }; }
-  const t = { boite: ['Boîte à trier', '#/boite'], loge: ['Loge', 'malles/loge/index.html#soin'], agenda: ['Calendrier', '#/'], achats: ['Achats et courses', 'malles/carnet/index.html#/home'], 'garde-robe': ['Armoire', 'malles/carnet/index.html#/armoire'] }[malle];
-  return t ? { nom: t[0], lien: t[1] } : { nom: malle, lien: '#/' };
-}
-/** La grande page d'où vient un élément (pour Ressources, catégories). */
-export function sectionDe(malle) {
-  if (!malle) return null;
-  if (malle.includes('/')) return section(malle.split('/')[0]);
-  return { boite: section('organisation'), agenda: section('organisation'), loge: section('quotidien'), 'garde-robe': section('quotidien'), achats: section('gestion') }[malle] || null;
-}
+/* Le plan ci-dessus n'est plus que la GRAINE : à la première ouverture de la version 1.0, il est copié dans
+   la base (store « noeuds »), et c'est cette copie que Louenn modifie dans l'administration (noyau/arbre.js).
+   Les identifiants des sous-onglets sont « section/sous-onglet », comme les malles de leurs notes : rien n'est perdu. */
+export const GRAINE = SECTIONS;
+// Les sous-onglets qui ouvrent une vraie application intégrée (voir noyau/apps.js), et les liens internes.
+export const APPS_DE_GRAINE = { 'gestion/achats': 'achats', 'quotidien/armoire': 'armoire', 'quotidien/loge': 'loge', 'apprentissage/etudes': 'cours' };
+export const ICONE = (n) => `${ICI}icones/${n}.webp`;
+export const EPINGLE = `${ICI}epingle.webp`;
+/** L'image d'un nœud : son icône choisie, sinon son sticker (ou celui de la grande page). */
+const imgDe = (x) => (x.startsWith('timbre') ? COLLAGE(x) : IMG(x));
+export const visuel = (n) => (n?.image ? n.image : n?.icone ? ICONE(n.icone) : (n?.hero || n?.sticker) ? imgDe(n.hero || n.sticker) : IMG('papillon-bleu'));
+export const decoDe = (x) => (x ? imgDe(x) : null);
+export const STICKERS = ['chat-sorcier', 'crapaud-sorcier', 'champi-fantome', 'souris-escargot', 'bourdon-the', 'pleine-lune', 'bourdon', 'colibri', 'grenouille-chapeau', 'champi-fraise', 'souris-archer', 'oie', 'croissant', 'fees', 'chat-tasse', 'nuage-pleure', 'papillon-bleu', 'soleil-rouge', 'grenouille-amanite', 'jonquille', 'ronde-fees', 'crapaud-chambre', 'herisson-livre', 'souris-champi', 'chat-nouilles', 'herisson-fleur', 'pie-robe', 'chat-bocal', 'chat-aile', 'faon-tachete', 'crapaud', 'chat-bocal'].filter((x, i, l) => l.indexOf(x) === i);

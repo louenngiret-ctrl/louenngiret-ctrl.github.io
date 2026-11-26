@@ -1,0 +1,10 @@
+{
+  "id": "app-modele",
+  "nom": "App modèle",
+  "version": "1.0.0",
+  "entree": "index.html",
+  "description": "Un petit compteur d’habitudes qui montre tout ce qu’une app peut faire dans My memories. Copie-la pour faire la tienne.",
+  "icone": "i067",
+  "categorie": "creation",
+  "permissions": ["arbre:lire", "notes:lire", "notes:ecrire"]
+}

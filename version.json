@@ -1,7 +1,22 @@
 {
-  "version": "0.9.0",
+  "version": "1.0.0",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "1.0.0",
+      "date": "2026-11-26",
+      "titre": "My memories se gère toute seule",
+      "notes": [
+        "Nouvelle Administration (Paramètres, ou le bouton Modifier de chaque page) : crée, renomme, déplace et jette des pages, des dossiers, des liens et des apps, sans toucher au code.",
+        "Chaque page peut changer d'image (stickers, 178 icônes, ou ta propre image), de couleur, de taille de tuile, et être épinglée.",
+        "Les pages gardent maintenant des fichiers : importe, ouvre, modifie les textes, renomme, télécharge. Les anciennes versions sont gardées.",
+        "Ajoute tes propres applications : un dossier avec app.json, ou un .zip. Elles tournent isolées et ne voient que ce que tu leur permets. Une app modèle est fournie.",
+        "Sauvegarde complète en .zip (photos, Carnet, Loge, Suite et réglages compris), restauration, points de restauration automatiques chaque jour.",
+        "Sur PC : une archive déposée chaque jour dans le dossier de ton choix.",
+        "Une corbeille : tout ce qui est jeté se récupère.",
+        "La synchronisation entre le PC et le téléphone est préparée mais pas encore branchée : elle demande un serveur, à valider ensemble."
+      ]
+    },
     {
       "version": "0.9.0",
       "date": "2026-11-26",
