@@ -15,18 +15,26 @@ Restaurer une archive : un point de restauration est pris juste avant, puis les 
 
 Les anciennes sauvegardes `.json` (versions 0.x) se remettent aussi : notes et réglages internes seulement.
 
+## Échange entre appareils (fusion)
+
+Même archive, autre bouton : « Fusionner avec cet appareil ». Règles (D14) : pour chaque page, note, fichier ou app, la
+version la plus récente gagne et l'autre va dans les anciennes versions ; contenu identique = rien ne bouge ; ce qui a
+été supprimé sur l'autre appareil est supprimé ici seulement si ça n'a pas été modifié depuis ; les anciennes
+versions de l'autre appareil s'ajoutent. Carnet, Loge et Suite ne se fusionnent pas : la case « prendre aussi » les
+remplace. Un point de restauration est pris avant.
+
 ## Format de l'archive
 
 ```
 My memories sauvegarde AAAA-MM-JJ.zip
-  my-memories.json   { format: "my-memories-sauvegarde", versionFormat: 1, appli, exporte, bases: [...], localStorage: {...} }
+  my-memories.json   { format: "my-memories-sauvegarde", versionFormat: 1, appli, exporte, appareil, bases: [...], localStorage: {...}, suppressions: [{ store, cle, date }] }
   octets/0, octets/1…  le contenu des Blob, ArrayBuffer et tableaux typés
   LISEZMOI.txt
 ```
 
 Chaque base : `{ nom, version, stores: [{ nom, keyPath, autoIncrement, index: [...], lignes: [[cle, valeur], ...] }] }`.
 Les valeurs non JSON sont emballées : `{ $blob: "octets/3", type, nom }`, `{ $buffer }`, `{ $vue, classe }`, `{ $date }`.
-Exclus : le `journal` (propre à l'appareil), les points de restauration, l'identifiant d'appareil `mm.appareil`.
+Exclus : le `journal` (propre à l'appareil, seules ses suppressions partent), les points de restauration, l'identifiant d'appareil `mm.appareil`, les épingles et le dossier de sauvegarde (poignées propres à l'appareil).
 Une base absente de l'appareil est recréée avec son schéma. Si `versionFormat` est plus récent que l'appli, la
 restauration est refusée (mettre l'appli à jour d'abord).
 

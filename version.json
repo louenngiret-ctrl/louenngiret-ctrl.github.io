@@ -1,7 +1,19 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "1.1.0",
+      "date": "2026-11-26",
+      "titre": "Tes dossiers dans My memories",
+      "notes": [
+        "Nouveau : Dossiers épinglés (Gestion et administration). Épingle un dossier ou des fichiers de ton PC et retrouve-les dans My memories.",
+        "Ouvre, lis, modifie (textes), renomme, ajoute et jette les fichiers du disque. L'ancienne version et les fichiers jetés restent récupérables dans My memories.",
+        "Copie un fichier du disque dans une page, ou envoie un fichier d'une page dans un dossier épinglé.",
+        "Marche aussi sur le téléphone avec Chrome à jour (ses propres dossiers).",
+        "Échange entre le PC et le téléphone sans serveur : une archive se fusionne avec l'autre appareil au lieu de tout remplacer. La version la plus récente gagne, l'autre est gardée."
+      ]
+    },
     {
       "version": "1.0.0",
       "date": "2026-11-26",

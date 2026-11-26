@@ -11,7 +11,9 @@ const FORMAT = 'my-memories-sauvegarde';
 const VERSION_FORMAT = 1;
 const SAUTER_LS = new Set(['mm.appareil']); // propre à chaque appareil
 const STORES_EXCLUS = { grenier: new Set(['journal']) }; // le journal est local à l'appareil
-const AUTO_GARDER = 5; // points de restauration automatiques gardés
+const AUTO_GARDER = 5;
+const LOCALES = /^(pc\.|sauvegarde\.dossier)/; // réglages de la base qui ne quittent jamais l'appareil
+const SUIVIS = ['elements', 'noeuds', 'fichiers', 'apps']; // ce que l'échange fusionne // points de restauration automatiques gardés
 const DOSSIER_GARDER = 14; // archives gardées dans le dossier du PC
 const jourDe = (t) => new Date(t).toISOString().slice(0, 10);
 export const nomArchive = (t = Date.now()) => `My memories sauvegarde ${jourDe(t)}.zip`;
@@ -19,6 +21,7 @@ export const nomArchive = (t = Date.now()) => `My memories sauvegarde ${jourDe(t
 /* ---------- Emballer des valeurs IndexedDB en JSON (les Blob et octets partent en fichiers dans l'archive) ---------- */
 function emballer(v, sacs) {
   if (v === null || typeof v !== 'object') return v;
+  if (typeof FileSystemHandle !== 'undefined' && v instanceof FileSystemHandle) return null; // propre à l'appareil
   if (v instanceof Blob) { const ref = `octets/${sacs.length}`; sacs.push([ref, v]); return { $blob: ref, type: v.type, nom: v instanceof File ? v.name : undefined }; }
   if (v instanceof ArrayBuffer) { const ref = `octets/${sacs.length}`; sacs.push([ref, new Blob([v])]); return { $buffer: ref }; }
   if (ArrayBuffer.isView(v)) { const ref = `octets/${sacs.length}`; sacs.push([ref, new Blob([v])]); return { $vue: ref, classe: v.constructor.name }; }
@@ -58,7 +61,7 @@ async function lireBase(nom, sacs) {
       const schema = { nom: s, keyPath: os.keyPath, autoIncrement: os.autoIncrement, index: [...os.indexNames].map((i) => { const x = os.index(i); return { nom: i, keyPath: x.keyPath, unique: x.unique, multiEntry: x.multiEntry }; }), lignes: [] };
       await new Promise((ok, ko) => {
         const c = os.openCursor();
-        c.onsuccess = () => { const cur = c.result; if (!cur) return ok(); if (nom === 'grenier' && s === 'versions' && String(cur.value?.cible).startsWith('point:')) { cur.continue(); return; } // les points restent sur l'appareil
+        c.onsuccess = () => { const cur = c.result; if (!cur) return ok(); if (nom === 'grenier' && s === 'versions' && String(cur.value?.cible).startsWith('point:')) { cur.continue(); return; } if (nom === 'grenier' && s === 'meta' && LOCALES.test(String(cur.value?.cle))) { cur.continue(); return; } // les points, les épingles et le dossier de sauvegarde restent sur l'appareil
           schema.lignes.push(os.keyPath == null ? [emballer(cur.key, sacs), emballer(cur.value, sacs)] : [null, emballer(cur.value, sacs)]); cur.continue(); };
         c.onerror = () => ko(c.error);
       });
@@ -118,7 +121,7 @@ export async function fabriquerArchive() {
   const ls = {};
   for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!SAUTER_LS.has(k)) ls[k] = localStorage.getItem(k); }
   const version = await fetch('version.json', { cache: 'no-store' }).then((r) => r.json()).then((j) => j.version).catch(() => '');
-  const contenu = { format: FORMAT, versionFormat: VERSION_FORMAT, appli: version, exporte: new Date().toISOString(), bases, localStorage: ls };
+  const contenu = { format: FORMAT, versionFormat: VERSION_FORMAT, appli: version, exporte: new Date().toISOString(), appareil: store.appareil(), bases, localStorage: ls, suppressions: await suppressionsLocales() };
   const { zipSync, strToU8 } = await import('../vendor/fflate/fflate.js');
   const fichiers = { 'my-memories.json': strToU8(JSON.stringify(contenu)), 'LISEZMOI.txt': strToU8('Sauvegarde complète de My memories.\nPour la remettre : My memories, Administration, Sauvegardes, « Remettre une sauvegarde ».\nLe détail du format est dans docs/SAUVEGARDE.md du dépôt.\n') };
   for (const [ref, b] of sacs) fichiers[ref] = new Uint8Array(await b.arrayBuffer());
@@ -175,7 +178,7 @@ const STORES_POINT = ['elements', 'meta', 'noeuds', 'fichiers'];
 export async function prendrePoint(raison = 'à la demande', { manuel = false } = {}) {
   const donnees = {};
   await store.tx(STORES_POINT, 'readonly', async (ss) => { await Promise.all(ss.map(async (s, i) => { donnees[STORES_POINT[i]] = await store.req(s.getAll()); })); });
-  donnees.meta = donnees.meta.filter((m) => !String(m.cle).startsWith('sauvegarde.'));
+  donnees.meta = donnees.meta.filter((m) => !String(m.cle).startsWith('sauvegarde.') && !LOCALES.test(String(m.cle)));
   const seq = await store.tx('journal', 'readonly', (s) => store.req(s.openCursor(null, 'prev')).then((c) => c?.key || 0));
   const p = { id: store.nouvelId(), cible: manuel ? 'point:manuel' : 'point:auto', date: Date.now(), raison, seq, donnees, resume: { notes: donnees.elements.length, pages: donnees.noeuds.length, fichiers: donnees.fichiers.length } };
   await store.ecrire('versions', p);
@@ -246,4 +249,72 @@ export async function auto() {
     const d = await etatDossier();
     if (d.branche && d.permission === 'granted' && (!d.derniere || jourDe(d.derniere) !== jourDe(Date.now()))) await ecrireDansDossier();
   } catch (e) { console.warn('Sauvegarde automatique :', e); }
+}
+
+/* ---------- Échange entre appareils, sans serveur : fusionner une archive au lieu de tout remplacer ---------- */
+/** Les suppressions faites sur cet appareil (dans le journal), la plus récente par objet. */
+async function suppressionsLocales() {
+  const j = await store.lireTout('journal').catch(() => []), m = new Map();
+  for (const x of j) {
+    if (!SUIVIS.includes(x.store)) continue;
+    const k = `${x.store}|${x.cle}`;
+    if (x.op === 'del') m.set(k, { store: x.store, cle: x.cle, date: x.date });
+    else if (m.has(k) && x.date >= m.get(k).date) m.delete(k); // recréé depuis
+  }
+  return [...m.values()];
+}
+/** Même contenu à la date près ? (seulement pour ce qui n'a pas de fichier dedans) */
+function pareil(nomStore, a, b) {
+  if (nomStore === 'fichiers' || nomStore === 'apps' || a.fichier instanceof Blob || b.fichier instanceof Blob) return false;
+  const net = (o) => JSON.stringify(Object.keys(o).filter((k) => k !== 'modifie' && k !== 'cree').sort().map((k) => [k, o[k]]));
+  return net(a) === net(b);
+}
+const CIBLE = { elements: 'element', noeuds: 'noeud', fichiers: 'fichier', apps: 'app' };
+const APPAREIL_LS = /^(mm\.|grenier\.(barre|ambiance|decor|meteo))/; // réglages d'affichage propres à chaque appareil
+/**
+ * Fusionne l'archive avec cet appareil : pour chaque page, note, fichier ou app, la version la plus récente gagne
+ * (l'autre est gardée dans les anciennes versions) ; ce qui a été supprimé ailleurs après sa dernière modification
+ * ici est supprimé (et gardé en version). Rien n'est perdu. Un point de restauration est pris avant.
+ * autres=true : Carnet, Loge, Suite et leurs réglages sont pris de l'archive (remplacés, ils ne se fusionnent pas).
+ */
+export async function fusionnerArchive(lu, { autres = false } = {}) {
+  if (lu.contenu.ancienne) throw new Error('Une ancienne sauvegarde (.json) ne peut que remplacer.');
+  await prendrePoint('avant un échange', { manuel: true });
+  const base = lu.contenu.bases.find((b) => b.nom === 'grenier');
+  const bilan = { ajoutes: 0, remplaces: 0, supprimes: 0, gardes: 0 };
+  const tombesIci = new Map((await suppressionsLocales()).map((x) => [`${x.store}|${x.cle}`, x]));
+  const ops = [], t = Date.now();
+  const garder = (nomStore, obj, raison) => ops.push({ store: 'versions', op: 'put', obj: { id: store.nouvelId(), cible: `${CIBLE[nomStore]}:${obj.id}`, date: t, raison, donnees: obj } });
+  const locaux = {};
+  for (const s of SUIVIS) locaux[s] = new Map((await store.lireTout(s).catch(() => [])).map((x) => [x.id, x]));
+  const dejaVersions = new Set((await store.lireTout('versions').catch(() => [])).map((x) => x.id));
+  for (const s of base?.stores || []) {
+    if (SUIVIS.includes(s.nom)) {
+      for (const [, brut] of s.lignes) {
+        const v = await deballer(brut, lu.octets), ici = locaux[s.nom].get(v.id);
+        if (!ici) {
+          const tombe = tombesIci.get(`${s.nom}|${v.id}`);
+          if (tombe && tombe.date >= (v.modifie || 0)) { bilan.gardes++; continue; } // supprimé ici après sa dernière modification là-bas
+          ops.push({ store: s.nom, op: 'put', obj: v }); bilan.ajoutes++;
+        } else if (pareil(s.nom, v, ici)) bilan.gardes++; // même contenu, seule la date diffère (ex. graine copiée sur chaque appareil)
+        else if ((v.modifie || 0) > (ici.modifie || 0)) {
+          garder(s.nom, ici, 'remplacé par un échange'); ops.push({ store: s.nom, op: 'put', obj: v }); bilan.remplaces++;
+        } else bilan.gardes++;
+      }
+    } else if (s.nom === 'versions') {
+      // les anciennes versions venues de l'autre appareil s'ajoutent, sans doublon
+      for (const [, brut] of s.lignes) { const v = await deballer(brut, lu.octets); if (!dejaVersions.has(v.id)) ops.push({ store: 'versions', op: 'put', obj: v }); }
+    }
+  }
+  for (const tb of lu.contenu.suppressions || []) {
+    if (!SUIVIS.includes(tb.store)) continue;
+    const ici = locaux[tb.store].get(tb.cle);
+    if (ici && (ici.modifie || 0) <= tb.date) { garder(tb.store, ici, 'supprimé sur l’autre appareil'); ops.push({ store: tb.store, op: 'del', cle: tb.cle }); bilan.supprimes++; }
+  }
+  if (ops.length) await store.lot(ops);
+  if (autres) {
+    for (const b of lu.contenu.bases) if (b.nom !== 'grenier') await ecrireBase(b, lu.octets);
+    if (lu.contenu.localStorage) for (const [k, v] of Object.entries(lu.contenu.localStorage)) if (!APPAREIL_LS.test(k)) localStorage.setItem(k, v);
+  }
+  return bilan;
 }

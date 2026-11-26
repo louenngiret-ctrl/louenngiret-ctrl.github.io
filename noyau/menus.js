@@ -177,11 +177,13 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
     else if (/^video\//.test(f.mime)) { const u = URL.createObjectURL(f.blob); urls.push(u); apercu = `<video controls src="${u}"></video>`; }
     else if (texte) apercu = `<label class="mm-fiche-texte"><span>Contenu</span><textarea rows="12" data-contenu spellcheck="false">${esc(await f.blob.text())}</textarea></label>`;
     const vs = await fichiers.versions(f.id);
+    const pcm = await import('./pc.js'), dossiersPc = pcm.possible() ? (await pcm.epingles()).filter((x) => x.genre === 'dossier') : [];
     d.innerHTML = `<form method="dialog" class="mm-fiche-corps" data-fiche-form="${f.id}">
       <label><span>Nom</span><input data-nom value="${esc(f.nom)}" maxlength="120"></label>
       ${apercu}
       <p class="petit">${fichiers.poids(f.taille)}${f.mime ? `, ${esc(f.mime)}` : ''}. Modifié le ${DATEH.format(new Date(f.modifie))}.</p>
       ${vs.length ? `<details><summary>${pluriel(vs.length, 'ancienne version')}</summary><ul class="mm-versions">${vs.map((v) => `<li><span>${DATEH.format(new Date(v.date))}, ${esc(v.raison)}</span><button type="button" class="btn-sobre" data-version="${v.id}">Revenir à celle-ci</button></li>`).join('')}</ul></details>` : ''}
+      ${dossiersPc.length ? `<label class="pc-copier"><span>Envoyer sur le disque, dans un dossier épinglé</span><select data-vers-pc><option value="">Choisir un dossier…</option>${dossiersPc.map((x) => `<option value="${esc(x.id)}">${esc(x.nom)}</option>`).join('')}</select></label>` : ''}
       <div class="mm-fiche-actions">
         <button type="button" class="btn" data-enregistrer>Enregistrer</button>
         <button type="button" class="btn-sobre" data-telecharger>Télécharger</button>
@@ -199,6 +201,18 @@ export async function rendreNoeud(vue, id, { pied, toast }) {
     await dessiner(); toast('Note rangée'); $('#mm-note', vue)?.focus();
   };
   vue.onchange = async (e) => {
+    const vp = e.target.closest('[data-vers-pc]');
+    if (vp && vp.value) {
+      const pcm = await import('./pc.js'), ep = await pcm.epingle(vp.value), fid = vp.closest('[data-fiche-form]').dataset.ficheForm;
+      const f = (await fichiers.lister(n.id)).find((x) => x.id === fid);
+      try {
+        if ((await pcm.acces(ep.handle, true)) !== 'granted') throw new Error('Accès refusé par le navigateur.');
+        const fh = await pcm.creerFichier(ep.handle, f.nom, f.blob);
+        toast(`Envoyé dans « ${ep.nom} » : ${fh.name}`);
+      } catch (err) { toast(err.message); }
+      vp.value = '';
+      return;
+    }
     const inp = e.target.closest('[data-importer]');
     if (!inp || !inp.files.length) return;
     for (const f of inp.files) await fichiers.ajouterFichier(n.id, f);

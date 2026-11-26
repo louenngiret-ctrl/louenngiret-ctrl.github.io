@@ -1,4 +1,4 @@
-# État du projet (version 1.0.0, 26 novembre 2026)
+# État du projet (version 1.1.0, 26 novembre 2026)
 
 ## Marche aujourd'hui
 
@@ -15,6 +15,12 @@
 - **Sauvegardes** : archive complète .zip, restauration avec aperçu, points de restauration automatiques et manuels,
   archive quotidienne dans un dossier du PC, ancienne sauvegarde .json encore lisible.
 - **Corbeille** pour les pages et les fichiers.
+- **Dossiers épinglés** (`#/pc`, page dans Gestion et administration) : épingler des dossiers et fichiers de l'appareil
+  (PC avec Chrome ou Edge, téléphone avec Chrome 132 ou plus), parcourir, ouvrir, modifier les textes (ancienne version
+  gardée), renommer, créer, ajouter, jeter (copie gardée dans la corbeille), copier dans une page, envoyer un fichier
+  d'une page vers un dossier épinglé.
+- **Échange sans serveur** : une archive se fusionne avec l'autre appareil (le plus récent gagne, l'autre est gardé,
+  les suppressions passent).
 - **Explorer, Rechercher** (pages, notes, fichiers, Carnet), **Paramètres** (barre déplaçable), **Ressources**,
   **Atelier de déco**, **capture rapide** (texte, dictée, photo), **partage vers l'appli**.
 - Hors connexion complet, mise à jour automatique (PC et A14), 0 violation axe sur les vues testées, 360 px et 1280 px.
@@ -22,12 +28,11 @@
 ## Préparé, pas encore actif
 
 - **Journal des changements** et identifiant d'appareil : rempli à chaque écriture, pas encore envoyé nulle part.
-- **Synchronisation PC et téléphone, compagnon Windows** : plan complet dans [SYNCHRO.md](SYNCHRO.md), relais à valider.
+- **Synchronisation automatique et compagnon Windows** : plan complet dans [SYNCHRO.md](SYNCHRO.md). Décision du 26/11/2026 : pas de serveur pour l’instant ; l’échange par archive le remplace.
 
 ## N'existe pas encore
 
 - Éditeur de pages en blocs (titres, listes, images, tableaux) : les pages sont des carnets de notes et de fichiers.
-- Ouvrir directement un dossier du PC dans My memories (sans synchro).
 - Rappels et notifications (il faut un serveur qui envoie).
 - Partage entre personnes.
 
@@ -36,3 +41,6 @@
 - Le stockage du navigateur est protégé (`navigator.storage.persist`) mais reste celui du navigateur : garder une
   archive récente tant que la synchro n'existe pas.
 - Carnet V2 n'est pas modifié (règle) : il ne suit donc pas encore le décor ni le SDK.
+- Les épingles sont propres à chaque appareil et le navigateur redemande l'accord à chaque nouvelle session
+  (bouton « Rouvrir l'accès »). Un fichier du disque n'est sur le téléphone que s'il a été copié dans une page puis échangé.
+- Échange : Carnet, Loge et Suite ne se fusionnent pas (option « prendre aussi » = remplacement).

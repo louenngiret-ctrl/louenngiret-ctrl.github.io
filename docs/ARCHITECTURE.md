@@ -9,7 +9,8 @@ de compilation : HTML, CSS et modules JavaScript natifs. Elle tourne sur le PC (
 ```
  Interface        accueil.js (tableau de bord)  menus.js (grand menu, dossiers, pages)  admin.js (administration)
                   navigation.js (barre, Explorer, Rechercher, Paramètres)  atelier.js  curiosites.js  hote.js (apps)
- Services         arbre.js (arborescence)  fichiers.js  apps.js  sauvegarde.js  decor.js  meteo.js
+                  dossiers.js (Dossiers épinglés)
+ Services         arbre.js (arborescence)  fichiers.js  apps.js  sauvegarde.js  pc.js (disque)  decor.js  meteo.js
  Stockage         store.js : IndexedDB « grenier », la source de vérité de l'appareil
  Coquille         sw.js (hors connexion, mises à jour)  manifest.webmanifest  index.html
  Apps livrées     malles/carnet (Carnet V2 : achats, armoire)  malles/loge  malles/cours (+ Suite BTS)
@@ -58,6 +59,7 @@ Autres bases de la même origine : `carnet` (Carnet V2 : `kv`, `thumb`, `full`).
 | `#/` | Tableau de bord (s'ouvre en premier) |
 | `#/accueil` | Grand menu (enfants de la racine) |
 | `#/n/<id>` | Un nœud : dossier en tuiles ou page en carnet. `#/s/<id>` reste un alias (anciens liens). |
+| `#/pc[/<épingle>/<chemin>]` | Dossiers épinglés (fichiers de l'appareil) |
 | `#/app/<id>` | Une application : livrée (pleine page) ou ajoutée (cadre isolé) |
 | `#/admin/<arbre/[id] \| apps \| sauvegardes \| corbeille>` | Administration |
 | `#/ressources/<principal \| categories \| ressource>` | Ressources |

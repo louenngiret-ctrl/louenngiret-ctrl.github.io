@@ -24,8 +24,10 @@ La référence complète est la Bible (titre resté « Bible du Grenier ») : ht
 - Arborescence (`noyau/arbre.js`, store `noeuds`) : la seule source des pages, dossiers, liens et apps. `plan.js` n'est plus que la graine copiée à la première ouverture de la 1.0 et la boîte à images. Un id de nœud ne change jamais. Supprimer = corbeille ; chaque modification garde une version.
 - Apps ajoutées (`noyau/apps.js`, `hote.js`) : cadre `sandbox` SANS `allow-same-origin` (jamais l'ajouter), tout accès aux données par le SDK et ses permissions. Apps livrées (Carnet, Loge, Cours) : `apps.INTEGREES`. Voir `docs/APPS.md`.
 - Sauvegarde (`noyau/sauvegarde.js`) : une nouvelle base IndexedDB ou une nouvelle clé localStorage est emportée automatiquement ; un changement du format d'archive = `versionFormat` + 1 et lecture des anciens formats.
+- Dossiers épinglés (`noyau/pc.js`, `dossiers.js`) : poignées File System Access dans la meta `pc.epingles`, jamais dans les archives ; recopier en mémoire tout `File` du disque avant de le garder ; avant d'écraser ou de jeter un fichier du disque, garder sa version.
+- Pas de serveur pour l'instant (choix de Louenn, 26/11/2026) : échange entre appareils par archive fusionnée (`fusionnerArchive`).
 - Synchro : rien de simulé. Créer un projet Supabase (ou tout compte) seulement avec l'accord explicite de Louenn (`docs/SYNCHRO.md`).
-- Routes : `#/` tableau de bord (s'ouvre en premier), `#/accueil` grand menu, `#/n/<id>` un nœud (`#/s/…` alias), `#/app/<id>`, `#/admin/<arbre|apps|sauvegardes|corbeille>`, `#/ressources/<principal|categories|ressource>`.
+- Routes : `#/` tableau de bord (s'ouvre en premier), `#/accueil` grand menu, `#/n/<id>` un nœud (`#/s/…` alias), `#/app/<id>`, `#/pc`, `#/admin/<arbre|apps|sauvegardes|corbeille>`, `#/ressources/<principal|categories|ressource>`.
 - Licences : ne jamais mettre dans le dépôt public des fichiers dont la licence interdit la redistribution (refusés le 26/11/2026 : textures TextureVault « grunge halftone », papiers Novanture). Les remplacer par des effets CSS ou SVG.
 - Mobile d'abord (Samsung A14), cibles tactiles de 44 px minimum, rien qui dépasse à 360 px.
 - Textes visibles et noms de fichiers livrés : vrais espaces, jamais de tirets du bas.

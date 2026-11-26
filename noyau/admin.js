@@ -346,8 +346,13 @@ async function ongletSauvegardes(zone) {
       : `<p class="petit">Choisis un dossier du PC (par exemple dans Documents, ou un dossier synchronisé par OneDrive ou Google Drive) : My memories y déposera une archive chaque jour.</p>
         <div class="reg-choix"><button type="button" class="btn" data-dossier-changer>Choisir le dossier</button></div>`}
     </section>` : ''}
+    <section class="bloc" aria-labelledby="ech-titre">
+      <h2 id="ech-titre">Échanger entre le PC et le téléphone</h2>
+      <p class="petit">Sans serveur, l’archive sert de messager. Sur l’appareil qui a du nouveau : « Télécharger l’archive » ou « Envoyer ailleurs » (Drive, mail, câble). Sur l’autre : « Choisir le fichier » ci-dessous, puis « Fusionner ». Pour chaque page, note, fichier ou app, la version la plus récente gagne ; l’autre reste dans les anciennes versions. Rien n’est perdu.</p>
+      <p class="petit">Astuce PC : choisis comme dossier de sauvegarde automatique un dossier Google Drive ou OneDrive, le téléphone y trouve l’archive du jour.</p>
+    </section>
     <section class="bloc" aria-labelledby="rem-titre">
-      <h2 id="rem-titre">Remettre une sauvegarde</h2>
+      <h2 id="rem-titre">Fusionner ou remettre une archive</h2>
       <p class="petit">Une archive .zip, ou une ancienne sauvegarde .json. Tu vois ce qu’elle contient avant de confirmer ; un point de restauration est pris juste avant.</p>
       <label class="btn-sobre"><input type="file" accept=".zip,.json,application/zip,application/json" data-restaurer hidden><span>Choisir le fichier</span></label>
       <div data-resume></div>
@@ -376,6 +381,11 @@ async function ongletSauvegardes(zone) {
     if (b.matches('[data-point]')) return faire(b, async () => { await sauvegarde.prendrePoint('pris à la main', { manuel: true }); await ongletSauvegardes(zone); }, 'Point de restauration pris');
     if (b.matches('[data-revenir-point]')) return deuxTemps(b, 'Sûr ? Appuie encore', () => faire(b, async () => { await sauvegarde.revenirAuPoint(b.dataset.revenirPoint); ctx.toast('Données remises comme à ce moment-là'); setTimeout(() => location.reload(), 700); }));
     if (b.matches('[data-effacer-point]')) return deuxTemps(b, 'Sûr ?', async () => { await sauvegarde.effacerPoint(b.dataset.effacerPoint); ongletSauvegardes(zone); });
+    if (b.matches('[data-fusionner]') && lu) return faire(b, async () => {
+      const r = await sauvegarde.fusionnerArchive(lu, { autres: !!$('[data-autres]', zone)?.checked });
+      ctx.toast(`Échange fait : ${pl(r.ajoutes, 'ajout')}, ${pl(r.remplaces, 'mise à jour', 'mises à jour')}, ${pl(r.supprimes, 'suppression')}`);
+      setTimeout(() => location.reload(), 1400);
+    });
     if (b.matches('[data-remettre]') && lu) return deuxTemps(b, 'Sûr ? Tout sera remplacé', () => faire(b, async () => { await sauvegarde.remettreArchive(lu); ctx.toast('Sauvegarde remise'); setTimeout(() => location.reload(), 700); }));
   };
   zone.onchange = async (e) => {
@@ -387,8 +397,10 @@ async function ongletSauvegardes(zone) {
       const r = lu.resume;
       z.innerHTML = `<div class="reg-revue"><h3>Sauvegarde du ${quand(r.date)}${r.appli ? ` (My memories ${esc(r.appli)})` : ''}</h3>
         <p>${pl(r.elements, 'note ou élément', 'notes et éléments')}, ${pl(r.pages, 'page')}, ${pl(r.fichiers, 'fichier')}, ${pl(r.apps, 'app')}${r.bases.length > 1 ? `, et les données de : ${esc(r.bases.filter((x) => x !== 'grenier').join(', '))}` : ''}${r.reglages ? `, ${pl(r.reglages, 'réglage')}` : ''}.</p>
-        ${r.ancienne ? '<p class="petit">Ancienne sauvegarde : seuls les notes et les réglages internes seront remis ; tes pages et tes apps restent comme elles sont.</p>' : '<p class="petit">Les données de cet appareil seront remplacées par celles-ci.</p>'}
-        <button type="button" class="btn" data-remettre>Remettre cette sauvegarde</button></div>`;
+        ${r.ancienne ? `<p class="petit">Ancienne sauvegarde : seuls les notes et les réglages internes seront remis ; tes pages et tes apps restent comme elles sont.</p>
+        <button type="button" class="btn" data-remettre>Remettre cette sauvegarde</button>` : `<p class="petit"><b>Fusionner</b> : garde tout ce qui est ici, ajoute ce qui manque, prend les versions plus récentes. <b>Remplacer</b> : cet appareil devient une copie exacte de l’archive.</p>
+        ${r.bases.length > 1 || r.reglages ? '<label class="reg-coche"><input type="checkbox" data-autres><span>En fusionnant, prendre aussi Carnet, Loge et Suite de l’archive (ils ne se fusionnent pas : ceux de cet appareil sont remplacés)</span></label>' : ''}
+        <div class="reg-choix"><button type="button" class="btn" data-fusionner>Fusionner avec cet appareil</button><button type="button" class="btn-sobre" data-remettre>Tout remplacer</button></div>`}</div>`;
     } catch (err) { lu = null; z.innerHTML = `<p class="reg-alerte" role="alert">${esc(err.message)}</p>`; }
   };
 }

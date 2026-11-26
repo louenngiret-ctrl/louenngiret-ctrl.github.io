@@ -77,6 +77,7 @@ export const SECTIONS = [
       s('professionnel', 'Professionnel', 'Stages, alternance, contacts, candidatures.', 'pie-robe'),
       s('economie', 'Économie', 'Budget du mois, dépenses, économies.', 'chat-bocal'),
       s('achats', 'Achats et courses', 'Tes listes, ton panier, tes envies.', 'champi-fraise', 'malles/carnet/index.html#/home'),
+      s('dossiers', 'Dossiers épinglés', 'Les dossiers et fichiers de cet appareil, ouverts depuis My memories.', 'chat-aile', '#/pc'),
     ],
   },
 ];

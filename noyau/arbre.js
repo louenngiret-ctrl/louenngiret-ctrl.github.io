@@ -10,7 +10,7 @@ import * as store from './store.js';
 import { GRAINE, APPS_DE_GRAINE } from './plan.js';
 
 export const RACINE = 'racine';
-const VERSION_GRAINE = 1;
+const VERSION_GRAINE = 2;
 let cache = null; // Map id -> nœud
 
 const maintenant = () => Date.now();
@@ -44,7 +44,21 @@ export async function charger(force = false) {
     l = g;
   }
   cache = new Map(l.map((n) => [n.id, n]));
+  await completerGraine();
   return cache;
+}
+/** Les ajouts de la graine après la 1.0 arrivent chez qui a déjà son arborescence, sans rien déplacer. */
+async function completerGraine() {
+  const v = (await store.lireMeta('arbre.graine').catch(() => 1)) || 1;
+  if (v >= VERSION_GRAINE) return;
+  const t = maintenant(), ops = [];
+  // 1.1 : Dossiers épinglés, dans Gestion et administration (si ce dossier existe encore)
+  if (v < 2 && !cache.has('gestion/dossiers') && cache.get('gestion') && !cache.get('gestion').corbeille) {
+    ops.push({ store: 'noeuds', op: 'put', obj: { id: 'gestion/dossiers', parent: 'gestion', ordre: enfants('gestion').length, type: 'lien', lien: '#/pc', nom: 'Dossiers épinglés', desc: 'Les dossiers et fichiers de cet appareil, ouverts depuis My memories.', sticker: 'chat-aile', cree: t, modifie: t } });
+  }
+  if (ops.length) await store.lot(ops);
+  await store.ecrireMeta('arbre.graine', VERSION_GRAINE);
+  if (ops.length) cache = new Map((await store.lireTout('noeuds')).map((n) => [n.id, n]));
 }
 export const pret = () => !!cache;
 export const noeud = (id) => cache?.get(id) || null;
@@ -110,7 +124,8 @@ export async function deplacer(id, parent, position = null) {
   const pos = position == null ? freres.length : Math.max(0, Math.min(position, freres.length));
   freres.splice(pos, 0, { ...n, parent });
   const ops = [versionDe(n, 'déplacement')];
-  freres.forEach((f, i) => { const o = f.id === id ? { ...n, parent, ordre: i, modifie: maintenant() } : { ...f, ordre: i }; if (f.id === id || f.ordre !== i) ops.push({ store: 'noeuds', op: 'put', obj: o }); });
+  // la date suit l'ordre : un réordonnancement passe aussi dans les échanges
+  freres.forEach((f, i) => { const o = f.id === id ? { ...n, parent, ordre: i, modifie: maintenant() } : { ...f, ordre: i, modifie: maintenant() }; if (f.id === id || f.ordre !== i) ops.push({ store: 'noeuds', op: 'put', obj: o }); });
   await enregistrer(ops);
 }
 export async function decaler(id, sens) {
@@ -164,7 +179,7 @@ export async function remettreArbre(versionId) {
 }
 
 /** La page où vit un élément (sa « malle ») : pour Rechercher et Ressources. */
-const AUTRES = { boite: { nom: 'Boîte à trier', lien: '#/boite' }, agenda: { nom: 'Tableau de bord', lien: '#/' }, capture: { nom: 'Boîte à trier', lien: '#/boite' } };
+const AUTRES = { pc: { nom: 'Dossiers épinglés', lien: '#/pc' }, boite: { nom: 'Boîte à trier', lien: '#/boite' }, agenda: { nom: 'Tableau de bord', lien: '#/' }, capture: { nom: 'Boîte à trier', lien: '#/boite' } };
 export function pageDe(malle) {
   const n = noeud(malle);
   if (n && !n.corbeille) return { nom: n.nom, lien: lienDe(n), noeud: n };

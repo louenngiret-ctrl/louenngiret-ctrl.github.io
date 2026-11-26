@@ -40,3 +40,16 @@ Raison : la synchro pourra reprendre l'historique local au lieu de tout comparer
 
 **D12. Bibliothèque d'icônes en WebP 96 px dans `assets/memoires/icones/`.** Découpées dans les planches fournies par
 Louenn le 26/11/2026. Cachées dans `LOURDS` : pour changer une icône, lui donner un nouveau numéro.
+
+**D13. Pas de serveur pour l'instant (décision de Louenn, 26/11/2026).** La connexion avec le PC passe par le PC
+lui-même : File System Access (`noyau/pc.js`), poignées gardées sur l'appareil (meta `pc.epingles`, jamais dans les
+archives). Entre appareils : échange par archive fusionnée. Coût : pas de mise à jour automatique d'un appareil à
+l'autre, les fichiers du disque ne voyagent que copiés dans une page.
+
+**D14. Fusion d'archive : le plus récent gagne, rien ne se perd.** Comparaison par `modifie` pour `elements`, `noeuds`,
+`fichiers`, `apps` ; contenu identique à la date près = rien à faire ; le perdant va dans `versions` ; les suppressions
+voyagent (champ `suppressions` de l'archive, tiré du journal) et ne s'appliquent que si l'objet n'a pas été modifié
+depuis. Coût : deux modifications du même objet de chaque côté = une seule gagne (l'autre reste récupérable).
+
+**D15. Tout ce que My memories garde d'un fichier du disque est recopié en mémoire.** Un `File` lu par File System
+Access reste lié au disque et devient illisible si le fichier change ou disparaît (constaté le 26/11/2026).

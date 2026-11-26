@@ -1,6 +1,6 @@
 // Service worker du Grenier : hors connexion + mises à jour.
 // À CHAQUE NOUVELLE VERSION : changer VERSION ici ET dans version.json.
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE = `grenier-${VERSION}`;
 // Gros fichiers (Carnet, Suite BTS, moteur et modèles d'essayage) : dans un cache à part,
 // gardé d'une version à l'autre. Changer LOURDS seulement quand Carnet ou la Suite changent.
@@ -512,6 +512,8 @@ const COQUILLE = [
   './noyau/sauvegarde.js',
   './noyau/admin.js',
   './noyau/admin.css',
+  './noyau/pc.js',
+  './noyau/dossiers.js',
   './assets/fonts/unifraktur-maguntia.woff2',
   './malles/loge/index.html',
   './malles/loge/loge.css',

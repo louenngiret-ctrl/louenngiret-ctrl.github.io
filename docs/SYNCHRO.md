@@ -1,5 +1,10 @@
 # Synchronisation PC, téléphone et compagnon Windows (plan, pas encore construit)
 
+> État au 26/11/2026 : Louenn a choisi d'avancer sans serveur. Ce qui existe à la place : les Dossiers épinglés
+> (les fichiers du disque dans My memories, sur l'appareil lui-même) et l'échange par archive fusionnée
+> (Administration, Sauvegardes). Le plan ci-dessous reste valable le jour où un relais sera accepté : l'archive porte
+> déjà les suppressions et l'identifiant d'appareil, et la fusion suit les mêmes règles que la synchro prévue.
+
 Rien de ce qui est décrit ici n'est actif dans l'appli : aucun bouton ne fait semblant. La version 1.0 pose ce dont
 la synchronisation aura besoin (journal des changements, identifiants stables, versions, corbeille, identifiant
 d'appareil), pour la brancher sans tout refaire.

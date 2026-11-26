@@ -385,7 +385,7 @@ $('#capture-texte').addEventListener('keydown', (e) => {
 
 /* Jeter un post-it : deux appuis, sans fenêtre système */
 vue.addEventListener('click', async (e) => {
-  const b = e.target.closest('[data-jeter]');
+  const b = e.target.closest('.postit [data-jeter]'); // seulement les post-it de la Boîte (d'autres vues ont leur propre « Jeter »)
   if (!b) return;
   if (!b.classList.contains('sur')) {
     b.classList.add('sur'); b.textContent = 'Sûr ?';
@@ -413,6 +413,7 @@ async function route() {
   else if (a === 'reglages') await vueReglages();
   else if (a === 'accueil') { const m = await import('./menus.js'); m.rendreMenu(vue, { pied: pied() }); }
   else if ((a === 'n' || a === 's') && b) { const m = await import('./menus.js'); await m.rendreNoeud(vue, decodeURIComponent(h.split('/').slice(1).join('/')), { pied: pied(), toast }); }
+  else if (a === 'pc') { const { rendreDossiers } = await import('./dossiers.js'); await rendreDossiers(vue, h.split('/').slice(1).join('/'), { pied: pied(), toast }); }
   else if (a === 'app' && b) { const { rendreApp } = await import('./hote.js'); await rendreApp(vue, decodeURIComponent(b), { pied: pied(), toast }); }
   else if (a === 'admin') { const { rendreAdmin } = await import('./admin.js'); await rendreAdmin(vue, b, h.split('/').slice(2).join('/'), { barre, pied, toast }); }
   else if (a === 'ressources') { const m = await import('./menus.js'); await m.rendreRessources(vue, b, { pied: pied() }); }
