@@ -151,7 +151,7 @@ export function tCarte(e) {
     <span class="scotch" data-cle="carte" aria-hidden="true"></span>
     <h2 class="t-titre">La carte du jour</h2>
     <div class="carte-jeu">
-      <button type="button" class="carte-3d" data-carte ${vue ? 'aria-hidden="true" tabindex="-1"' : 'aria-label="Retourner la carte du jour"'}>
+      <button type="button" class="carte-3d" data-carte ${vue ? 'aria-hidden="true" tabindex="-1"' : 'aria-label="Retourne-moi : la carte du jour"'}>
         <span class="face dos" style="--dos:url('${PLANCHES[7].img}')"><span>Retourne-moi</span></span>
         <span class="face recto"><img src="${c.img}" alt="${vue ? esc(`${c.nom}, carte du tarot`) : ''}" loading="lazy" width="300" height="520"></span>
       </button>

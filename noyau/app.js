@@ -2,6 +2,7 @@
 import * as store from './store.js';
 import { MALLES, malle } from './malles.js';
 import { brancherDecor, appliquerDecor, lireDecor, UNIVERS } from './decor.js';
+import { installerNavigation } from './navigation.js';
 // carton ouvert, dessiné pour la Boîte vide
 const CARTON = `<svg class="carton-vide" viewBox="0 0 160 120" aria-hidden="true">
   <path d="M30 52 L80 64 L130 52 L130 104 L80 116 L30 104 Z" fill="#b98a55" stroke="#6e4a26" stroke-width="2"/>
@@ -69,11 +70,11 @@ function comptesCarnet() {
   } catch (e) { return {}; }
 }
 
-async function vueAccueil() {
+async function vueAccueil(mode = 'tableau') {
   const [boite, loge] = await Promise.all([store.parMalle('boite').catch(() => []), store.parMalle('loge').catch(() => [])]);
   const comptes = { boite: boite.length, loge: loge.length, ...comptesCarnet() };
   const { rendreAccueil } = await import('./accueil.js');
-  await rendreAccueil(vue, { malles: MALLES, carteMalle, comptes, pied: pied(), toast });
+  await rendreAccueil(vue, { malles: MALLES, carteMalle, comptes, pied: pied(), toast, mode });
   majBoutonInstaller();
 }
 
@@ -405,6 +406,7 @@ async function route() {
   else if (a === 'boite') await vueMalle('boite');
   else if (a === 'nouveautes') await vueNouveautes();
   else if (a === 'reglages') await vueReglages();
+  else if (a === 'accueil') await vueAccueil('accueil');
   else if (a === 'deco') { const { rendreAtelier } = await import('./atelier.js'); await rendreAtelier(vue, { barre, pied, toast }); }
   else if (a === 'cabinet') { const { rendreCabinet } = await import('./curiosites.js'); await rendreCabinet(vue, { barre, pied }); }
   else await vueAccueil();
@@ -451,6 +453,7 @@ function annoncerPartage() {
 /* ---------- Démarrage ---------- */
 annoncerPartage();
 brancherDecor();
+installerNavigation();
 setInterval(appliquerAmbiance, 10 * 60 * 1000);
 chargerVersion().finally(route);
 brancherServiceWorker();

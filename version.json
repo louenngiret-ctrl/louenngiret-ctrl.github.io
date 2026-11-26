@@ -1,7 +1,19 @@
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
   "date": "2026-11-26",
   "historique": [
+    {
+      "version": "0.8.0",
+      "date": "2026-11-26",
+      "titre": "La barre de navigation",
+      "notes": [
+        "Une barre fixe, comme dans un logiciel : Accueil en haut, Explorer, Rechercher, Paramètres, et Tableau de bord tout en bas.",
+        "À gauche sur PC, en bas sur téléphone. Glisse la poignée vers un bord pour la déplacer, ou choisis sa place dans Paramètres.",
+        "Explorer : toutes les malles rangées par pièce. Celles marquées « à venir » arrivent bientôt.",
+        "Rechercher : un mot, et le Grenier fouille toutes les malles, même hors connexion.",
+        "Le Grenier s'ouvre sur le Tableau de bord. L'Accueil est une page à part : la fenêtre en grand, la carte et le trésor du jour, tes malles."
+      ]
+    },
     {
       "version": "0.7.0",
       "date": "2026-11-26",

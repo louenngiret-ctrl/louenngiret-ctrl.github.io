@@ -425,11 +425,15 @@ export async function rendreAccueil(vue, ctx) {
     courses: () => tCourses(s), armoire: () => tArmoire(s), loge: () => tLoge(loge, routine), boite: () => tBoite(boite),
     cours: () => tCours(), musique: () => tMusique(), devise: () => tDevise(), carte: () => cab.tCarte(e), cabinet: () => cab.tCabinet(e),
   };
-  vue.innerHTML = `<section class="accueil-bento" aria-label="Accueil">
-    <h1 class="sr">Accueil</h1>
+  // L'Accueil : la page d'arrivée (fenêtre, carte et trésor du jour, malles). Le Tableau de bord : toutes les tuiles.
+  const accueil = ctx.mode === 'accueil';
+  const tete = accueil ? ['lucarne'] : ['lucarne', 'ephemeride', 'horloge'];
+  const corps = accueil ? ['carte', 'cabinet', 'devise'] : ['meteo', 'carte', 'priorites', 'devise', 'cabinet', 'cours', 'calendrier', 'courses', 'armoire', 'temps', 'loge', 'boite', 'musique'];
+  vue.innerHTML = `<section class="accueil-bento${accueil ? ' page-accueil' : ''}" aria-label="${accueil ? 'Accueil' : 'Tableau de bord'}">
+    <h1 class="sr">${accueil ? 'Accueil' : 'Tableau de bord'}</h1>
     ${d.fanions ? guirlande() : ''}
-    <div class="bento-tete">${['lucarne', 'ephemeride', 'horloge'].filter((id) => !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
-    <div class="bento">${['meteo', 'carte', 'priorites', 'devise', 'cabinet', 'cours', 'calendrier', 'courses', 'armoire', 'temps', 'loge', 'boite', 'musique'].filter((id) => !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
+    <div class="bento-tete">${tete.filter((id) => accueil || !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
+    <div class="bento">${corps.filter((id) => accueil || !caches.has(id)).map((id) => tuiles[id]()).join('')}</div>
     <section class="etagere-malles" aria-labelledby="t-malles"><h2 id="t-malles" class="t-section">Les malles</h2>
       <div class="malles">${malles.map((x) => carteMalle(x, comptes[x.id])).join('')}</div></section>
     <div id="installer-zone"></div>
